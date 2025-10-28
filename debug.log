@@ -1,0 +1,65 @@
+2025-10-11 21:00:21 - Dépôts trouvés: 22
+2025-10-11 21:00:22 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzE3MjIyfQ.Dymhq7CmjN657GLfEY2CpXYmkWgcmyXGL6yRGSW6S64","message":"10-13-2025 06:30","email":"kingphanuel237@gmail.com"}}
+2025-10-11 21:00:22 - Traitement dépôt 61 - Transaction: BLACK761
+2025-10-11 21:00:22 - Traitement dépôt 62 - Transaction: BLACK762
+2025-10-11 21:00:22 - Traitement dépôt 63 - Transaction: BLACK763
+2025-10-11 21:00:22 - Traitement dépôt 64 - Transaction: BLACK764
+2025-10-11 21:00:22 - Traitement dépôt 65 - Transaction: BLACK7_1760217485
+2025-10-11 21:00:22 - Traitement dépôt 66 - Transaction: BLACK7_1760219586
+2025-10-11 21:00:22 - Traitement dépôt 67 - Transaction: BLACK7_1760219669
+2025-10-11 21:00:22 - Traitement dépôt 68 - Transaction: BLACK7_1760220079
+2025-10-11 21:00:22 - Traitement dépôt 69 - Transaction: BLACK7_1760220567
+2025-10-11 21:00:22 - Traitement dépôt 70 - Transaction: BLACK7_1760220602
+2025-10-11 21:00:22 - Traitement dépôt 71 - Transaction: BLACK7_1760220644
+2025-10-11 21:00:22 - Traitement dépôt 72 - Transaction: BLACK7_1760221022
+2025-10-11 21:00:22 - Traitement dépôt 73 - Transaction: BLACK773
+2025-10-11 21:00:22 - Traitement dépôt 74 - Transaction: BLACK774
+2025-10-11 21:00:22 - Traitement dépôt 75 - Transaction: BLACK775
+2025-10-11 21:00:22 - Traitement dépôt 76 - Transaction: BLACK776
+2025-10-11 21:00:22 - Traitement dépôt 77 - Transaction: BLACK777
+2025-10-11 21:00:22 - Traitement dépôt 78 - Transaction: BLACK778
+2025-10-11 21:00:22 - Traitement dépôt 79 - Transaction: BLACK779
+2025-10-11 21:00:22 - Traitement dépôt 80 - Transaction: BLACK7_1760223361
+2025-10-11 21:00:22 - Traitement dépôt 81 - Transaction: BLACK7_1760223437
+2025-10-11 21:00:22 - Traitement dépôt 82 - Transaction: BLACK7_1760230106
+2025-10-11 21:11:44 - Dépôts trouvés: 1
+2025-10-11 21:11:45 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzE3OTA1fQ.JEJIvj6QK2mId89keCsNpxt3zoZTT4WJYaZAW7gg9A4","message":"10-13-2025 06:41","email":"kingphanuel237@gmail.com"}}
+2025-10-11 21:11:45 - Traitement dépôt 83 - Transaction: BLACK7_1760230906
+2025-10-11 21:12:11 - Dépôts trouvés: 0
+2025-10-11 21:12:24 - Dépôts trouvés: 0
+2025-10-12 16:27:23 - Dépôts trouvés: 0
+2025-10-12 16:49:20 - Dépôts trouvés: 2
+2025-10-12 16:49:21 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzc0MTYxfQ.nersdUEyV6JRJ557FgYhbJmLgVIYEL-An9kFj2CM790","message":"10-13-2025 22:19","email":"kingphanuel237@gmail.com"}}
+2025-10-12 16:49:21 - Traitement dépôt 85 - Transaction: BLACK7_1760286396
+2025-10-12 16:49:22 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1916","attributes":{"id":1916,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"688608462","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":0,"created_at":"2025-10-12T21:56:38.313+05:30","description":"Achats de produits","expired_at":"2025-10-12T22:56:38.311+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/d063f46c-dd9b-4c27-99f5-1512642bfbff","transaction_id":"BLACK7_1760286396","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1916"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 16:49:22 - Statut trouvé: 200
+2025-10-12 16:49:22 - Traitement dépôt 86 - Transaction: BLACK7_1760286952
+2025-10-12 16:49:23 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1917","attributes":{"id":1917,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"687740148","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":4,"created_at":"2025-10-12T22:05:53.936+05:30","description":"Achats de produits","expired_at":"2025-10-12T23:05:53.934+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/23e1346b-4c7e-44a7-9bb6-c71dfb61b06b","transaction_id":"BLACK7_1760286952","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1917"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 16:49:23 - Statut trouvé: 200
+2025-10-12 16:50:59 - Dépôts trouvés: 2
+2025-10-12 16:51:00 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzc0MjYwfQ.yOmIEP4AMHq7ZkgMr3g1Mb6u10UIi5JvWtmOszO8O2E","message":"10-13-2025 22:21","email":"kingphanuel237@gmail.com"}}
+2025-10-12 16:51:00 - Traitement dépôt 85 - Transaction: BLACK7_1760286396
+2025-10-12 16:51:01 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1916","attributes":{"id":1916,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"688608462","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":0,"created_at":"2025-10-12T21:56:38.313+05:30","description":"Achats de produits","expired_at":"2025-10-12T22:56:38.311+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/d063f46c-dd9b-4c27-99f5-1512642bfbff","transaction_id":"BLACK7_1760286396","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1916"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 16:51:01 - Statut trouvé: 200
+2025-10-12 16:51:01 - Traitement dépôt 86 - Transaction: BLACK7_1760286952
+2025-10-12 16:51:02 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1917","attributes":{"id":1917,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"687740148","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":1,"created_at":"2025-10-12T22:05:53.936+05:30","description":"Achats de produits","expired_at":"2025-10-12T23:05:53.934+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/23e1346b-4c7e-44a7-9bb6-c71dfb61b06b","transaction_id":"BLACK7_1760286952","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1917"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 16:51:02 - Statut trouvé: 200
+2025-10-12 16:52:25 - Dépôts trouvés: 2
+2025-10-12 16:52:26 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzc0MzQ2fQ.22BgijPwBg_r8wK4Car5fK1r8UYrFNgn6px8AqhULT0","message":"10-13-2025 22:22","email":"kingphanuel237@gmail.com"}}
+2025-10-12 16:52:26 - Traitement dépôt 85 - Transaction: BLACK7_1760286396
+2025-10-12 16:52:27 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1916","attributes":{"id":1916,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"688608462","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":0,"created_at":"2025-10-12T21:56:38.313+05:30","description":"Achats de produits","expired_at":"2025-10-12T22:56:38.311+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/d063f46c-dd9b-4c27-99f5-1512642bfbff","transaction_id":"BLACK7_1760286396","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1916"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 16:52:27 - Statut trouvé: 200
+2025-10-12 16:52:27 - Traitement dépôt 86 - Transaction: BLACK7_1760286952
+2025-10-12 16:52:28 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1917","attributes":{"id":1917,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"687740148","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":1,"created_at":"2025-10-12T22:05:53.936+05:30","description":"Achats de produits","expired_at":"2025-10-12T23:05:53.934+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/23e1346b-4c7e-44a7-9bb6-c71dfb61b06b","transaction_id":"BLACK7_1760286952","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1917"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 16:52:28 - Statut trouvé: 200
+2025-10-12 17:03:16 - Dépôts trouvés: 2
+2025-10-12 17:03:17 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzc0OTk4fQ.eI6PWs4Ogmvc2yB8Q1zpypcv36hUxE5NR65QpmH8c3w","message":"10-13-2025 22:33","email":"kingphanuel237@gmail.com"}}
+2025-10-12 17:03:17 - Traitement dépôt 85 - Transaction: BLACK7_1760286396
+2025-10-12 17:03:17 - Traitement dépôt 86 - Transaction: BLACK7_1760286952
+2025-10-12 17:03:18 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1917","attributes":{"id":1917,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"687740148","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":1,"created_at":"2025-10-12T22:05:53.936+05:30","description":"Achats de produits","expired_at":"2025-10-12T23:05:53.934+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/23e1346b-4c7e-44a7-9bb6-c71dfb61b06b","transaction_id":"BLACK7_1760286952","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1917"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 17:03:18 - Statut trouvé: 200
+2025-10-12 17:03:32 - Dépôts trouvés: 1
+2025-10-12 17:03:33 - Auth response: {"status":200,"data":{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhZG1pbl9pZCI6MTI1LCJtYWluX2FkbWluX2lkIjoxMjUsInVzZXJfaWQiOjEyNSwiZXhwIjoxNzYwMzc1MDEzfQ.yYa44bdu0PwkcuiQ6PHBLuYF16crdM3C1b8RAA3ag5o","message":"10-13-2025 22:33","email":"kingphanuel237@gmail.com"}}
+2025-10-12 17:03:33 - Traitement dépôt 86 - Transaction: BLACK7_1760286952
+2025-10-12 17:03:33 - API Response: {"status":200,"data":{"data":{"data":{"type":"payment-links","id":"1917","attributes":{"id":1917,"name":"Ggff","email":"servicesoleas1@gmail.com","mobile":"687740148","amount":100,"currency_code":"XAF","country":"Cameroon","country_code":"CM","status":1,"created_at":"2025-10-12T22:05:53.936+05:30","description":"Achats de produits","expired_at":"2025-10-12T23:05:53.934+05:30","payment_uuid":"https:\/\/app.swychrconnect.com\/payment\/23e1346b-4c7e-44a7-9bb6-c71dfb61b06b","transaction_id":"BLACK7_1760286952","pass_digital_charge":true,"net_payable":102.5,"admin_name":"AshTech store","admin_email":"kingphanuel237@gmail.com","callback_url":"https:\/\/blackrock.hstn.me\/compte.php"},"links":{"self":"\/payment-links\/1917"}}},"message":"Payment link details retrieved successfully","status":200}}
+2025-10-12 17:03:33 - Statut trouvé: 200
