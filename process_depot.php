@@ -62,7 +62,7 @@ $devises = [
 $currency = $devises[$pays] ?? 'XOF';
 
 // Clé API SoleasPay
-$api_key = 'CnKwsRD0pLYO2etn82SvBUy_TjeqbsJaRpUpNEHDP1s-AP';
+$api_key = 'met ta clee api soleaspay ici';
 
 // Génération d'un ID de commande unique
 $order_id = 'DEP_' . $user_id . '_' . time() . '_' . rand(1000, 9999);
