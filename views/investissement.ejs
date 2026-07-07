@@ -177,7 +177,7 @@
                     <% plans.forEach(function(plan, idx) { %>
                     <div class="plan-card">
                         <div class="plan-image-wrap">
-                            <img src="https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=600&q=70" alt="<%= plan.nom %>">
+                            <img src="<%= plan.image_url %>" alt="<%= plan.nom %>">
                             <div class="plan-duration-badge"><%= plan.duree_jours %> Jours</div>
                         </div>
                         <div class="plan-body">
