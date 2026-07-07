@@ -70,7 +70,7 @@ router.post('/depot/process', requireAuth, async (req, res) => {
       'https://soleaspay.com/api/agent/bills/v3',
       {
         wallet: numero, amount: montant, currency, orderId: order_id,
-        description: 'Dépôt sur NVIDIA Technology', payer: payer_name, payerEmail: email,
+        description: 'Dépôt sur Altiora Capital Africa', payer: payer_name, payerEmail: email,
         successUrl: `${protocol}://${host}/depot?success=1`,
         failureUrl: `${protocol}://${host}/depot?failed=1`,
       },
