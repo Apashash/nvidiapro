@@ -26,6 +26,7 @@ app.use(session({
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Routes
 app.use('/', require('./routes/auth'));

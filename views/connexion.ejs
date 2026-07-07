@@ -18,8 +18,8 @@
         /* Hero header with rice field image */
         .hero {
             height: 260px;
-            background: linear-gradient(to bottom, rgba(30,20,0,0.45) 0%, rgba(80,45,0,0.55) 100%),
-                        url('https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=800&q=80') center/cover no-repeat;
+            background: linear-gradient(to bottom, rgba(10,5,0,0.30) 0%, rgba(10,5,0,0.55) 100%),
+                        url('/images/slide4.jpeg') center/cover no-repeat;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -28,16 +28,15 @@
             flex-shrink: 0;
         }
         .hero-logo {
-            width: 72px; height: 72px;
-            background: linear-gradient(135deg, #D4921F, #B07018);
+            width: 90px; height: 90px;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 0 4px rgba(255,255,255,0.3), 0 8px 24px rgba(0,0,0,0.4);
+            overflow: hidden;
+            box-shadow: 0 0 0 3px rgba(212,146,31,0.6), 0 8px 24px rgba(0,0,0,0.5);
             margin-bottom: 12px;
         }
-        .hero-logo i { font-size: 32px; color: #fff; }
-        .hero h1 { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .hero p { font-size: 13px; color: rgba(255,255,255,0.85); margin-top: 4px; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+        .hero-logo img { width:100%; height:100%; object-fit:cover; }
+        .hero h1 { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 0.5px; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+        .hero p { font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 4px; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
 
         /* Form card */
         .form-card {
@@ -118,7 +117,7 @@
 </head>
 <body>
     <div class="hero">
-        <div class="hero-logo"><i class="fas fa-wheat-awn"></i></div>
+        <div class="hero-logo"><img src="/images/logo-altiora.jpeg" alt="Altiora Capital Africa"></div>
         <h1>Altiora Capital Africa</h1>
         <p>« Ensemble, construisons la richesse de demain. »</p>
     </div>

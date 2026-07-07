@@ -12,20 +12,19 @@
         body { background:#F5EFE6; min-height:100vh; display:flex; flex-direction:column; }
         .hero {
             height: 230px;
-            background: linear-gradient(to bottom, rgba(30,20,0,0.45), rgba(80,45,0,0.60)),
-                        url('https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=800&q=80') center/cover no-repeat;
+            background: linear-gradient(to bottom, rgba(10,5,0,0.30), rgba(10,5,0,0.55)),
+                        url('/images/slide1.jpeg') center/cover no-repeat;
             display: flex; flex-direction:column; align-items:center; justify-content:center;
         }
         .hero-logo {
-            width:64px; height:64px; border-radius:50%;
-            background: linear-gradient(135deg, #D4921F, #B07018);
-            display:flex; align-items:center; justify-content:center;
-            box-shadow: 0 0 0 4px rgba(255,255,255,0.3), 0 8px 24px rgba(0,0,0,0.4);
+            width:80px; height:80px; border-radius:50%;
+            overflow:hidden;
+            box-shadow: 0 0 0 3px rgba(212,146,31,0.6), 0 8px 24px rgba(0,0,0,0.5);
             margin-bottom:10px;
         }
-        .hero-logo i { font-size:28px; color:#fff; }
-        .hero h1 { font-size:24px; font-weight:800; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,0.4); }
-        .hero p { font-size:12px; color:rgba(255,255,255,0.85); margin-top:3px; }
+        .hero-logo img { width:100%; height:100%; object-fit:cover; }
+        .hero h1 { font-size:24px; font-weight:800; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,0.6); }
+        .hero p { font-size:12px; color:rgba(255,255,255,0.9); margin-top:3px; }
         .form-card {
             background:#fff; border-radius:28px 28px 0 0; margin-top:-28px;
             flex:1; padding:28px 24px 40px;
@@ -93,7 +92,7 @@
 </head>
 <body>
     <div class="hero">
-        <div class="hero-logo"><i class="fas fa-wheat-awn"></i></div>
+        <div class="hero-logo"><img src="/images/logo-altiora.jpeg" alt="Altiora Capital Africa"></div>
         <h1>Altiora Capital Africa</h1>
         <p>« Ensemble, construisons la richesse de demain. »</p>
     </div>
