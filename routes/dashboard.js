@@ -45,7 +45,7 @@ router.get('/', requireAuth, async (req, res) => {
     delete req.session.success_message;
     delete req.session.error_message;
 
-    res.render('index', { user, solde: user.solde || 0, revenus: rev, posts, devise, success_message, error_message });
+    res.render('index', { user, solde: user.solde || 0, revenus: rev, posts, devise, success_message, error_message, notifications: [] });
   } catch (e) {
     console.error(e);
     res.redirect('/connexion');
