@@ -30,7 +30,7 @@ router.post('/cadeau', requireAuth, async (req, res) => {
       return res.redirect('/cadeau');
     }
     // Codes gérés manuellement - exemple de validation simple
-    const validCodes = { 'NVIDIA2025': 500, 'BONUS100': 100, 'WELCOME250': 250 };
+    const validCodes = { 'ALTIORA2026': 500, 'BONUS100': 100, 'WELCOME250': 250 };
     const montant = validCodes[code];
     if (!montant) {
       req.session.cadeau_error = 'Code cadeau invalide ou expiré.';
