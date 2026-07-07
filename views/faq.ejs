@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FAQ - NVIDIA Technologie</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent-green:#76b900; --dark-bg:#1e293b; --card-bg:rgba(255,255,255,0.95); --text-dark:#1e293b; --text-gray:#718096; --border:#e2e8f0; }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        html, body { height:100%; overflow-x:hidden; overflow-y:auto; }
+        body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%); color:#e2e8f0; line-height:1.6; padding:15px; padding-bottom:100px; user-select:none; -webkit-user-select:none; }
+        .background { position:fixed; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 10% 20%, rgba(118,185,0,0.15) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(0,0,0,0.5) 0%, transparent 20%), linear-gradient(135deg,#1e293b 0%,#0f172a 100%); z-index:-3; }
+        .header { display:flex; align-items:center; margin-bottom:24px; }
+        .logo-icon { width:40px; height:40px; background:var(--accent-green); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800; font-size:16px; box-shadow:0 4px 15px rgba(118,185,0,0.4); clip-path:polygon(0 0,100% 0,100% 75%,75% 100%,0 100%); }
+        .logo-text { margin-left:12px; }
+        .logo-text h1 { font-size:1.2rem; font-weight:800; color:#fff; }
+        .logo-text p { font-size:0.7rem; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; }
+        .faq-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; margin-bottom:12px; overflow:hidden; }
+        .faq-question { padding:16px 18px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-weight:600; font-size:0.9rem; }
+        .faq-question:hover { background:rgba(118,185,0,0.08); }
+        .faq-question .arrow { color:var(--accent-green); transition:transform 0.3s; }
+        .faq-answer { display:none; padding:0 18px 16px; color:#94a3b8; font-size:0.85rem; line-height:1.7; border-top:1px solid rgba(255,255,255,0.05); }
+        .faq-card.open .faq-answer { display:block; }
+        .faq-card.open .arrow { transform:rotate(180deg); }
+        .section-title { color:var(--accent-green); font-size:1rem; font-weight:700; margin:20px 0 12px; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:8px; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<%- include('partials/menu', { page: '' }) %>
+
+<div class="header">
+    <div class="logo-icon">N</div>
+    <div class="logo-text"><h1>NVIDIA Technologie</h1><p>Foire Aux Questions</p></div>
+</div>
+
+<div class="section-title"><i class="fas fa-question-circle"></i> Questions générales</div>
+
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">C'est quoi NVIDIA Technologie ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">NVIDIA Technologie est une plateforme d'investissement en ligne qui vous permet de générer des revenus passifs grâce à des plans d'investissement avec des rendements journaliers. Vous pouvez également gagner des commissions de parrainage en invitant vos amis.</div>
+</div>
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Comment fonctionne le système d'investissement ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Vous choisissez un plan d'investissement (Action VIP 1 à 11) en fonction de votre budget. Chaque plan génère un rendement journalier (entre 10.5% et 19.5%) pendant 125 jours. Vous pouvez collecter vos revenus chaque 24h depuis votre profil.</div>
+</div>
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Quel est le montant minimum pour investir ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Le plan minimum est Action VIP 1 à 3 000 FCFA. Vous recevrez 10.5% de rendement journalier, soit 315 FCFA par jour pendant 125 jours.</div>
+</div>
+
+<div class="section-title"><i class="fas fa-money-bill-wave"></i> Dépôts & Retraits</div>
+
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Comment effectuer un dépôt ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Allez dans "Dépôt", choisissez votre pays et opérateur Mobile Money, entrez le montant (minimum 200 FCFA), votre numéro et email. Confirmez le paiement sur votre téléphone. Le crédit est automatique.</div>
+</div>
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Quand puis-je faire un retrait ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Les retraits sont disponibles du lundi au samedi de 9h à 19h GMT. Montant minimum: 1 200 FCFA. Un seul retrait toutes les 24h. Vous devez avoir un plan actif et au moins un dépôt validé.</div>
+</div>
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Combien de temps prend un retrait ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Les retraits sont traités dans un délai de 24 heures après validation de votre demande par notre équipe.</div>
+</div>
+
+<div class="section-title"><i class="fas fa-users"></i> Parrainage & VIP</div>
+
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Comment fonctionne le parrainage ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Partagez votre lien de parrainage unique. Quand un filleul achète un plan d'investissement, vous recevez automatiquement 20% de son investissement en bonus sur votre solde.</div>
+</div>
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">Comment progresser dans les niveaux VIP ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Votre niveau VIP dépend du nombre de filleuls directs actifs (ayant un plan en cours):<br>• VIP 0: 0-2 filleuls actifs<br>• VIP 1: 3-6 filleuls (700 FCFA/jour de salaire)<br>• VIP 2: 7-11 filleuls (1 200 FCFA/jour)<br>• VIP 3: 12-19 filleuls (4 000 FCFA/jour)<br>• VIP 4: 20-39 filleuls (5 000 FCFA/jour)<br>• VIP 5: 40+ filleuls (7 500 FCFA/jour)</div>
+</div>
+
+<div class="section-title"><i class="fas fa-shield-alt"></i> Sécurité</div>
+
+<div class="faq-card" onclick="toggleFaq(this)">
+    <div class="faq-question">À quoi sert le code PIN de transaction ? <i class="fas fa-chevron-down arrow"></i></div>
+    <div class="faq-answer">Le code PIN est un mot de passe à 4 chiffres supplémentaire qui protège vos retraits et la configuration de votre portefeuille. Sans ce PIN, personne ne peut retirer votre argent même s'il accède à votre compte.</div>
+</div>
+
+<script>
+function toggleFaq(card) {
+    card.classList.toggle('open');
+}
+</script>
+</body>
+</html>

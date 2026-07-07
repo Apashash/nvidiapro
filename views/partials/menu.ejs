@@ -1,0 +1,81 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    :root {
+        --accent-green: #76B900;
+        --menu-bg: rgba(0, 0, 0, 0.95);
+        --menu-border: rgba(118, 185, 0, 0.5);
+        --text-inactive: rgba(255, 255, 255, 0.6);
+        --text-active: #ffffff;
+        --shadow-color: rgba(118, 185, 0, 0.4);
+    }
+    .bottom-nav {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 320px;
+        background: var(--menu-bg);
+        backdrop-filter: blur(20px) saturate(150%);
+        -webkit-backdrop-filter: blur(20px) saturate(150%);
+        border: 1px solid var(--menu-border);
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px 0;
+        z-index: 9999;
+        box-shadow: 0 5px 25px var(--shadow-color), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: var(--text-inactive);
+        text-decoration: none;
+        font-size: 11px;
+        padding: 5px 3px;
+        border-radius: 6px;
+        margin: 0 5px;
+        text-transform: uppercase;
+        font-family: 'Arial', sans-serif;
+        transition: all 0.3s ease-out;
+        position: relative;
+    }
+    .nav-item i { font-size: 18px; margin-bottom: 4px; font-weight: 500; }
+    .nav-item span { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; line-height: 1.2; }
+    .nav-item:hover { color: var(--text-active); background: rgba(118,185,0,0.1); transform: translateY(-2px); }
+    .nav-item.active { color: var(--accent-green); font-weight: bold; }
+    .nav-item.active i { color: var(--accent-green); text-shadow: 0 0 5px var(--accent-green); }
+    .nav-item.active::after {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 2px;
+        background: var(--accent-green);
+        box-shadow: 0 0 10px var(--accent-green);
+        border-radius: 1px;
+        animation: active-glow 1.5s infinite alternate;
+    }
+    @keyframes active-glow { from { opacity: 0.7; } to { opacity: 1; } }
+    body { background-color: #121212; color: #ffffff; padding-bottom: 90px !important; }
+</style>
+
+<nav class="bottom-nav" id="bottomNav">
+    <a href="/" class="nav-item <%= locals.page === 'index' ? 'active' : '' %>">
+        <i class="fas fa-microchip"></i><span>Système</span>
+    </a>
+    <a href="/investissement" class="nav-item <%= locals.page === 'investissement' ? 'active' : '' %>">
+        <i class="fas fa-desktop"></i><span>Action</span>
+    </a>
+    <a href="/equipe" class="nav-item <%= locals.page === 'equipe' ? 'active' : '' %>">
+        <i class="fas fa-robot"></i><span>Equipe</span>
+    </a>
+    <a href="/compte" class="nav-item <%= locals.page === 'compte' ? 'active' : '' %>">
+        <i class="fas fa-fingerprint"></i><span>Profil</span>
+    </a>
+</nav>

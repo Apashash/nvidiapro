@@ -1,0 +1,118 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../config/db');
+const { requireAuth } = require('../middleware/auth');
+const nodemailer = require('nodemailer');
+
+router.get('/retrait', requireAuth, async (req, res) => {
+  const user_id = req.session.user_id;
+  try {
+    const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
+    const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
+    const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
+
+    const [walletRows] = await db.query('SELECT * FROM portefeuilles WHERE user_id = ?', [user_id]);
+    const has_wallet = walletRows.length > 0;
+    const wallet_data = has_wallet ? walletRows[0] : null;
+
+    const [tpRows] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ?', [user_id]);
+    const has_transaction_password = tpRows.length > 0;
+
+    const hGmt = parseInt(new Date().toUTCString().split(' ')[4].split(':')[0]);
+    const day = new Date().getUTCDay(); // 0=Sun, 6=Sat
+    const retraits_disponibles = day >= 1 && day <= 6 && hGmt >= 9 && hGmt < 19;
+
+    const message = req.session.retrait_message || null;
+    delete req.session.retrait_message;
+
+    res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message });
+  } catch (e) {
+    console.error(e);
+    res.redirect('/');
+  }
+});
+
+router.post('/retrait', requireAuth, async (req, res) => {
+  const user_id = req.session.user_id;
+  try {
+    const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
+    const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
+    const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
+
+    const [walletRows] = await db.query('SELECT * FROM portefeuilles WHERE user_id = ?', [user_id]);
+    const has_wallet = walletRows.length > 0;
+    const wallet_data = has_wallet ? walletRows[0] : null;
+
+    const [tpRows] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ?', [user_id]);
+    const has_transaction_password = tpRows.length > 0;
+
+    const hGmt = parseInt(new Date().toUTCString().split(' ')[4].split(':')[0]);
+    const day = new Date().getUTCDay();
+    const retraits_disponibles = day >= 1 && day <= 6 && hGmt >= 9 && hGmt < 19;
+
+    const erreurs = [];
+    if (!has_wallet) erreurs.push('wallet');
+    else if (!has_transaction_password) erreurs.push('password');
+    else if (!retraits_disponibles) erreurs.push('Les retraits sont disponibles du lundi au samedi de 9h à 19h GMT.');
+    else {
+      const [[cmds]] = await db.query("SELECT COUNT(*) as nb FROM commandes WHERE user_id = ? AND date_fin >= CURDATE()", [user_id]);
+      if (cmds.nb === 0) erreurs.push("Vous devez avoir au moins un plan d'investissement en cours pour effectuer un retrait.");
+
+      const [[deps]] = await db.query("SELECT COUNT(*) as nb FROM depots WHERE user_id = ? AND statut = 'valide'", [user_id]);
+      if (deps.nb === 0) erreurs.push("Vous devez avoir effectué au moins un dépôt validé pour effectuer un retrait.");
+
+      const [[recents]] = await db.query(
+        "SELECT COUNT(*) as nb FROM retraits WHERE user_id = ? AND statut IN ('en_attente', 'valide') AND date_demande >= DATE_SUB(NOW(), INTERVAL 24 HOUR)",
+        [user_id]
+      );
+      if (recents.nb > 0) erreurs.push("Vous ne pouvez effectuer qu'un seul retrait toutes les 24 heures.");
+    }
+
+    if (erreurs.length) {
+      let msg;
+      if (erreurs[0] === 'wallet') msg = "<div class='notification error'>Vous devez d'abord configurer votre portefeuille.</div>";
+      else if (erreurs[0] === 'password') msg = "<div class='notification error'>Vous devez d'abord créer un mot de passe de transaction.</div>";
+      else msg = `<div class='notification error'>${erreurs[0]}</div>`;
+      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: msg });
+    }
+
+    const montant = parseFloat(req.body.montant);
+    const transaction_password = req.body.transaction_password || '';
+
+    if (!montant || !transaction_password) {
+      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Veuillez remplir tous les champs.</div>" });
+    }
+    if (montant > solde) {
+      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Solde insuffisant.</div>" });
+    }
+    if (montant < 1200) {
+      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Le montant minimum de retrait est de 1 200 XOF.</div>" });
+    }
+
+    // Verify transaction password
+    const [[tp]] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ? AND password = ?', [user_id, transaction_password]);
+    if (!tp) {
+      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Mot de passe de transaction incorrect.</div>" });
+    }
+
+    const conn = await db.getConnection();
+    try {
+      await conn.beginTransaction();
+      await conn.query('UPDATE soldes SET solde = solde - ? WHERE user_id = ?', [montant, user_id]);
+      await conn.query(
+        "INSERT INTO retraits (user_id, montant, methode, numero_compte, statut) VALUES (?, ?, ?, ?, 'en_attente')",
+        [user_id, montant, wallet_data.methode_paiement, wallet_data.numero_telephone]
+      );
+      await conn.commit();
+    } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
+
+    req.session.retrait_message = "<div class='notification success'>Votre demande de retrait a été soumise avec succès. Elle sera traitée dans les 24h.</div>";
+    res.redirect('/retrait');
+  } catch (e) {
+    console.error(e);
+    req.session.retrait_message = `<div class='notification error'>Erreur: ${e.message}</div>`;
+    res.redirect('/retrait');
+  }
+});
+
+module.exports = router;

@@ -1,6 +1,41 @@
-modules = ["php-8.2", "web"]
+modules = ["php-8.2", "web", "nodejs-24", "python-base-3.13"]
 [agent]
 expertMode = true
 
 [nix]
 channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start App"
+
+[[workflows.workflow]]
+name = "Start App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[userenv]
+
+[userenv.shared]
+DB_HOST = "sql104.iceiy.com"
+DB_NAME = "icei_40255736_2026"
+DB_USER = "icei_40255736"

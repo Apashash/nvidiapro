@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - NVIDIA Technologie</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+        body { background:#0a0a0a; color:#e0e0e0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .login-card { background:rgba(25,25,25,0.98); border:1px solid rgba(118,185,0,0.3); border-radius:16px; padding:36px 28px; width:100%; max-width:380px; }
+        .logo { text-align:center; margin-bottom:28px; }
+        .logo h1 { color:#76b900; font-size:1.5rem; font-weight:800; }
+        .logo p { color:#a0a0a0; font-size:0.85rem; margin-top:4px; }
+        .error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:0.85rem; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; color:#a0a0a0; font-size:0.8rem; margin-bottom:6px; }
+        .form-group input { width:100%; background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 14px; color:#e0e0e0; font-size:0.9rem; }
+        .form-group input:focus { outline:none; border-color:#76b900; }
+        .btn { width:100%; background:#76b900; color:#000; border:none; border-radius:10px; padding:14px; font-weight:700; font-size:1rem; cursor:pointer; }
+        .btn:hover { background:#90d300; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <div class="logo">
+        <h1>⚡ NVIDIA Admin</h1>
+        <p>Accès administrateur sécurisé</p>
+    </div>
+    <% if (error) { %><div class="error"><%= error %></div><% } %>
+    <form action="/adminxyz" method="POST">
+        <div class="form-group">
+            <label>Code de sécurité</label>
+            <input type="password" name="security_code" placeholder="Entrez le code" required autofocus>
+        </div>
+        <button type="submit" class="btn">Accéder au panneau admin</button>
+    </form>
+</div>
+</body>
+</html>

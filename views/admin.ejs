@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NVIDIA Technologie</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+        body { background:#0a0a0a; color:#e0e0e0; min-height:100vh; }
+        .topbar { background:rgba(20,20,20,0.98); border-bottom:1px solid rgba(118,185,0,0.3); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; }
+        .topbar h1 { color:#76b900; font-size:1.2rem; font-weight:800; }
+        .topbar a { color:#a0a0a0; text-decoration:none; font-size:0.85rem; }
+        .topbar a:hover { color:#76b900; }
+        .container { max-width:1200px; margin:0 auto; padding:20px; }
+        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:24px; }
+        .stat-card { background:rgba(25,25,25,0.98); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:18px; text-align:center; }
+        .stat-card .num { color:#76b900; font-size:2rem; font-weight:800; }
+        .stat-card .label { color:#a0a0a0; font-size:0.75rem; text-transform:uppercase; margin-top:4px; }
+        .tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+        .tab-btn { background:rgba(25,25,25,0.98); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 16px; color:#a0a0a0; cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
+        .tab-btn.active, .tab-btn:hover { background:#76b900; color:#000; border-color:#76b900; font-weight:700; }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+        .table-card { background:rgba(20,20,20,0.98); border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden; }
+        .table-card table { width:100%; border-collapse:collapse; }
+        .table-card th { background:rgba(118,185,0,0.15); color:#76b900; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; padding:12px 14px; text-align:left; }
+        .table-card td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; vertical-align:middle; }
+        .table-card tr:last-child td { border-bottom:none; }
+        .table-card tr:hover td { background:rgba(255,255,255,0.03); }
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+        .badge-pending { background:rgba(245,158,11,0.2); color:#f59e0b; }
+        .badge-valid { background:rgba(16,185,129,0.2); color:#10b981; }
+        .badge-rejected { background:rgba(239,68,68,0.2); color:#ef4444; }
+        .btn-sm { padding:5px 12px; border-radius:6px; border:none; cursor:pointer; font-size:0.75rem; font-weight:600; margin:2px; }
+        .btn-validate { background:#10b981; color:#fff; }
+        .btn-reject { background:#ef4444; color:#fff; }
+        .btn-edit { background:#3a86ff; color:#fff; }
+        .search-bar { display:flex; gap:10px; margin-bottom:14px; }
+        .search-bar input { flex:1; background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:9px 14px; color:#e0e0e0; font-size:0.85rem; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; align-items:center; justify-content:center; }
+        .modal.active { display:flex; }
+        .modal-box { background:#1a1a1a; border:1px solid rgba(118,185,0,0.4); border-radius:14px; padding:24px; width:90%; max-width:400px; }
+        .modal-box h3 { color:#76b900; margin-bottom:16px; }
+        .modal-box input { width:100%; background:#0f0f0f; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 14px; color:#e0e0e0; margin-bottom:12px; }
+        .modal-box .btns { display:flex; gap:10px; }
+        .modal-box .btns button { flex:1; padding:10px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
+        .msg { padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:0.85rem; }
+        .msg-success { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#10b981; }
+        .msg-error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; }
+    </style>
+</head>
+<body>
+<div class="topbar">
+    <h1>⚡ NVIDIA Admin Panel</h1>
+    <div style="display:flex;gap:16px;align-items:center;">
+        <span style="color:#a0a0a0;font-size:0.8rem;" id="adminMsg"></span>
+        <a href="/adminxyz/logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card"><div class="num"><%= stats_users.total || 0 %></div><div class="label">Utilisateurs</div></div>
+        <div class="stat-card"><div class="num"><%= stats_pending_depots.total || 0 %></div><div class="label">Dépôts en attente</div></div>
+        <div class="stat-card"><div class="num"><%= stats_pending_retraits.total || 0 %></div><div class="label">Retraits en attente</div></div>
+        <div class="stat-card"><div class="num"><%= (parseFloat(stats_depots.somme) || 0).toLocaleString('fr-FR') %></div><div class="label">Total dépôts (FCFA)</div></div>
+        <div class="stat-card"><div class="num"><%= (parseFloat(stats_retraits.somme) || 0).toLocaleString('fr-FR') %></div><div class="label">Total retraits (FCFA)</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('depots')">Dépôts</button>
+        <button class="tab-btn" onclick="showTab('retraits')">Retraits</button>
+        <button class="tab-btn" onclick="showTab('users')">Utilisateurs</button>
+        <button class="tab-btn" onclick="showTab('posts')">Posts</button>
+    </div>
+
+    <!-- Dépôts Tab -->
+    <div class="tab-content active" id="tab-depots">
+        <div class="table-card">
+            <table>
+                <thead><tr><th>ID</th><th>Utilisateur</th><th>Montant</th><th>Méthode</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                <% depots.forEach(d => { %>
+                <tr>
+                    <td>#<%= d.id %></td>
+                    <td><strong><%= d.nom %></strong><br><small style="color:#a0a0a0"><%= d.telephone %></small></td>
+                    <td style="color:#76b900;font-weight:700"><%= parseFloat(d.montant).toLocaleString('fr-FR') %> FCFA</td>
+                    <td style="font-size:0.8rem"><%= d.methode %></td>
+                    <td style="font-size:0.75rem;color:#a0a0a0"><%= new Date(d.date_depot).toLocaleDateString('fr-FR') %></td>
+                    <td><span class="badge badge-<%= d.statut === 'valide' ? 'valid' : d.statut === 'rejete' ? 'rejected' : 'pending' %>"><%= d.statut %></span></td>
+                    <td>
+                        <% if (d.statut === 'en_attente') { %>
+                        <button class="btn-sm btn-validate" onclick="adminAction('validate_deposit',<%= d.id %>)">✓ Valider</button>
+                        <button class="btn-sm btn-reject" onclick="adminAction('reject_deposit',<%= d.id %>)">✗ Rejeter</button>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Retraits Tab -->
+    <div class="tab-content" id="tab-retraits">
+        <div class="table-card">
+            <table>
+                <thead><tr><th>ID</th><th>Utilisateur</th><th>Montant</th><th>Portefeuille</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                <% retraits.forEach(r => { %>
+                <tr>
+                    <td>#<%= r.id %></td>
+                    <td><strong><%= r.nom %></strong><br><small style="color:#a0a0a0"><%= r.telephone %></small></td>
+                    <td style="color:#ef4444;font-weight:700"><%= parseFloat(r.montant).toLocaleString('fr-FR') %> FCFA</td>
+                    <td style="font-size:0.8rem"><%= r.methode %> — <%= r.numero_compte %></td>
+                    <td style="font-size:0.75rem;color:#a0a0a0"><%= new Date(r.date_demande).toLocaleDateString('fr-FR') %></td>
+                    <td><span class="badge badge-<%= r.statut === 'valide' ? 'valid' : r.statut === 'rejete' ? 'rejected' : 'pending' %>"><%= r.statut %></span></td>
+                    <td>
+                        <% if (r.statut === 'en_attente') { %>
+                        <button class="btn-sm btn-validate" onclick="adminAction('validate_retrait',<%= r.id %>)">✓ Valider</button>
+                        <button class="btn-sm btn-reject" onclick="adminAction('reject_retrait',<%= r.id %>)">✗ Rejeter</button>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div class="tab-content" id="tab-users">
+        <div class="table-card">
+            <table>
+                <thead><tr><th>ID</th><th>Nom</th><th>Téléphone</th><th>Pays</th><th>Solde</th><th>Actions</th></tr></thead>
+                <tbody>
+                <% users.forEach(u => { %>
+                <tr>
+                    <td>#<%= u.id %></td>
+                    <td><strong><%= u.nom %></strong></td>
+                    <td><%= u.telephone %></td>
+                    <td><%= u.pays || '-' %></td>
+                    <td style="color:#76b900;font-weight:700"><%= parseFloat(u.solde || 0).toLocaleString('fr-FR') %> FCFA</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="showBalanceModal(<%= u.id %>, '<%= u.nom %>', <%= u.solde || 0 %>)">💰 Solde</button>
+                    </td>
+                </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Posts Tab -->
+    <div class="tab-content" id="tab-posts">
+        <div class="table-card">
+            <table>
+                <thead><tr><th>ID</th><th>Auteur</th><th>Message</th><th>Image</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody>
+                <% posts.forEach(p => { %>
+                <tr>
+                    <td>#<%= p.id %></td>
+                    <td><%= p.nom %></td>
+                    <td style="font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= p.message %></td>
+                    <td><% if (p.image) { %><a href="/uploads/<%= p.image %>" target="_blank" style="color:#76b900;font-size:0.8rem">Voir image</a><% } %></td>
+                    <td style="font-size:0.75rem;color:#a0a0a0"><%= new Date(p.date_creation).toLocaleDateString('fr-FR') %></td>
+                    <td>
+                        <button class="btn-sm btn-validate" onclick="adminAction('validate_post',<%= p.id %>)">✓</button>
+                        <button class="btn-sm btn-reject" onclick="adminAction('reject_post',<%= p.id %>)">✗</button>
+                    </td>
+                </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Balance Modal -->
+<div class="modal" id="balanceModal">
+    <div class="modal-box">
+        <h3>💰 Modifier le solde</h3>
+        <p id="balanceUserName" style="color:#a0a0a0;margin-bottom:14px;font-size:0.9rem"></p>
+        <input type="hidden" id="balanceUserId">
+        <input type="number" id="balanceAmount" placeholder="Nouveau solde (FCFA)" step="100">
+        <div class="btns">
+            <button style="background:#555;color:#fff" onclick="closeModal()">Annuler</button>
+            <button style="background:#76b900;color:#000" onclick="updateBalance()">Mettre à jour</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.target.classList.add('active');
+}
+
+async function adminAction(action, id) {
+    if (!confirm(`Confirmer: ${action.replace('_', ' ')} #${id} ?`)) return;
+    const res = await fetch('/adminxyz/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=${action}&id=${id}`
+    });
+    const data = await res.json();
+    const msg = document.getElementById('adminMsg');
+    if (data.success) {
+        msg.textContent = '✓ Action effectuée';
+        msg.style.color = '#10b981';
+        setTimeout(() => location.reload(), 1000);
+    } else {
+        msg.textContent = '✗ ' + (data.message || 'Erreur');
+        msg.style.color = '#ef4444';
+    }
+}
+
+function showBalanceModal(userId, name, solde) {
+    document.getElementById('balanceUserId').value = userId;
+    document.getElementById('balanceUserName').textContent = name + ' — Solde actuel: ' + parseFloat(solde).toLocaleString('fr-FR') + ' FCFA';
+    document.getElementById('balanceAmount').value = solde;
+    document.getElementById('balanceModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('balanceModal').classList.remove('active');
+}
+
+async function updateBalance() {
+    const user_id = document.getElementById('balanceUserId').value;
+    const montant = document.getElementById('balanceAmount').value;
+    const res = await fetch('/adminxyz/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=update_balance&user_id=${user_id}&montant=${montant}`
+    });
+    const data = await res.json();
+    if (data.success) { closeModal(); location.reload(); }
+    else alert('Erreur: ' + data.message);
+}
+</script>
+</body>
+</html>

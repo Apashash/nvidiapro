@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retrait - NVIDIA Technologie</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --accent-green:#76b900; --dark-bg:#0a0a0a; --card-bg:rgba(25,25,25,0.95); --text-light:#e0e0e0; --text-gray:#a0a0a0; --border-color:rgba(255,255,255,0.1); --error:#ef4444; --success:#10b981; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+        body { background:#0a0a0a; color:#e0e0e0; min-height:100vh; padding-bottom:100px; }
+        .container { max-width:430px; margin:0 auto; padding:20px 15px; }
+        .balance-card { background:linear-gradient(135deg,var(--accent-green),#4a7a00); border-radius:16px; padding:24px; text-align:center; margin-bottom:20px; }
+        .balance-card .label { color:rgba(0,0,0,0.7); font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; }
+        .balance-card .amount { color:#000; font-size:2.5rem; font-weight:800; margin:8px 0; }
+        .balance-card .currency { color:rgba(0,0,0,0.6); font-size:0.9rem; }
+        .notification { padding:12px 16px; border-radius:10px; margin-bottom:16px; font-size:0.9rem; }
+        .notification.error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; }
+        .notification.success { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#10b981; }
+        .card { background:var(--card-bg); border:1px solid var(--border-color); border-radius:14px; padding:20px; margin-bottom:20px; }
+        .card h3 { color:var(--accent-green); font-size:1rem; margin-bottom:16px; font-weight:700; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; color:var(--text-gray); font-size:0.8rem; margin-bottom:6px; }
+        .form-group input { width:100%; background:#1a1a1a; border:1px solid var(--border-color); border-radius:10px; padding:12px 14px; color:var(--text-light); font-size:0.9rem; }
+        .form-group input:focus { outline:none; border-color:var(--accent-green); }
+        .btn-submit { width:100%; background:var(--accent-green); color:#000; border:none; border-radius:10px; padding:14px; font-weight:700; font-size:1rem; cursor:pointer; transition:all 0.3s; }
+        .btn-submit:hover { background:#90d300; }
+        .btn-submit:disabled { background:#555; cursor:not-allowed; }
+        .wallet-info { background:#1a1a1a; border-radius:10px; padding:14px; margin-bottom:16px; }
+        .wallet-info .row { display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.85rem; }
+        .wallet-info .row:last-child { margin-bottom:0; }
+        .wallet-info .key { color:var(--text-gray); }
+        .wallet-info .val { color:var(--text-light); font-weight:600; }
+        .warning-card { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:14px; margin-bottom:16px; }
+        .warning-card p { color:#f59e0b; font-size:0.85rem; }
+        .info-card { background:rgba(118,185,0,0.08); border:1px solid rgba(118,185,0,0.2); border-radius:10px; padding:14px; margin-bottom:16px; font-size:0.85rem; color:var(--text-gray); }
+        .info-card strong { color:var(--accent-green); }
+    </style>
+</head>
+<body>
+<%- include('partials/menu', { page: 'compte' }) %>
+
+<div class="container">
+    <!-- Balance -->
+    <div class="balance-card">
+        <div class="label">Solde disponible</div>
+        <div class="amount"><%= parseFloat(solde).toLocaleString('fr-FR') %></div>
+        <div class="currency">FCFA</div>
+    </div>
+
+    <% if (message) { %>
+        <%- message %>
+    <% } %>
+
+    <!-- Conditions -->
+    <% if (!has_wallet) { %>
+    <div class="warning-card">
+        <p><i class="fas fa-exclamation-triangle"></i> Vous n'avez pas encore configuré votre portefeuille. <a href="/portefeuille" style="color:#f59e0b;font-weight:600;">Configurer maintenant</a></p>
+    </div>
+    <% } %>
+
+    <% if (!has_transaction_password) { %>
+    <div class="warning-card">
+        <p><i class="fas fa-lock"></i> Vous devez d'abord créer un code PIN de transaction. <a href="/portefeuille" style="color:#f59e0b;font-weight:600;">Créer le PIN</a></p>
+    </div>
+    <% } %>
+
+    <% if (!retraits_disponibles) { %>
+    <div class="warning-card">
+        <p><i class="fas fa-clock"></i> Les retraits sont disponibles du <strong>lundi au samedi de 9h à 19h GMT</strong>.</p>
+    </div>
+    <% } %>
+
+    <!-- Info -->
+    <div class="info-card">
+        <p>ℹ️ Montant minimum: <strong>1 200 FCFA</strong> — Un seul retrait par 24h — Les retraits sont traités sous 24h.</p>
+    </div>
+
+    <!-- Wallet info -->
+    <% if (has_wallet && wallet_data) { %>
+    <div class="card">
+        <h3><i class="fas fa-wallet"></i> Portefeuille de destination</h3>
+        <div class="wallet-info">
+            <div class="row"><span class="key">Nom:</span><span class="val"><%= wallet_data.nom_portefeuille %></span></div>
+            <div class="row"><span class="key">Méthode:</span><span class="val"><%= wallet_data.methode_paiement %></span></div>
+            <div class="row"><span class="key">Numéro:</span><span class="val"><%= wallet_data.numero_telephone %></span></div>
+            <div class="row"><span class="key">Pays:</span><span class="val"><%= wallet_data.pays %></span></div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Form -->
+    <% if (has_wallet && has_transaction_password && retraits_disponibles) { %>
+    <div class="card">
+        <h3><i class="fas fa-arrow-up"></i> Effectuer un retrait</h3>
+        <form action="/retrait" method="POST">
+            <input type="hidden" name="demander_retrait" value="1">
+            <div class="form-group">
+                <label>Montant à retirer (FCFA)</label>
+                <input type="number" name="montant" min="1200" max="<%= solde %>" step="100" placeholder="Minimum 1 200 FCFA" required>
+            </div>
+            <div class="form-group">
+                <label>Code PIN de transaction (4 chiffres)</label>
+                <input type="password" name="transaction_password" maxlength="4" placeholder="****" inputmode="numeric" required>
+            </div>
+            <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Demander le retrait</button>
+        </form>
+    </div>
+    <% } %>
+</div>
+</body>
+</html>

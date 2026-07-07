@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portefeuille - NVIDIA Technologie</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --accent-green:#76b900; --dark-bg:#0f0f0f; --card-bg:rgba(30,30,30,0.95); --text-light:#e0e0e0; --text-gray:#a0a0a0; --border-color:rgba(255,255,255,0.1); --error:#ef4444; --success:#10b981; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+        body { background:#0f0f0f; color:#e0e0e0; min-height:100vh; padding-bottom:100px; }
+        .container { max-width:430px; margin:0 auto; padding:20px 15px; }
+        .header { text-align:center; padding:24px; background:var(--card-bg); border-radius:16px; border:1px solid var(--border-color); margin-bottom:20px; }
+        .header h1 { color:var(--accent-green); font-size:1.4rem; font-weight:700; }
+        .alert { padding:12px 16px; border-radius:10px; margin-bottom:16px; font-size:0.9rem; }
+        .alert-error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; }
+        .alert-success { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#10b981; }
+        .card { background:var(--card-bg); border:1px solid var(--border-color); border-radius:14px; padding:20px; margin-bottom:20px; }
+        .card h3 { color:var(--accent-green); font-size:1rem; margin-bottom:16px; font-weight:700; }
+        .wallet-info { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+        .info-item label { color:var(--text-gray); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; }
+        .info-item span { display:block; color:var(--text-light); font-weight:600; margin-top:4px; font-size:0.9rem; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; color:var(--text-gray); font-size:0.8rem; margin-bottom:6px; }
+        .form-group input, .form-group select { width:100%; background:#1a1a1a; border:1px solid var(--border-color); border-radius:10px; padding:12px 14px; color:var(--text-light); font-size:0.9rem; transition:border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--accent-green); }
+        .form-group select option { background:#1a1a1a; }
+        .btn-submit { width:100%; background:var(--accent-green); color:#000; border:none; border-radius:10px; padding:14px; font-weight:700; font-size:1rem; cursor:pointer; transition:all 0.3s; margin-top:8px; }
+        .btn-submit:hover { background:#90d300; transform:translateY(-1px); }
+        .pin-section { background:var(--card-bg); border:1px solid var(--border-color); border-radius:14px; padding:20px; margin-bottom:20px; }
+        .pin-section h3 { color:var(--accent-green); font-size:1rem; margin-bottom:16px; font-weight:700; }
+        .no-pin-warning { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px; margin-bottom:16px; color:#ef4444; font-size:0.85rem; }
+        .method-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .method-item { background:#1a1a1a; border:1px solid var(--border-color); border-radius:8px; padding:10px; text-align:center; cursor:pointer; transition:all 0.2s; }
+        .method-item.selected { border-color:var(--accent-green); background:rgba(118,185,0,0.1); }
+    </style>
+</head>
+<body>
+<%- include('partials/menu', { page: 'compte' }) %>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-wallet"></i> Portefeuille</h1>
+        <p style="color:var(--text-gray);font-size:0.85rem;margin-top:4px;">Configurez votre portefeuille de retrait</p>
+    </div>
+
+    <% if (error) { %><div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> <%= error %></div><% } %>
+    <% if (success) { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= success %></div><% } %>
+
+    <!-- PIN Section -->
+    <div class="pin-section">
+        <h3><i class="fas fa-lock"></i> Code PIN de Transaction</h3>
+        <% if (!has_transaction_password) { %>
+            <div class="no-pin-warning"><i class="fas fa-exclamation-circle"></i> Vous devez d'abord créer un code PIN avant de configurer votre portefeuille.</div>
+        <% } %>
+        <div id="pinForm">
+            <div class="form-group">
+                <label>Ancien PIN (laisser vide si première création)</label>
+                <input type="password" id="old_pin" maxlength="4" placeholder="****" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Nouveau PIN (4 chiffres)</label>
+                <input type="password" id="new_pin" maxlength="4" placeholder="****" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label>Confirmer le nouveau PIN</label>
+                <input type="password" id="confirm_pin" maxlength="4" placeholder="****" inputmode="numeric">
+            </div>
+            <button class="btn-submit" onclick="updatePin()"><i class="fas fa-save"></i> Enregistrer le PIN</button>
+            <div id="pinMsg" style="margin-top:10px;font-size:0.85rem;"></div>
+        </div>
+    </div>
+
+    <!-- Wallet Form -->
+    <% if (has_transaction_password) { %>
+    <div class="card">
+        <h3><i class="fas fa-credit-card"></i> <%= has_wallet ? 'Modifier mon Portefeuille' : 'Créer mon Portefeuille' %></h3>
+
+        <% if (has_wallet && wallet_data) { %>
+        <div class="wallet-info">
+            <div class="info-item"><label>Nom</label><span><%= wallet_data.nom_portefeuille %></span></div>
+            <div class="info-item"><label>Pays</label><span><%= wallet_data.pays %></span></div>
+            <div class="info-item"><label>Méthode</label><span><%= wallet_data.methode_paiement %></span></div>
+            <div class="info-item"><label>Numéro</label><span><%= wallet_data.numero_telephone %></span></div>
+        </div>
+        <% } %>
+
+        <form action="/portefeuille" method="POST">
+            <div class="form-group">
+                <label>Nom du portefeuille</label>
+                <input type="text" name="nom_portefeuille" value="<%= has_wallet && wallet_data ? wallet_data.nom_portefeuille : '' %>" placeholder="Ex: Mon compte MTN" required>
+            </div>
+            <div class="form-group">
+                <label>Pays</label>
+                <select name="pays" id="paysSelect" onchange="updateMethods()">
+                    <option value="">-- Sélectionner --</option>
+                    <% Object.keys(pays_methodes).forEach(p => { %>
+                        <option value="<%= p %>" <%= (has_wallet && wallet_data && wallet_data.pays === p) ? 'selected' : '' %>><%= p %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Méthode de paiement</label>
+                <select name="methode_paiement" id="methodeSelect">
+                    <option value="">-- Sélectionner d'abord un pays --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Numéro de téléphone (chiffres seulement)</label>
+                <input type="tel" name="numero_telephone" value="<%= has_wallet && wallet_data ? wallet_data.numero_telephone : '' %>" placeholder="Ex: 699123456" inputmode="numeric" required>
+            </div>
+            <div class="form-group">
+                <label>Confirmer le numéro</label>
+                <input type="tel" name="confirm_telephone" placeholder="Répéter le numéro" inputmode="numeric" required>
+            </div>
+            <div class="form-group">
+                <label>Code PIN de transaction</label>
+                <input type="password" name="transaction_password" maxlength="4" placeholder="****" inputmode="numeric" required>
+            </div>
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> <%= has_wallet ? 'Mettre à jour' : 'Créer le portefeuille' %></button>
+        </form>
+    </div>
+    <% } %>
+</div>
+
+<script>
+const paysMethodes = <%- JSON.stringify(pays_methodes) %>;
+const methodeNoms = <%- JSON.stringify(methodes_noms) %>;
+
+function updateMethods() {
+    const pays = document.getElementById('paysSelect').value;
+    const select = document.getElementById('methodeSelect');
+    select.innerHTML = '<option value="">-- Sélectionner --</option>';
+    if (pays && paysMethodes[pays]) {
+        paysMethodes[pays].forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = methodeNoms[m] || m;
+            <% if (has_wallet && wallet_data) { %>
+            if (m === '<%= has_wallet && wallet_data ? wallet_data.methode_paiement : '' %>') opt.selected = true;
+            <% } %>
+            select.appendChild(opt);
+        });
+    }
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('paysSelect').value) updateMethods();
+});
+
+async function updatePin() {
+    const old_pin = document.getElementById('old_pin').value;
+    const new_pin = document.getElementById('new_pin').value;
+    const confirm_pin = document.getElementById('confirm_pin').value;
+    const msg = document.getElementById('pinMsg');
+    try {
+        const res = await fetch('/update_transaction_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `old_pin=${old_pin}&new_pin=${new_pin}&confirm_pin=${confirm_pin}`
+        });
+        const data = await res.json();
+        msg.textContent = data.message;
+        msg.style.color = data.success ? '#10b981' : '#ef4444';
+        if (data.success) { document.getElementById('old_pin').value = ''; document.getElementById('new_pin').value = ''; document.getElementById('confirm_pin').value = ''; setTimeout(() => location.reload(), 1500); }
+    } catch(e) { msg.textContent = 'Erreur réseau'; msg.style.color = '#ef4444'; }
+}
+</script>
+</body>
+</html>

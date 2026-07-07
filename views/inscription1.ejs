@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inscription - NVIDIA Technologie</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --nvidia-green: #76B900;
+            --nvidia-black: #000000;
+            --primary-white: #ffffff;
+            --background-dark: #0a0a0a;
+            --input-dark: #1e1e1e;
+            --text-light: var(--primary-white);
+            --text-accent: var(--nvidia-green);
+            --text-gray: #b0b0b0;
+            --card-bg: rgba(10, 10, 10, 0.95);
+            --border-color: rgba(118, 185, 0, 0.15);
+            --error: #ef4444;
+            --success: var(--nvidia-green);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--background-dark); color: var(--text-light); line-height: 1.6; position: relative; overflow-y: auto; -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); z-index: -3; }
+        .geometric-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: repeating-linear-gradient(45deg, var(--nvidia-green) 0, var(--nvidia-green) 1px, transparent 1px, transparent 20px), repeating-linear-gradient(-45deg, var(--nvidia-green) 0, var(--nvidia-green) 1px, transparent 1px, transparent 20px); background-size: 40px 40px; opacity: 0.08; z-index: -2; animation: patternShift 60s linear infinite; }
+        .green-accent { position: fixed; top: 0; right: 0; width: 400px; height: 400px; background: radial-gradient(circle, var(--nvidia-green) 0%, transparent 70%); filter: blur(80px); opacity: 0.2; z-index: -1; }
+        .blue-accent, .purple-accent, .light-shimmer, .light-beam { display: none !important; }
+        .main-container { min-height: 100vh; display: flex; flex-direction: column; padding: 20px; animation: fadeIn 1.2s ease-out; }
+        .header { display: flex; justify-content: center; align-items: center; padding: 15px 0; margin-bottom: 10px; animation: slideDown 1s ease-out; }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo-icon { width: 60px; height: 60px; background: var(--nvidia-green); border: none; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--nvidia-black); font-weight: 700; font-size: 24px; box-shadow: 0 8px 25px rgba(118, 185, 0, 0.4); transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .logo-icon::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.6), transparent); transform: rotate(45deg); animation: logoShine 3s infinite; }
+        .logo-icon:hover { transform: rotate(5deg) scale(1.05); box-shadow: 0 12px 35px rgba(118, 185, 0, 0.6); }
+        .logo-text { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 32px; color: var(--text-light); letter-spacing: -0.5px; }
+        .logo-subtext { font-size: 14px; color: var(--nvidia-green); margin-top: -2px; letter-spacing: 3px; font-weight: 500; }
+        .form-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px 0; }
+        .form-container { max-width: 500px; width: 100%; background: var(--card-bg); backdrop-filter: blur(20px); border-radius: 25px; padding: 40px 35px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 15px 30px rgba(118, 185, 0, 0.1); position: relative; overflow: hidden; animation: formAppear 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .form-container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--nvidia-green); box-shadow: 0 0 15px rgba(118, 185, 0, 0.5); }
+        .form-title { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; margin-bottom: 30px; text-align: center; color: var(--nvidia-green); position: relative; }
+        .form-title::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--nvidia-green); border-radius: 2px; box-shadow: 0 0 10px rgba(118, 185, 0, 0.5); }
+        .form-group { margin-bottom: 25px; animation: fadeInUp 0.8s ease-out; position: relative; }
+        .form-label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-light); font-size: 15px; letter-spacing: 0.5px; }
+        .form-input { width: 100%; padding: 18px; background: var(--input-dark); border: 1px solid rgba(118, 185, 0, 0.3); border-radius: 12px; font-size: 16px; color: var(--text-light); transition: var(--transition); font-family: 'Inter', sans-serif; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+        .form-input:focus { outline: none; border-color: var(--nvidia-green); box-shadow: 0 0 0 3px rgba(118, 185, 0, 0.2), 0 4px 15px rgba(118, 185, 0, 0.3); background: var(--nvidia-black); transform: translateY(-2px); }
+        .phone-input-container { display: flex; gap: 12px; }
+        .indicatif-select { flex: 0 0 120px; position: relative; }
+        .indicatif-select::after { content: "▼"; font-size: 12px; color: var(--nvidia-green); position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+        .indicatif-select select { width: 100%; padding: 18px; background: var(--input-dark); border: 1px solid rgba(118, 185, 0, 0.3); border-radius: 12px; color: var(--text-light); height: 100%; -webkit-appearance: none; font-family: 'Inter', sans-serif; font-weight: 600; text-align: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+        .phone-input { flex: 1; }
+        .btn-submit { background: var(--nvidia-green); color: var(--nvidia-black); border: none; padding: 20px; border-radius: 15px; font-size: 18px; font-weight: 700; cursor: pointer; width: 100%; transition: var(--transition); margin-top: 15px; box-shadow: 0 8px 25px rgba(118, 185, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5); position: relative; overflow: hidden; animation: fadeInUp 0.8s ease-out 0.6s both; letter-spacing: 1px; }
+        .btn-submit:hover { background: var(--nvidia-black); color: var(--nvidia-green); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(118, 185, 0, 0.8), inset 0 1px 0 rgba(118, 185, 0, 0.4); }
+        .login-link { text-align: center; margin-top: 30px; padding-top: 25px; border-top: 1px solid var(--border-color); animation: fadeInUp 0.8s ease-out 0.7s both; }
+        .btn-login-form { background: transparent; color: var(--nvidia-green); border: 1px solid var(--nvidia-green); padding: 16px 25px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: var(--transition); width: 100%; text-decoration: none; display: block; text-align: center; letter-spacing: 0.5px; position: relative; overflow: hidden; }
+        .btn-login-form:hover { background: rgba(118, 185, 0, 0.1); transform: translateY(-3px); box-shadow: 0 5px 20px rgba(118, 185, 0, 0.3); }
+        .error-message { color: var(--error); background: rgba(239, 68, 68, 0.1); padding: 18px; border-radius: 12px; margin-bottom: 25px; font-size: 15px; border-left: 4px solid var(--error); text-align: center; font-weight: 500; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2); animation: shake 0.5s ease; display: flex; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(10px); }
+        .referral-notice, .bonus-notice { background: rgba(118, 185, 0, 0.1); padding: 18px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid var(--nvidia-green); color: var(--text-light); text-align: center; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(118, 185, 0, 0.2); backdrop-filter: blur(10px); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes formAppear { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes patternShift { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+        @media (max-width: 768px) { .form-container { padding: 35px 25px; margin: 0 15px; } .form-title { font-size: 32px; } }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="geometric-pattern"></div>
+    <div class="green-accent"></div>
+    
+    <div class="main-container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">NV</div>
+                <div>
+                    <div class="logo-text">NVIDIA</div>
+                    <div class="logo-subtext">TECHNOLOGIE</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <div class="form-container">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <%= error %>
+                    </div>
+                <% } %>
+                
+                <% if (typeof code_parrain !== 'undefined' && code_parrain) { %>
+                    <div class="referral-notice">
+                        <i class="fas fa-user-friends"></i> Vous êtes invité par un membre NVIDIA Technologie
+                    </div>
+                <% } %>
+                
+                <div class="bonus-notice">
+                    <i class="fas fa-gift"></i> Bonus de bienvenue : 250 FCFA offerts !
+                </div>
+                
+                <h2 class="form-title">Rejoignez NVIDIA</h2>
+                
+                <form action="/inscription1" method="post" id="signup-form">
+                    <div class="form-group">
+                        <label class="form-label" for="nom">Nom complet</label>
+                        <input type="text" id="nom" name="nom" class="form-input" placeholder="Votre nom complet" required
+                                value="<%= typeof form_data !== 'undefined' ? form_data.nom : '' %>">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="telephone">Numéro WhatsApp</label>
+                        <div class="phone-input-container">
+                            <div class="indicatif-select">
+                                <select id="indicatif" name="indicatif" required>
+                                    <option value="">Code</option>
+                                    <% Object.entries(pays_eligibles).forEach(([code, pays]) => { %>
+                                        <option value="<%= code %>" <%= (typeof form_data !== 'undefined' && form_data.indicatif === code) || (!form_data && code === '+225') ? 'selected' : '' %>>
+                                            <%= code %>
+                                        </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="phone-input">
+                                <input type="text" id="telephone" name="telephone" class="form-input" placeholder="Numéro de téléphone" required pattern="[0-9 ]{6,}"
+                                    value="<%= typeof form_data !== 'undefined' ? form_data.telephone : '' %>">
+                            </div>
+                            <input type="hidden" name="pays" id="pays" value=""> 
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="mot_de_passe">Mot de passe</label>
+                        <input type="password" id="mot_de_passe" name="mot_de_passe" class="form-input" placeholder="Choisissez un mot de passe" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="confirmation">Confirmer le mot de passe</label>
+                        <input type="password" id="confirmation" name="confirmation" class="form-input" placeholder="Confirmez le mot de passe" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-user-plus"></i> CRÉER MON COMPTE
+                    </button>
+                </form>
+                
+                <div class="login-link">
+                    <p class="login-text">Déjà membre NVIDIA?</p>
+                    <a href="/connexion" class="btn-login-form">
+                        <i class="fas fa-sign-in-alt"></i> SE CONNECTER
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const indicatifSelect = document.getElementById('indicatif');
+            const paysInput = document.getElementById('pays');
+            const paysMap = <%- JSON.stringify(pays_eligibles) %>;
+            
+            function updatePays() {
+                const selectedCode = indicatifSelect.value;
+                paysInput.value = paysMap[selectedCode] || '';
+            }
+            
+            updatePays();
+            indicatifSelect.addEventListener('change', updatePays);
+
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach((group, index) => {
+                group.style.animationDelay = `${0.1 + (index * 0.1)}s`;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profil - NVIDIA Technologie</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --accent-green: #76b900;
+            --dark-bg: #0a0a0a;
+            --card-bg: rgba(22, 22, 22, 0.98);
+            --text-light: #e0e0e0;
+            --text-gray: #a0a0a0;
+            --border: rgba(255,255,255,0.08);
+            --error: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--dark-bg); color: var(--text-light); min-height: 100vh; padding-bottom: 100px; }
+        .container { max-width: 430px; margin: 0 auto; padding: 16px 14px; }
+
+        /* Header */
+        .profile-header { background: linear-gradient(135deg, rgba(118,185,0,0.12), rgba(0,0,0,0.6)); border: 1px solid rgba(118,185,0,0.25); border-radius: 16px; padding: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+        .avatar { width: 56px; height: 56px; background: var(--accent-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: #000; flex-shrink: 0; }
+        .profile-info h2 { font-size: 1rem; font-weight: 700; color: #fff; }
+        .profile-info .phone { color: var(--text-gray); font-size: 0.8rem; margin-top: 2px; }
+        .profile-info .id-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+        .profile-info .id-row span { color: var(--accent-green); font-size: 0.75rem; font-weight: 600; }
+        .copy-id-btn { background: none; border: none; color: var(--text-gray); cursor: pointer; font-size: 0.75rem; padding: 2px 4px; }
+        .logout-btn { margin-left: auto; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 8px; padding: 7px 12px; font-size: 0.75rem; cursor: pointer; flex-shrink: 0; }
+
+        /* VIP */
+        .vip-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+        .vip-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .vip-badge { background: linear-gradient(135deg, var(--accent-green), #4a7a00); color: #000; font-weight: 800; font-size: 0.85rem; padding: 4px 14px; border-radius: 20px; }
+        .vip-desc { color: var(--text-gray); font-size: 0.8rem; }
+        .progress-bar-wrap { background: #1a1a1a; border-radius: 20px; height: 8px; overflow: hidden; }
+        .progress-bar-fill { background: var(--accent-green); height: 100%; border-radius: 20px; transition: width 0.8s ease; }
+        .progress-label { color: var(--text-gray); font-size: 0.75rem; margin-top: 6px; }
+
+        /* Balances */
+        .balance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .balance-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+        .balance-item .lbl { color: var(--text-gray); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .balance-item .val { color: var(--accent-green); font-size: 1.3rem; font-weight: 800; margin-top: 4px; }
+        .balance-item .cur { color: var(--text-gray); font-size: 0.7rem; }
+
+        /* Action buttons */
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .action-btn { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; text-decoration: none; color: var(--text-light); display: block; }
+        .action-btn:hover { border-color: var(--accent-green); background: rgba(118,185,0,0.08); }
+        .action-btn i { display: block; font-size: 1.4rem; color: var(--accent-green); margin-bottom: 6px; }
+        .action-btn span { font-size: 0.78rem; font-weight: 600; }
+        .collect-btn { background: linear-gradient(135deg, var(--accent-green), #4a7a00); color: #000; border: none; }
+        .collect-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(118,185,0,0.3); }
+        .collect-btn i { color: #000; }
+        .collect-btn span { color: #000; }
+        .collect-btn:disabled, .collect-btn.disabled { background: #333; cursor: not-allowed; color: #777; transform: none; box-shadow: none; }
+        .collect-btn.disabled i, .collect-btn.disabled span { color: #777; }
+
+        /* Payment info */
+        .payment-info-box { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; color: #f59e0b; display: none; }
+        .payment-info-box.show { display: block; }
+
+        /* Menu list */
+        .menu-list { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
+        .menu-list-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text-light); cursor: pointer; transition: background 0.2s; }
+        .menu-list-item:last-child { border-bottom: none; }
+        .menu-list-item:hover { background: rgba(118,185,0,0.06); }
+        .menu-list-item .ico { width: 36px; height: 36px; background: rgba(118,185,0,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-size: 1rem; flex-shrink: 0; }
+        .menu-list-item .txt { flex: 1; font-size: 0.88rem; font-weight: 500; }
+        .menu-list-item .arr { color: var(--text-gray); font-size: 0.75rem; }
+
+        /* Modal overlay */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: flex-end; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-box { background: #161616; border: 1px solid rgba(118,185,0,0.3); border-radius: 20px 20px 0 0; padding: 24px 20px 32px; width: 100%; max-width: 430px; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-title { color: var(--accent-green); font-weight: 700; font-size: 1rem; margin-bottom: 16px; }
+        .modal-close { float: right; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
+        .modal-form .fg { margin-bottom: 14px; }
+        .modal-form label { display: block; color: var(--text-gray); font-size: 0.78rem; margin-bottom: 5px; }
+        .modal-form input { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text-light); font-size: 0.9rem; }
+        .modal-form input:focus { outline: none; border-color: var(--accent-green); }
+        .modal-btn { width: 100%; background: var(--accent-green); color: #000; border: none; border-radius: 10px; padding: 13px; font-weight: 700; font-size: 0.95rem; cursor: pointer; margin-top: 6px; }
+        .modal-msg { font-size: 0.82rem; margin-top: 8px; text-align: center; }
+
+        /* Transactions list */
+        .tx-list { list-style: none; max-height: 300px; overflow-y: auto; }
+        .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-type { color: var(--text-gray); text-transform: capitalize; }
+        .tx-amount-pos { color: var(--success); font-weight: 700; }
+        .tx-amount-neg { color: var(--error); font-weight: 700; }
+        .tx-date { color: var(--text-gray); font-size: 0.72rem; }
+
+        .badge-active { display: inline-block; background: rgba(16,185,129,0.15); color: #10b981; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 600; margin-top: 4px; }
+    </style>
+</head>
+<body>
+<%- include('partials/menu', { page: 'compte' }) %>
+
+<div class="container">
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="avatar"><%= (user.nom || 'U').charAt(0).toUpperCase() %></div>
+        <div class="profile-info">
+            <h2><%= user.nom %></h2>
+            <div class="phone"><%= user.telephone %></div>
+            <div class="id-row">
+                <span id="userIdDisplay"><%= custom_id %></span>
+                <button class="copy-id-btn" onclick="copyId()" title="Copier l'ID"><i class="fas fa-copy"></i></button>
+            </div>
+            <% if (has_active_command) { %><span class="badge-active"><i class="fas fa-circle" style="font-size:0.5rem"></i> Plan actif</span><% } %>
+        </div>
+        <button class="logout-btn" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+
+    <!-- VIP Level -->
+    <div class="vip-card">
+        <div class="vip-top">
+            <span class="vip-badge">VIP <%= vip ? vip.niveau : '0' %></span>
+            <span class="vip-desc"><%= vip && vip.niveau < 5 ? 'Encore ' + (vip.invitations_requises || 0) + ' filleuls actifs' : 'Niveau max!' %></span>
+        </div>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width:<%= vip ? Math.min(100, vip.pourcentage || 0) : 0 %>%"></div>
+        </div>
+        <div class="progress-label"><%= vip ? (vip.pourcentage || 0) : 0 %>% — <%= vip ? (vip.invitations_actuelles || 0) : 0 %> filleul(s) actif(s)</div>
+    </div>
+
+    <!-- Balances -->
+    <div class="balance-grid">
+        <div class="balance-item">
+            <div class="lbl">Solde Principal</div>
+            <div class="val"><%= parseFloat(solde || 0).toLocaleString('fr-FR') %></div>
+            <div class="cur">FCFA</div>
+        </div>
+        <div class="balance-item">
+            <div class="lbl">Revenus Totaux</div>
+            <div class="val"><%= parseFloat(revenus && revenus.total ? revenus.total : 0).toLocaleString('fr-FR') %></div>
+            <div class="cur">FCFA</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-row">
+        <a href="/salaire" class="action-btn">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Salaire VIP</span>
+        </a>
+        <div class="action-btn collect-btn <%= (!can_collect || !has_active_command) ? 'disabled' : '' %>" id="collectBtn"
+             onclick="<%= (can_collect && has_active_command) ? 'collectGain()' : '' %>">
+            <i class="fas fa-coins"></i>
+            <span>Récupérer Gain</span>
+        </div>
+    </div>
+
+    <!-- Next payment info -->
+    <% if (!can_collect && has_active_command && next_payment_info) { %>
+    <div class="payment-info-box show">
+        <i class="fas fa-clock"></i> <%- next_payment_info %>
+    </div>
+    <% } %>
+
+    <!-- Menu -->
+    <div class="menu-list">
+        <a href="/depot" class="menu-list-item">
+            <span class="ico"><i class="fas fa-arrow-down"></i></span>
+            <span class="txt">Dépôt</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </a>
+        <a href="/retrait" class="menu-list-item">
+            <span class="ico"><i class="fas fa-arrow-up"></i></span>
+            <span class="txt">Retrait</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </a>
+        <a href="/portefeuille" class="menu-list-item">
+            <span class="ico"><i class="fas fa-wallet"></i></span>
+            <span class="txt">Portefeuille</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </a>
+        <div class="menu-list-item" onclick="openTxModal()">
+            <span class="ico"><i class="fas fa-exchange-alt"></i></span>
+            <span class="txt">Historique des Transactions</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </div>
+        <div class="menu-list-item" onclick="openPinModal()">
+            <span class="ico"><i class="fas fa-lock"></i></span>
+            <span class="txt"><%= has_transaction_password ? 'Modifier le code PIN' : 'Créer un code PIN' %></span>
+            <i class="fas fa-chevron-right arr"></i>
+        </div>
+        <a href="/tuto" class="menu-list-item">
+            <span class="ico"><i class="fas fa-book"></i></span>
+            <span class="txt">Tutoriels</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </a>
+        <a href="/faq" class="menu-list-item">
+            <span class="ico"><i class="fas fa-question-circle"></i></span>
+            <span class="txt">FAQ</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </a>
+        <a href="https://t.me/groupeofficielblackrock" target="_blank" class="menu-list-item">
+            <span class="ico"><i class="fab fa-telegram"></i></span>
+            <span class="txt">Groupe Telegram</span>
+            <i class="fas fa-chevron-right arr"></i>
+        </a>
+    </div>
+</div>
+
+<!-- PIN Modal -->
+<div class="modal" id="pinModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closePinModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-title"><i class="fas fa-lock"></i> <%= has_transaction_password ? 'Modifier le PIN' : 'Créer un PIN' %></div>
+        <div class="modal-form">
+            <% if (has_transaction_password) { %>
+            <div class="fg">
+                <label>Ancien PIN</label>
+                <input type="password" id="old_pin" maxlength="4" placeholder="****" inputmode="numeric">
+            </div>
+            <% } %>
+            <div class="fg">
+                <label>Nouveau PIN (4 chiffres)</label>
+                <input type="password" id="new_pin" maxlength="4" placeholder="****" inputmode="numeric">
+            </div>
+            <div class="fg">
+                <label>Confirmer le PIN</label>
+                <input type="password" id="confirm_pin" maxlength="4" placeholder="****" inputmode="numeric">
+            </div>
+            <button class="modal-btn" onclick="savePin()">Enregistrer</button>
+            <div class="modal-msg" id="pinMsg"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Transactions Modal -->
+<div class="modal" id="txModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeTxModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-title"><i class="fas fa-exchange-alt"></i> Historique</div>
+        <% if (transactions && transactions.length > 0) { %>
+        <ul class="tx-list">
+            <% transactions.forEach(tx => { %>
+            <li class="tx-item">
+                <div>
+                    <div class="tx-type"><%= tx.type || 'transaction' %></div>
+                    <div class="tx-date"><%= tx.date ? new Date(tx.date).toLocaleDateString('fr-FR') : '' %></div>
+                </div>
+                <span class="<%= (tx.montant > 0) ? 'tx-amount-pos' : 'tx-amount-neg' %>">
+                    <%= (tx.montant > 0 ? '+' : '') %><%= parseFloat(tx.montant).toLocaleString('fr-FR') %> FCFA
+                </span>
+            </li>
+            <% }); %>
+        </ul>
+        <% } else { %>
+        <p style="color:var(--text-gray);text-align:center;padding:20px;font-size:0.85rem;">Aucune transaction trouvée.</p>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function copyId() {
+    const id = document.getElementById('userIdDisplay').textContent;
+    navigator.clipboard.writeText(id).then(() => {
+        const btn = document.querySelector('.copy-id-btn');
+        btn.innerHTML = '<i class="fas fa-check" style="color:#76b900"></i>';
+        setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
+    }).catch(() => {});
+}
+
+function confirmLogout() {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        window.location.href = '/deconnexion';
+    }
+}
+
+function openPinModal() { document.getElementById('pinModal').classList.add('active'); }
+function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
+function openTxModal() { document.getElementById('txModal').classList.add('active'); }
+function closeTxModal() { document.getElementById('txModal').classList.remove('active'); }
+
+async function savePin() {
+    const old_pin = document.getElementById('old_pin') ? document.getElementById('old_pin').value : '';
+    const new_pin = document.getElementById('new_pin').value;
+    const confirm_pin = document.getElementById('confirm_pin').value;
+    const msg = document.getElementById('pinMsg');
+    if (new_pin !== confirm_pin) { msg.textContent = 'Les PIN ne correspondent pas.'; msg.style.color = '#ef4444'; return; }
+    if (!/^\d{4}$/.test(new_pin)) { msg.textContent = 'Le PIN doit être 4 chiffres.'; msg.style.color = '#ef4444'; return; }
+    try {
+        const res = await fetch('/update_transaction_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `old_pin=${old_pin}&new_pin=${new_pin}&confirm_pin=${confirm_pin}`
+        });
+        const data = await res.json();
+        msg.textContent = data.message;
+        msg.style.color = data.success ? '#10b981' : '#ef4444';
+        if (data.success) setTimeout(() => location.reload(), 1200);
+    } catch(e) { msg.textContent = 'Erreur réseau'; msg.style.color = '#ef4444'; }
+}
+
+async function collectGain() {
+    const btn = document.getElementById('collectBtn');
+    if (btn.classList.contains('disabled')) return;
+    btn.classList.add('disabled');
+    try {
+        const res = await fetch('/compte/collecter', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+        const data = await res.json();
+        if (data.success) {
+            alert('✓ ' + data.message);
+            location.reload();
+        } else {
+            alert('✗ ' + data.message);
+            btn.classList.remove('disabled');
+        }
+    } catch(e) { alert('Erreur réseau'); btn.classList.remove('disabled'); }
+}
+
+// Close modals on backdrop click
+document.getElementById('pinModal').addEventListener('click', function(e) { if (e.target === this) closePinModal(); });
+document.getElementById('txModal').addEventListener('click', function(e) { if (e.target === this) closeTxModal(); });
+</script>
+</body>
+</html>
