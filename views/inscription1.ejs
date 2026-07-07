@@ -117,7 +117,7 @@
                                 <select id="indicatif" name="indicatif" required>
                                     <option value="">Code</option>
                                     <% Object.entries(pays_eligibles).forEach(([code, pays]) => { %>
-                                        <option value="<%= code %>" <%= (typeof form_data !== 'undefined' && form_data.indicatif === code) || (!form_data && code === '+225') ? 'selected' : '' %>>
+                                        <option value="<%= code %>" <%= (typeof form_data !== 'undefined' && form_data && form_data.indicatif === code) || (typeof form_data === 'undefined' && code === '+225') ? 'selected' : '' %>>
                                             <%= code %>
                                         </option>
                                     <% }) %>

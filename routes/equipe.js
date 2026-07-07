@@ -19,7 +19,7 @@ async function getInvestissementActif(ids) {
   if (!ids.length) return 0;
   const placeholders = ids.map(() => '?').join(',');
   const [[row]] = await db.query(
-    `SELECT COALESCE(SUM(montant), 0) as total FROM commandes WHERE user_id IN (${placeholders}) AND statut = 'actif' AND date_fin >= CURDATE()`,
+    `SELECT COALESCE(SUM(montant), 0) as total FROM commandes WHERE user_id IN (${placeholders}) AND statut = 'actif' AND date_fin >= CURRENT_DATE`,
     ids
   );
   return parseFloat(row.total || 0);
@@ -48,7 +48,7 @@ router.get('/equipe', requireAuth, async (req, res) => {
       const placeholders = f1.map(() => '?').join(',');
       const [details] = await db.query(
         `SELECT u.id, u.nom, u.telephone, u.pays, u.date_inscription, s.solde,
-         (SELECT COUNT(*) FROM commandes c WHERE c.user_id = u.id AND c.statut = 'actif' AND c.date_fin >= CURDATE()) as has_active
+         (SELECT COUNT(*) FROM commandes c WHERE c.user_id = u.id AND c.statut = 'actif' AND c.date_fin >= CURRENT_DATE) as has_active
          FROM utilisateurs u LEFT JOIN soldes s ON u.id = s.user_id
          WHERE u.id IN (${placeholders}) ORDER BY u.date_inscription DESC`,
         f1

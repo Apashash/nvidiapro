@@ -24,7 +24,7 @@ router.get('/compte', requireAuth, async (req, res) => {
     const [tpRows] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ?', [user_id]);
     const has_transaction_password = tpRows.length > 0;
 
-    const [commandes] = await db.query("SELECT * FROM commandes WHERE user_id = ? AND date_fin >= CURDATE()", [user_id]);
+    const [commandes] = await db.query("SELECT * FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE", [user_id]);
     const has_active_command = commandes.length > 0;
 
     let can_collect = false;
@@ -89,7 +89,7 @@ router.post('/compte/collecter', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   try {
     const [commandes] = await db.query(
-      "SELECT * FROM commandes WHERE user_id = ? AND date_fin >= CURDATE() AND statut = 'actif'",
+      "SELECT * FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE AND statut = 'actif'",
       [user_id]
     );
     const now = Date.now();

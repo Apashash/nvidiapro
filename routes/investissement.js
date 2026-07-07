@@ -50,7 +50,7 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
     try {
       await conn.beginTransaction();
       await conn.query(
-        'INSERT INTO commandes (user_id, plan_id, montant, gain_journalier, date_debut, date_fin) VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 7 HOUR), DATE_ADD(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL ? DAY))',
+        "INSERT INTO commandes (user_id, plan_id, montant, gain_journalier, date_debut, date_fin) VALUES (?, ?, ?, ?, NOW() + INTERVAL '7 hours', NOW() + INTERVAL '7 hours' + (? || ' days')::INTERVAL)",
         [user_id, plan_id, montant, gain_journalier, duree]
       );
       await conn.query('UPDATE soldes SET solde = solde - ? WHERE user_id = ?', [montant, user_id]);

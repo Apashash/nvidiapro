@@ -55,17 +55,17 @@ router.post('/retrait', requireAuth, async (req, res) => {
     else if (!has_transaction_password) erreurs.push('password');
     else if (!retraits_disponibles) erreurs.push('Les retraits sont disponibles du lundi au samedi de 9h à 19h GMT.');
     else {
-      const [[cmds]] = await db.query("SELECT COUNT(*) as nb FROM commandes WHERE user_id = ? AND date_fin >= CURDATE()", [user_id]);
-      if (cmds.nb === 0) erreurs.push("Vous devez avoir au moins un plan d'investissement en cours pour effectuer un retrait.");
+      const [[cmds]] = await db.query("SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE", [user_id]);
+      if (Number(cmds.nb) === 0) erreurs.push("Vous devez avoir au moins un plan d'investissement en cours pour effectuer un retrait.");
 
-      const [[deps]] = await db.query("SELECT COUNT(*) as nb FROM depots WHERE user_id = ? AND statut = 'valide'", [user_id]);
-      if (deps.nb === 0) erreurs.push("Vous devez avoir effectué au moins un dépôt validé pour effectuer un retrait.");
+      const [[deps]] = await db.query("SELECT COUNT(*)::int as nb FROM depots WHERE user_id = ? AND statut = 'valide'", [user_id]);
+      if (Number(deps.nb) === 0) erreurs.push("Vous devez avoir effectué au moins un dépôt validé pour effectuer un retrait.");
 
       const [[recents]] = await db.query(
-        "SELECT COUNT(*) as nb FROM retraits WHERE user_id = ? AND statut IN ('en_attente', 'valide') AND date_demande >= DATE_SUB(NOW(), INTERVAL 24 HOUR)",
+        "SELECT COUNT(*)::int as nb FROM retraits WHERE user_id = ? AND statut IN ('en_attente', 'valide') AND date_demande >= NOW() - INTERVAL '24 hours'",
         [user_id]
       );
-      if (recents.nb > 0) erreurs.push("Vous ne pouvez effectuer qu'un seul retrait toutes les 24 heures.");
+      if (Number(recents.nb) > 0) erreurs.push("Vous ne pouvez effectuer qu'un seul retrait toutes les 24 heures.");
     }
 
     if (erreurs.length) {

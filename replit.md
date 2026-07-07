@@ -28,8 +28,9 @@ French-language mobile investment platform for West African users (Cameroun, Cô
 - Admin panel at `/adminxyz`
 
 ## Database
-External MySQL: `sql104.iceiy.com` / database `icei_40255736_2026`
-Credentials stored in `config/db.js` (use env vars `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` to override).
+Replit built-in PostgreSQL (via `DATABASE_URL` env var, auto-provisioned).
+`config/db.js` is a mysql2-compatible wrapper around `pg` (converts `?` → `$N` placeholders, returns `[rows, fields]` tuples, provides `getConnection()` with transaction support).
+Schema is in the Replit database. Seed data (planinvestissement) is pre-loaded.
 
 ## Security Notes
 - Passwords stored plaintext in DB (matches original PHP — do not add bcrypt without a migration)
