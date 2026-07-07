@@ -46,11 +46,30 @@
     .logo { display:flex; align-items:center; gap:12px; }
     .logo-icon {
         width: 42px; height: 42px; border-radius: 50%;
-        background: rgba(255,255,255,0.25);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 18px; font-weight: 800; color: #fff;
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+        overflow: hidden;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.5), 0 2px 8px rgba(0,0,0,0.3);
+        flex-shrink: 0;
     }
+    .logo-icon img { width:100%; height:100%; object-fit:cover; }
+
+    /* ───────────── TRUST BANNER ───────────── */
+    .trust-banner {
+        margin: 14px 16px 0;
+        background: linear-gradient(135deg, rgba(212,146,31,0.12), rgba(160,99,26,0.08));
+        border: 1px solid rgba(196,125,30,0.25);
+        border-radius: 14px;
+        padding: 10px 14px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .trust-icon {
+        width: 34px; height: 34px; border-radius: 50%;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .trust-icon i { color: #fff; font-size: 14px; }
+    .trust-text { font-size: 12px; color: #7D5A38; line-height: 1.5; }
+    .trust-text strong { color: #C47D1E; font-weight: 700; }
     .logo-text { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
     .logo-subtext { color: rgba(255,255,255,0.8); font-size: 10px; font-weight: 500; letter-spacing: 1px; margin-top: -1px; }
     .header-right { display:flex; gap:8px; }
@@ -365,7 +384,7 @@
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            <div class="logo-icon"><i class="fas fa-chart-line" style="font-size:18px"></i></div>
+            <div class="logo-icon"><img src="/images/logo-altiora.jpeg" alt="Altiora"></div>
             <div>
                 <div class="logo-text">ALTIORA</div>
                 <div class="logo-subtext">CAPITAL AFRICA</div>
@@ -418,6 +437,15 @@
         </div>
     </div>
 
+    <!-- Bannière de confiance -->
+    <div class="trust-banner">
+        <div class="trust-icon"><i class="fas fa-shield-halved"></i></div>
+        <div class="trust-text">
+            <strong>Plateforme 100% sécurisée</strong><br>
+            Vos fonds sont protégés et vos gains crédités chaque jour. Retraits rapides 24h/7j.
+        </div>
+    </div>
+
     <!-- Balance + Actions -->
     <div class="main-section">
         <div class="premium-card">
@@ -425,7 +453,7 @@
                 <div class="balance-label">
                     <i class="fas fa-wallet"></i> Solde Principal
                 </div>
-                <div class="card-logo"><i class="fas fa-chart-line" style="font-size:14px"></i></div>
+                <div class="card-logo" style="overflow:hidden;padding:0;"><img src="/images/logo-altiora.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="A"></div>
             </div>
             <div class="balance-container">
                 <div class="balance-amount"><%= user.solde.toLocaleString() %> <%= devise %></div>
