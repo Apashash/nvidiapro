@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FAQ - NVIDIA Technologie</title>
+    <title>FAQ - Altiora Capital Africa</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -12,16 +12,23 @@
         .container { max-width:430px; margin:0 auto; }
 
         .page-header {
-            background: linear-gradient(135deg, #D4921F, #A0631A);
-            padding: 50px 20px 28px; text-align:center; color:#fff;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+            padding: 40px 20px 28px; text-align:center; color:#fff;
         }
-        .page-header h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
-        .page-header p { font-size:13px; color:rgba(255,255,255,0.85); }
+        .page-header .logo-wrap {
+            width:72px; height:72px; border-radius:50%;
+            background:#000; border:2px solid #C9A84C;
+            margin:0 auto 12px; overflow:hidden; display:flex; align-items:center; justify-content:center;
+        }
+        .page-header .logo-wrap img { width:100%; height:100%; object-fit:cover; }
+        .page-header h1 { font-size:18px; font-weight:800; color:#C9A84C; letter-spacing:0.5px; margin-bottom:2px; }
+        .page-header .tagline { font-size:11px; color:rgba(255,255,255,0.7); font-style:italic; margin-bottom:6px; }
+        .page-header p { font-size:12px; color:rgba(255,255,255,0.6); }
 
         .content { padding:16px; }
 
         .section-label {
-            color:#C47D1E; font-size:12px; font-weight:700;
+            color:#C9A84C; font-size:12px; font-weight:700;
             text-transform:uppercase; letter-spacing:1px; margin:20px 0 10px;
             display:flex; align-items:center; gap:8px;
         }
@@ -33,7 +40,7 @@
             box-shadow:0 2px 8px rgba(196,125,30,0.07);
             transition:border-color 0.2s;
         }
-        .faq-card.open { border-color:#C47D1E; }
+        .faq-card.open { border-color:#C9A84C; }
 
         .faq-question {
             padding:15px 16px; display:flex; justify-content:space-between;
@@ -42,16 +49,33 @@
         }
         .faq-question:hover { background:#FBF5EC; }
         .faq-question .q-text { flex:1; }
-        .faq-arrow { color:#C47D1E; transition:transform 0.3s; flex-shrink:0; }
+        .faq-arrow { color:#C9A84C; transition:transform 0.3s; flex-shrink:0; }
         .faq-card.open .faq-arrow { transform:rotate(180deg); }
 
         .faq-answer {
-            display:none; padding:0 16px 16px; color:#7D5A38;
-            font-size:13px; line-height:1.7; border-top:1px solid #F0E0C8;
-            padding-top:12px;
+            display:none; padding:12px 16px 16px; color:#7D5A38;
+            font-size:13px; line-height:1.75; border-top:1px solid #F0E0C8;
         }
         .faq-card.open .faq-answer { display:block; }
-        .faq-answer br + br { display:block; margin-top:4px; }
+
+        .plans-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:8px; }
+        .plans-table th { background:#1a1a2e; color:#C9A84C; padding:6px 4px; text-align:center; font-weight:700; }
+        .plans-table td { padding:5px 4px; text-align:center; border-bottom:1px solid #F0E0C8; color:#3D2B1F; }
+        .plans-table tr:nth-child(even) td { background:#FBF5EC; }
+        .plans-table .plan-name { font-weight:600; text-align:left; color:#1a1a2e; }
+
+        .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+        .info-item { background:#FBF5EC; border-radius:10px; padding:10px; border:1px solid #F0E0C8; }
+        .info-item .label { font-size:10px; color:#C9A84C; font-weight:700; text-transform:uppercase; margin-bottom:3px; }
+        .info-item .value { font-size:12px; color:#3D2B1F; font-weight:600; }
+
+        .sectors-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .sector-tag { background:#1a1a2e; color:#C9A84C; border-radius:20px; padding:4px 10px; font-size:11px; font-weight:600; }
+
+        .commission-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #F0E0C8; }
+        .commission-row:last-child { border:none; }
+        .commission-row .level { font-size:12px; color:#3D2B1F; font-weight:600; }
+        .commission-row .pct { font-size:16px; font-weight:800; color:#C9A84C; }
     </style>
 </head>
 <body>
@@ -59,37 +83,120 @@
 
 <div class="container">
     <div class="page-header">
-        <h1><i class="fas fa-question-circle"></i> FAQ</h1>
+        <div class="logo-wrap">
+            <img src="/assets/logo-altiora.jpeg" alt="Altiora Capital Africa">
+        </div>
+        <h1>ALTIORA CAPITAL AFRICA</h1>
+        <div class="tagline">« Ensemble, construisons la richesse de demain. »</div>
         <p>Foire aux questions — réponses rapides</p>
     </div>
 
     <div class="content">
-        <div class="section-label"><i class="fas fa-info-circle"></i> Questions générales</div>
+
+        <!-- SECTION : Présentation -->
+        <div class="section-label"><i class="fas fa-info-circle"></i> Présentation générale</div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
-                <span class="q-text">C'est quoi NVIDIA Technologie ?</span>
+                <span class="q-text">C'est quoi Altiora Capital Africa ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">NVIDIA Technologie est une plateforme d'investissement en ligne qui vous permet de générer des revenus passifs grâce à des plans d'investissement avec des rendements journaliers. Vous pouvez également gagner des commissions de parrainage en invitant vos amis.</div>
+            <div class="faq-answer">
+                Fondée en 2026 à Douala, Cameroun, <strong>Altiora Capital Africa</strong> est une entreprise panafricaine spécialisée dans l'investissement participatif et le financement de projets à fort potentiel de croissance.<br><br>
+                Notre mission : rendre l'investissement accessible à tous grâce à une plateforme numérique moderne, sécurisée et performante, disponible 24h/24 et 7j/7.
+                <div class="info-grid" style="margin-top:12px;">
+                    <div class="info-item"><div class="label">Fondée</div><div class="value">Janvier 2026</div></div>
+                    <div class="info-item"><div class="label">Capital social</div><div class="value">500 000 000 FCFA</div></div>
+                    <div class="info-item"><div class="label">Siège social</div><div class="value">Douala, Cameroun</div></div>
+                    <div class="info-item"><div class="label">Zone</div><div class="value">Afrique</div></div>
+                </div>
+            </div>
         </div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
-                <span class="q-text">Comment fonctionne le système d'investissement ?</span>
+                <span class="q-text">Dans quels secteurs investit Altiora Capital Africa ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Vous choisissez un plan d'investissement (Action VIP 1 à 11) en fonction de votre budget. Chaque plan génère un rendement journalier (entre 10.5% et 19.5%) pendant 125 jours. Vous pouvez collecter vos revenus chaque 24h depuis votre profil.</div>
+            <div class="faq-answer">
+                Altiora Capital Africa concentre ses activités sur des secteurs à fort potentiel en Afrique :
+                <div class="sectors-list">
+                    <span class="sector-tag">🌾 Agriculture</span>
+                    <span class="sector-tag">🏭 Agro-industrie</span>
+                    <span class="sector-tag">⚡ Énergies renouvelables</span>
+                    <span class="sector-tag">🏠 Immobilier</span>
+                    <span class="sector-tag">🏪 PME</span>
+                    <span class="sector-tag">🚛 Transport & Logistique</span>
+                    <span class="sector-tag">💻 Technologies numériques</span>
+                    <span class="sector-tag">🤖 Intelligence artificielle</span>
+                </div>
+            </div>
         </div>
+
+        <div class="faq-card" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span class="q-text">Quels sont les objectifs d'Altiora Capital Africa ?</span>
+                <i class="fas fa-chevron-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+                À l'horizon 2035, Altiora Capital Africa vise :<br><br>
+                • Une présence dans <strong>35 pays africains</strong><br>
+                • Plus de <strong>5 millions d'utilisateurs</strong><br>
+                • Plus de <strong>100 milliards FCFA</strong> de projets financés<br>
+                • Plus de <strong>10 000 projets accompagnés</strong><br>
+                • Des milliers d'emplois directs et indirects créés
+            </div>
+        </div>
+
+        <!-- SECTION : Plans d'investissement -->
+        <div class="section-label"><i class="fas fa-chart-line"></i> Plans d'investissement</div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
                 <span class="q-text">Quel est le montant minimum pour investir ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Le plan minimum est Action VIP 1 à 3 000 FCFA. Vous recevrez 10.5% de rendement journalier, soit 315 FCFA par jour pendant 125 jours.</div>
+            <div class="faq-answer">
+                Le montant minimum d'investissement est de <strong>5 000 FCFA</strong> (Plan DÉCOUVERTE).<br>
+                Le plan maximum est de <strong>15 000 000 FCFA</strong> (Plan LEGACY).<br><br>
+                Altiora Capital Africa propose <strong>20 plans d'investissement</strong> adaptés à tous les profils.
+            </div>
         </div>
 
+        <div class="faq-card" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span class="q-text">Quels sont les 20 plans disponibles ?</span>
+                <i class="fas fa-chevron-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+                <table class="plans-table">
+                    <tr><th>Plan</th><th>Montant (FCFA)</th><th>Rendement/jr</th></tr>
+                    <tr><td class="plan-name">01. DÉCOUVERTE</td><td>5 000</td><td>3%</td></tr>
+                    <tr><td class="plan-name">02. STARTER</td><td>10 000</td><td>3%</td></tr>
+                    <tr><td class="plan-name">03. BASIC PLUS</td><td>20 000</td><td>3,2%</td></tr>
+                    <tr><td class="plan-name">04. BRONZE</td><td>30 000</td><td>3,3%</td></tr>
+                    <tr><td class="plan-name">05. BRONZE PLUS</td><td>50 000</td><td>3,5%</td></tr>
+                    <tr><td class="plan-name">06. SILVER</td><td>75 000</td><td>3,7%</td></tr>
+                    <tr><td class="plan-name">07. SILVER PLUS</td><td>100 000</td><td>4%</td></tr>
+                    <tr><td class="plan-name">08. GOLD</td><td>150 000</td><td>4,2%</td></tr>
+                    <tr><td class="plan-name">09. GOLD PLUS</td><td>200 000</td><td>4,5%</td></tr>
+                    <tr><td class="plan-name">10. PLATINUM</td><td>300 000</td><td>4,7%</td></tr>
+                    <tr><td class="plan-name">11. PLATINUM PLUS</td><td>500 000</td><td>5%</td></tr>
+                    <tr><td class="plan-name">12. DIAMOND</td><td>750 000</td><td>5,2%</td></tr>
+                    <tr><td class="plan-name">13. DIAMOND PLUS</td><td>1 000 000</td><td>5,5%</td></tr>
+                    <tr><td class="plan-name">14. ÉLITE</td><td>1 500 000</td><td>5,7%</td></tr>
+                    <tr><td class="plan-name">15. ÉLITE PLUS</td><td>2 000 000</td><td>6%</td></tr>
+                    <tr><td class="plan-name">16. PRESTIGE</td><td>3 000 000</td><td>6,2%</td></tr>
+                    <tr><td class="plan-name">17. PRESTIGE PLUS</td><td>5 000 000</td><td>6,5%</td></tr>
+                    <tr><td class="plan-name">18. EMPIRE</td><td>7 500 000</td><td>6,7%</td></tr>
+                    <tr><td class="plan-name">19. EMPIRE PLUS</td><td>10 000 000</td><td>6,9%</td></tr>
+                    <tr><td class="plan-name">20. LEGACY</td><td>15 000 000</td><td>7%</td></tr>
+                </table>
+                <br>Les rendements sont basés sur la performance des projets financés et peuvent varier.
+            </div>
+        </div>
+
+        <!-- SECTION : Dépôts & Retraits -->
         <div class="section-label"><i class="fas fa-money-bill-wave"></i> Dépôts & Retraits</div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
@@ -97,7 +204,10 @@
                 <span class="q-text">Comment effectuer un dépôt ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Allez dans "Dépôt", choisissez votre pays et opérateur Mobile Money, entrez le montant (minimum 200 FCFA), votre numéro et email. Confirmez le paiement sur votre téléphone. Le crédit est automatique.</div>
+            <div class="faq-answer">
+                Allez dans <strong>Dépôt</strong>, choisissez votre pays et opérateur Mobile Money, entrez le montant (minimum 3 500 FCFA), votre numéro et email. Confirmez le paiement sur votre téléphone. Le crédit est automatique dès validation.<br><br>
+                Pays supportés : Cameroun, Côte d'Ivoire, Sénégal, Bénin, Burkina Faso, Mali, Togo.
+            </div>
         </div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
@@ -105,7 +215,14 @@
                 <span class="q-text">Quand puis-je faire un retrait ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Les retraits sont disponibles du lundi au samedi de 9h à 19h GMT. Montant minimum: 1 200 FCFA. Un seul retrait toutes les 24h. Vous devez avoir un plan actif et au moins un dépôt validé.</div>
+            <div class="faq-answer">
+                Les retraits sont disponibles du <strong>lundi au samedi de 9h à 19h GMT</strong>.<br><br>
+                • Retrait minimum : <strong>1 500 FCFA</strong><br>
+                • Retrait maximum : <strong>500 000 FCFA</strong><br>
+                • Frais de retrait : <strong>10%</strong><br>
+                • Un seul retrait toutes les 24 heures<br>
+                • Vous devez avoir un plan actif et un dépôt validé
+            </div>
         </div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
@@ -113,36 +230,63 @@
                 <span class="q-text">Combien de temps prend un retrait ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Les retraits sont traités dans un délai de 24 heures après validation de votre demande par notre équipe.</div>
+            <div class="faq-answer">Les retraits sont traités dans un délai de <strong>24 heures</strong> après validation de votre demande par notre équipe. Le service client est disponible 7j/7 pour toute question.</div>
         </div>
 
-        <div class="section-label"><i class="fas fa-users"></i> Parrainage & VIP</div>
+        <!-- SECTION : Parrainage -->
+        <div class="section-label"><i class="fas fa-users"></i> Programme d'ambassadeurs</div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
-                <span class="q-text">Comment fonctionne le parrainage ?</span>
+                <span class="q-text">Comment fonctionne le programme d'ambassadeurs ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Partagez votre lien de parrainage unique. Quand un filleul achète un plan d'investissement, vous recevez automatiquement 20% de son investissement en bonus sur votre solde.</div>
-        </div>
-
-        <div class="faq-card" onclick="toggleFaq(this)">
-            <div class="faq-question">
-                <span class="q-text">Comment progresser dans les niveaux VIP ?</span>
-                <i class="fas fa-chevron-down faq-arrow"></i>
+            <div class="faq-answer">
+                Partagez votre lien de parrainage unique. Vous gagnez des commissions sur les investissements de vos filleuls sur 3 niveaux :
+                <div style="margin-top:10px;">
+                    <div class="commission-row">
+                        <span class="level">🥇 Commission directe (Niveau 1)</span>
+                        <span class="pct">10%</span>
+                    </div>
+                    <div class="commission-row">
+                        <span class="level">🥈 Niveau 2</span>
+                        <span class="pct">3%</span>
+                    </div>
+                    <div class="commission-row">
+                        <span class="level">🥉 Niveau 3</span>
+                        <span class="pct">1%</span>
+                    </div>
+                </div>
+                <br>Des récompenses complémentaires sont prévues pour les ambassadeurs atteignant les objectifs définis.
             </div>
-            <div class="faq-answer">Votre niveau VIP dépend du nombre de filleuls directs actifs :<br>• VIP 0 : 0-2 filleuls actifs<br>• VIP 1 : 3-6 filleuls (700 FCFA/jour)<br>• VIP 2 : 7-11 filleuls (1 200 FCFA/jour)<br>• VIP 3 : 12-19 filleuls (4 000 FCFA/jour)<br>• VIP 4 : 20-39 filleuls (5 000 FCFA/jour)<br>• VIP 5 : 40+ filleuls (7 500 FCFA/jour)</div>
         </div>
 
-        <div class="section-label"><i class="fas fa-shield-alt"></i> Sécurité</div>
+        <!-- SECTION : Sécurité -->
+        <div class="section-label"><i class="fas fa-shield-alt"></i> Sécurité & confiance</div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
                 <span class="q-text">À quoi sert le code PIN de transaction ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
-            <div class="faq-answer">Le code PIN est un mot de passe à 4 chiffres supplémentaire qui protège vos retraits et la configuration de votre portefeuille. Sans ce PIN, personne ne peut retirer votre argent même s'il accède à votre compte.</div>
+            <div class="faq-answer">Le code PIN est un mot de passe à 4 chiffres qui protège vos retraits et la configuration de votre portefeuille. Sans ce PIN, personne ne peut retirer votre argent même en cas d'accès non autorisé à votre compte.</div>
         </div>
+
+        <div class="faq-card" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span class="q-text">Quelles sont les valeurs d'Altiora Capital Africa ?</span>
+                <i class="fas fa-chevron-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+                Nos activités reposent sur des principes fondamentaux :<br><br>
+                ✅ Transparence &nbsp; ✅ Innovation<br>
+                ✅ Intégrité &nbsp; ✅ Excellence<br>
+                ✅ Responsabilité &nbsp; ✅ Inclusion financière<br>
+                ✅ Développement durable<br><br>
+                <em>« Investir dans le potentiel de l'Afrique. Construire ensemble la prospérité de demain. »</em>
+            </div>
+        </div>
+
     </div>
 </div>
 
