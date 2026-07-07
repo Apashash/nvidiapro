@@ -3,60 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Machine à Sous Gratuite</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>Machine à Sous Gratuite - NVIDIA Technologie</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root {
-            --primary-white: #ffffff;
-            --accent-green: #76b900;
-            --background-dark: #0f1c1f;
-            --button-red: #ff0000;
-            --error: #ef4444;
-            --card-bg: rgba(10, 20, 20, 0.95);
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins','Segoe UI',sans-serif; }
+        body { background:#F5EFE6; color:#3D2B1F; min-height:100vh; padding-bottom:90px; }
+        .container { max-width:430px; margin:0 auto; text-align:center; }
+
+        .page-header {
+            background: linear-gradient(135deg, #D4921F, #A0631A);
+            padding: 50px 20px 28px; text-align:center; color:#fff;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--background-dark); color: #e0e0e0; padding: 15px; text-align: center; }
-        .container { max-width: 600px; margin: 0 auto; padding-top: 20px; }
-        .slot-container { position: relative; width: 90%; max-width: 450px; margin: 30px auto; padding: 20px; background: linear-gradient(to bottom, #444, #222); border-radius: 15px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2); }
-        .slot-reels { display: flex; justify-content: space-around; padding: 10px 0; border: 5px solid var(--accent-green); border-radius: 8px; background: #111; }
-        .reel { width: 30%; height: 120px; overflow: hidden; position: relative; border-radius: 5px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7); }
-        .reel-inner { position: absolute; width: 100%; top: 0; transition: transform 0.1s linear; }
-        .symbol { display: flex; align-items: center; justify-content: center; height: 120px; font-size: 50px; font-weight: bold; color: var(--primary-white); background: #222; border-bottom: 1px solid #333; }
-        .symbol i { font-size: 50px; color: var(--primary-white); }
-        .payline { position: absolute; top: 50%; left: 0; width: 100%; height: 4px; background-color: var(--button-red); transform: translateY(-50%); box-shadow: 0 0 10px var(--button-red); z-index: 10; pointer-events: none; }
-        .spin-button { width: 100%; max-width: 200px; background: var(--accent-green); color: var(--primary-white); border: none; padding: 15px 30px; border-radius: 8px; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 8px 15px rgba(118, 185, 0, 0.5); margin-top: 25px; text-transform: uppercase; }
-        .spin-button:disabled { background: #446600; box-shadow: none; cursor: not-allowed; }
-        .solde-display { font-size: 16px; font-weight: 600; color: var(--accent-green); margin-bottom: 20px; }
-        .action-zone { margin-top: 25px; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #timer-display { text-align: center; color: var(--error); font-size: 28px; font-weight: 700; }
-        .result-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 1000; display: none; align-items: center; justify-content: center; }
-        .popup-content { background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 15px 50px rgba(118, 185, 0, 0.6); border: 2px solid var(--accent-green); max-width: 350px; width: 90%; transform: scale(0.8); opacity: 0; animation: popupIn 0.4s forwards; text-align: center; }
-        @keyframes popupIn { to { transform: scale(1); opacity: 1; } }
-        .result-icon { font-size: 50px; color: var(--accent-green); margin-bottom: 15px; animation: bounce 0.8s infinite alternate; }
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
-        .result-title { font-size: 24px; font-weight: 700; color: var(--accent-green); margin-bottom: 10px; }
-        .result-message { font-size: 16px; color: #e0e0e0; margin-bottom: 20px; }
+        .page-header h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
+        .page-header p { font-size:13px; color:rgba(255,255,255,0.85); }
+
+        .balance-strip {
+            background:#fff; border-bottom:1px solid #F0E0C8;
+            padding:14px 20px; font-size:15px; font-weight:700;
+            color:#3D2B1F; display:flex; justify-content:center; align-items:center; gap:8px;
+        }
+        .balance-strip span { color:#C47D1E; font-size:17px; }
+
+        /* Slot machine */
+        .slot-area { padding:24px 16px; }
+        .slot-machine {
+            background:#fff; border-radius:20px;
+            box-shadow:0 8px 30px rgba(196,125,30,0.18);
+            border:2px solid #E8D5B0; padding:20px; margin-bottom:20px;
+            position:relative; overflow:hidden;
+        }
+        .slot-machine::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:4px;
+            background:linear-gradient(135deg,#D4921F,#B07018);
+        }
+        .slot-label { font-size:12px; font-weight:700; color:#A87D50;
+            text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; }
+        .slot-reels {
+            display:flex; justify-content:space-around; padding:10px 0;
+            border:3px solid #C47D1E; border-radius:12px; background:#FBF5EC;
+        }
+        .reel {
+            width:30%; height:120px; overflow:hidden; position:relative;
+            border-radius:8px; box-shadow:inset 0 0 10px rgba(0,0,0,0.12);
+        }
+        .reel-inner { position:absolute; width:100%; top:0; transition:transform 0.1s linear; }
+        .symbol {
+            display:flex; align-items:center; justify-content:center;
+            height:120px; font-size:50px; font-weight:bold; color:#3D2B1F;
+            background:#FBF5EC; border-bottom:1px solid #F0E0C8;
+        }
+        .symbol i { font-size:48px; color:#C47D1E; }
+        .payline {
+            position:absolute; top:50%; left:0; width:100%; height:3px;
+            background:#EF4444; transform:translateY(-50%);
+            box-shadow:0 0 8px rgba(239,68,68,0.5); z-index:10; pointer-events:none;
+        }
+
+        .spin-btn {
+            background:linear-gradient(135deg,#D4921F,#B07018);
+            color:#fff; border:none; padding:16px 48px; border-radius:40px;
+            font-size:20px; font-weight:800; cursor:pointer;
+            box-shadow:0 6px 20px rgba(196,125,30,0.45); transition:transform 0.2s;
+            text-transform:uppercase; letter-spacing:1px; font-family:'Poppins',sans-serif;
+        }
+        .spin-btn:hover:not(:disabled) { transform:scale(1.04); }
+        .spin-btn:disabled { background:#E8D5B0; color:#A87D50; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        #timer-display {
+            font-size:28px; font-weight:800; color:#C47D1E;
+            background:#FBF5EC; border:1px solid #E8D5B0;
+            border-radius:14px; padding:14px 22px; display:inline-block;
+        }
+
+        /* Result popup */
+        .result-popup {
+            display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,0.55); backdrop-filter:blur(8px);
+            z-index:1000; align-items:center; justify-content:center;
+        }
+        .popup-box {
+            background:#fff; padding:32px 24px; border-radius:24px;
+            box-shadow:0 24px 60px rgba(196,125,30,0.30);
+            border:2px solid #C47D1E; max-width:340px; width:90%;
+            animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275); text-align:center;
+        }
+        @keyframes popIn { from { transform:scale(0.8); opacity:0; } to { transform:scale(1); opacity:1; } }
+        .result-icon { font-size:52px; color:#C47D1E; margin-bottom:14px;
+            animation:bounce 0.8s infinite alternate; }
+        @keyframes bounce { from { transform:translateY(0); } to { transform:translateY(-8px); } }
+        .result-title { font-size:24px; font-weight:800; color:#C47D1E; margin-bottom:10px; }
+        .result-msg { font-size:15px; color:#7D5A38; line-height:1.6; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <script>
         const SYMBOLS = [
-            '<i class="fas fa-gem"></i>',   
-            '<i class="fas fa-lemon"></i>',  
-            '<i class="fas fa-cherry"></i>',
-            '<i class="fas fa-star"></i>',  
-            '<i class="fas fa-bell"></i>',   
-            '<i class="fas fa-dollar-sign"></i>', 
-            '<span>BAR</span>',             
-            '<span style="color:#ef4444;">7</span>',             
+            '<i class="fas fa-gem"></i>',
+            '<i class="fas fa-lemon"></i>',
+            '<i class="fas fa-star"></i>',
+            '<i class="fas fa-bell"></i>',
+            '<i class="fas fa-dollar-sign"></i>',
+            '<span>BAR</span>',
+            '<span style="color:#C47D1E;">7</span>',
+            '<i class="fas fa-wheat-awn"></i>',
         ];
         const SYMBOL_HEIGHT = 120;
-        
+
         function buildReel(reelElement) {
             const inner = reelElement.querySelector('.reel-inner');
             inner.innerHTML = '';
-            const totalSymbols = 20; 
+            const totalSymbols = 20;
             for (let i = 0; i < totalSymbols; i++) {
                 const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
                 const symbolDiv = document.createElement('div');
@@ -65,23 +121,23 @@
                 inner.appendChild(symbolDiv);
             }
         }
-        
+
         function spinReel(reelIndex, symbolIndex, spinDuration, delay) {
             const reel = document.querySelectorAll('.reel-inner')[reelIndex];
-            const stopSymbolIndex = 16; 
+            const stopSymbolIndex = 16;
             const finalPosition = stopSymbolIndex * SYMBOL_HEIGHT;
             return new Promise(resolve => {
                 const randomOffset = (Math.random() * (SYMBOL_HEIGHT/2)) - (SYMBOL_HEIGHT/4);
                 gsap.to(reel, {
                     y: -finalPosition + randomOffset,
                     duration: spinDuration,
-                    ease: `power${reelIndex + 2}.out`, 
+                    ease: `power${reelIndex + 2}.out`,
                     delay: delay,
                     onComplete: resolve
                 });
             });
         }
-        
+
         async function startSpin() {
             const spinButton = document.getElementById('spinButton');
             spinButton.disabled = true;
@@ -95,20 +151,19 @@
                 const data = await response.json();
                 if (data.status === 'success') {
                     const winnings = data.gains;
-                    let comboSymbolIndex = winnings >= 1500 ? 7 : (winnings > 25 ? 2 : (winnings === 25 ? 4 : -1));
+                    let comboSymbolIndex = winnings >= 1500 ? 6 : (winnings > 25 ? 7 : (winnings === 25 ? 3 : -1));
                     let promises = [];
                     let baseDuration = 3.0;
                     for (let i = 0; i < reels.length; i++) {
                         let finalSymbolIndex = comboSymbolIndex !== -1 ? comboSymbolIndex : Math.floor(Math.random() * SYMBOLS.length);
-                        if (comboSymbolIndex === -1 && i > 0 && finalSymbolIndex === promises[0].finalSymbolIndex) {
-                            finalSymbolIndex = (finalSymbolIndex + 1) % SYMBOLS.length;
-                        }
-                        promises.push(spinReel(i, finalSymbolIndex, baseDuration + i * 0.5, 0).then(() => { buildReel(document.querySelectorAll('.reel')[i]); }));
+                        promises.push(spinReel(i, finalSymbolIndex, baseDuration + i * 0.5, 0).then(() => {
+                            buildReel(document.querySelectorAll('.reel')[i]);
+                        }));
                     }
                     await Promise.all(promises);
                     showResultPopup(winnings);
                     document.getElementById('soldePrincipal').textContent = data.new_solde.toLocaleString('fr') + ' <%= devise %>';
-                    setTimeout(() => window.location.reload(), 3000); 
+                    setTimeout(() => window.location.reload(), 3000);
                 } else {
                     alert(data.message || 'Une erreur est survenue.');
                     reels.forEach(reel => gsap.killTweensOf(reel));
@@ -122,40 +177,40 @@
                 spinButton.textContent = 'SPIN';
             }
         }
-        
+
         let remainingSeconds = <%= remaining_time %>;
-        const timerDisplay = document.getElementById('timer-display');
-        const spinButton = document.getElementById('spinButton');
 
         function formatTime(seconds) {
             const d = Math.floor(seconds / 86400);
             const h = Math.floor((seconds % 86400) / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = seconds % 60;
-            return `${d}j : ${h.toString().padStart(2, '0')}h : ${m.toString().padStart(2, '0')}m : ${s.toString().padStart(2, '0')}s`;
+            return `${d}j : ${h.toString().padStart(2,'0')}h : ${m.toString().padStart(2,'0')}m : ${s.toString().padStart(2,'0')}s`;
         }
 
         function updateTimer() {
+            const spinButton = document.getElementById('spinButton');
+            const timerDisplay = document.getElementById('timer-display');
             if (remainingSeconds <= 0) {
-                spinButton.style.display = 'block';
+                spinButton.style.display = 'inline-block';
                 spinButton.disabled = false;
                 timerDisplay.style.display = 'none';
             } else {
                 spinButton.style.display = 'none';
-                timerDisplay.style.display = 'block';
+                timerDisplay.style.display = 'inline-block';
                 timerDisplay.textContent = formatTime(remainingSeconds);
                 remainingSeconds--;
                 setTimeout(updateTimer, 1000);
             }
         }
-        
+
         function showResultPopup(gains) {
             const popup = document.getElementById('resultPopup');
             const title = document.getElementById('resultTitle');
             const message = document.getElementById('resultMessage');
             if (gains > 0) {
                 title.textContent = "Félicitations !";
-                message.innerHTML = `Vous avez gagné <span style="color:var(--accent-green);">${gains.toLocaleString('fr')} <%= devise %></span>. Le montant a été ajouté à votre solde principal.`;
+                message.innerHTML = `Vous avez gagné <span style="color:#C47D1E;font-weight:800;">${gains.toLocaleString('fr')} <%= devise %></span>. Le montant a été ajouté à votre solde.`;
                 document.getElementById('resultIcon').className = 'fas fa-trophy result-icon';
             } else {
                 title.textContent = "Pas de chance...";
@@ -164,19 +219,30 @@
             }
             popup.style.display = 'flex';
         }
-        
+
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.reel').forEach(buildReel); 
+            document.querySelectorAll('.reel').forEach(buildReel);
             updateTimer();
-            if (!<%= can_spin %>) { spinButton.style.display = 'none'; }
+            if (!<%= can_spin %>) { document.getElementById('spinButton').style.display = 'none'; }
         });
     </script>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-gem"></i> Machine à Sous Gratuite</h1>
-        <p class="solde-display">Solde Principal: <span id="soldePrincipal"><%= solde.toLocaleString('fr') %> <%= devise %></span></p>
-        <div class="slot-container">
+<%- include('partials/menu', { page: 'index' }) %>
+
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-dice"></i> Machine à Sous</h1>
+        <p>Tentez votre chance gratuitement !</p>
+    </div>
+    <div class="balance-strip">
+        <i class="fas fa-coins" style="color:#C47D1E"></i>
+        Solde: <span id="soldePrincipal"><%= solde.toLocaleString('fr') %> <%= devise %></span>
+    </div>
+
+    <div class="slot-area">
+        <div class="slot-machine">
+            <div class="slot-label">🎰 Machine à Sous Gratuite</div>
             <div class="payline"></div>
             <div class="slot-reels">
                 <div class="reel"><div class="reel-inner"></div></div>
@@ -184,17 +250,20 @@
                 <div class="reel"><div class="reel-inner"></div></div>
             </div>
         </div>
-        <div class="action-zone">
-            <button id="spinButton" class="spin-button" onclick="startSpin()">SPIN</button>
+
+        <div style="margin-top:10px;">
+            <button id="spinButton" class="spin-btn" onclick="startSpin()">SPIN</button>
             <div id="timer-display" style="display:none;"></div>
         </div>
-        <div class="result-popup" id="resultPopup">
-            <div class="popup-content">
-                <div id="resultIcon"></div>
-                <div id="resultTitle" class="result-title"></div>
-                <div id="resultMessage" class="result-message"></div>
-            </div>
-        </div>
     </div>
+</div>
+
+<div class="result-popup" id="resultPopup">
+    <div class="popup-box">
+        <div id="resultIcon" class="result-icon"></div>
+        <div id="resultTitle" class="result-title"></div>
+        <div id="resultMessage" class="result-msg"></div>
+    </div>
+</div>
 </body>
 </html>

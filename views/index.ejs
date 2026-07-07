@@ -3,1923 +3,737 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Accueil - NVIDIA Technology</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Accueil - NVIDIA Technologie</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-    /* VARIABLES MODIFIÉES POUR LE THÈME NVIDIA */
     :root {
-        --primary-white: #ffffff;
-        --soft-white: #f8fafc;
-        --warm-white: #fefefe;
-        --light-gray: #1a1a1a; /* Fond sombre */
-        --accent-green: #76b900; /* Vert NVIDIA */
-        --green-light: #90d300;
-        --green-dark: #588e00;
-        --text-dark: #e0e0e0; /* Texte clair sur fond sombre */
-        --text-gray: #a0a0a0;
-        --text-light: #cccccc;
-        --card-bg: rgba(30, 30, 30, 0.95); /* Fond de carte sombre et semi-transparent */
-        --border-color: rgba(255, 255, 255, 0.1);
-        --error: #ef4444;
-        --success: #10b981;
-        --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        --premium-color-a: #1e1e1e; /* Noir profond */
-        --premium-color-b: #3a3a3a; /* Gris foncé */
+        --amber: #C47D1E;
+        --amber-dark: #A0631A;
+        --amber-light: #D4921F;
+        --cream: #F5EFE6;
+        --card-bg: #FFFFFF;
+        --text-dark: #3D2B1F;
+        --text-mid: #7D5A38;
+        --text-muted: #A87D50;
+        --border: #E8D5B0;
+        --light-bg: #FBF5EC;
+        --transition: all 0.3s ease;
     }
-    
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    html, body {
-        height: 100%;
-        overflow-x: hidden;
-        overflow-y: auto;
-    }
-    
-    /* FOND SOMBRE GÉNÉRAL */
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html, body { height:100%; overflow-x:hidden; overflow-y:auto; }
     body {
-        font-family: 'Inter', sans-serif;
-        background: #0d0d0d; /* Fond très sombre */
+        font-family: 'Poppins', 'Inter', sans-serif;
+        background: var(--cream);
         color: var(--text-dark);
         line-height: 1.6;
-        position: relative;
         -webkit-text-size-adjust: 100%;
         touch-action: pan-y;
-        padding: 15px;
         user-select: none;
         -webkit-user-select: none;
     }
-    
-    /* Désactivation du zoom (conservation du code utilisateur) */
-    body * {
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-        -webkit-tap-highlight-color: transparent;
-    }
+    body * { -webkit-user-select:none; -webkit-touch-callout:none; }
 
-    /* Arrière-plan géométrique élégant - Style sombre et vert */
-    .background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: 
-            radial-gradient(circle at 10% 20%, rgba(118, 185, 0, 0.15) 0%, transparent 20%),
-            radial-gradient(circle at 90% 80%, rgba(150, 211, 0, 0.15) 0%, transparent 20%),
-            radial-gradient(circle at 20% 30%, rgba(118, 185, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(150, 211, 0, 0.1) 0%, transparent 50%),
-            linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
-        z-index: -3;
-    }
-    
-    .geometric-pattern {
-        /* Rendu plus subtil sur fond sombre */
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: 
-            linear-gradient(30deg, rgba(118, 185, 0, 0.08) 12%, transparent 12.5%, transparent 87%, rgba(118, 185, 0, 0.08) 87.5%, rgba(118, 185, 0, 0.08) 0),
-            linear-gradient(150deg, rgba(150, 211, 0, 0.08) 12%, transparent 12.5%, transparent 87%, rgba(150, 211, 0, 0.08) 87.5%, rgba(150, 211, 0, 0.08) 0),
-            linear-gradient(30deg, rgba(118, 185, 0, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(118, 185, 0, 0.05) 87.5%, rgba(118, 185, 0, 0.05) 0),
-            linear-gradient(150deg, rgba(150, 211, 0, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(150, 211, 0, 0.05) 87.5%, rgba(150, 211, 0, 0.05) 0),
-            linear-gradient(60deg, rgba(118, 185, 0, 0.1) 25%, transparent 25.5%, transparent 75%, rgba(118, 185, 0, 0.1) 75%, rgba(118, 185, 0, 0.1) 0),
-            linear-gradient(60deg, rgba(150, 211, 0, 0.1) 25%, transparent 25.5%, transparent 75%, rgba(150, 211, 0, 0.1) 75%, rgba(150, 211, 0, 0.1) 0);
-        background-size: 100px 175px; /* Ajout des propriétés de background manquantes */
-        background-position: 0 0, 0 0, 50px 87.5px, 50px 87.5px, 0 0, 50px 87.5px;
-        z-index: -2;
-        animation: patternShift 30s linear infinite;
-    }
-    
-    /* ACCENTS LUMINEUX VERT */
-    .blue-accent {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(118, 185, 0, 0.2) 0%, transparent 70%);
-        filter: blur(60px);
-        z-index: -1;
-    }
-    
-    .purple-accent {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(150, 211, 0, 0.2) 0%, transparent 70%);
-        filter: blur(60px);
-        z-index: -1;
-    }
-    
-    .light-shimmer {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-            125deg,
-            transparent 0%,
-            rgba(118, 185, 0, 0.1) 40%,
-            rgba(150, 211, 0, 0.1) 50%,
-            rgba(118, 185, 0, 0.1) 60%,
-            transparent 100%
-        );
-        opacity: 0.2;
-        z-index: -1;
-        animation: lightShine 15s infinite linear;
-    }
-    
-    .light-beam { /* Ajout du style light-beam manquant */
-        position: fixed;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-        animation: rotateBeam 25s linear infinite;
-        z-index: -1;
-    }
-    
-    /* Header compact */
+    .container { max-width:430px; margin:0 auto; padding:0 0 90px; }
+
+    /* ───────────── HEADER ───────────── */
     .header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-        animation: slideDown 0.8s ease-out;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        padding: 48px 18px 18px;
+        display: flex; align-items: center; justify-content: space-between;
     }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    
-    /* Logo - Utilisation du vert NVIDIA */
+    .logo { display:flex; align-items:center; gap:12px; }
     .logo-icon {
-        width: 45px;
-        height: 45px;
-        background: linear-gradient(135deg, var(--accent-green), var(--green-dark));
-        box-shadow: 0 8px 25px rgba(118, 185, 0, 0.4);
-        border: none;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary-white);
-        font-weight: bold;
-        font-size: 18px;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+        width: 42px; height: 42px; border-radius: 50%;
+        background: rgba(255,255,255,0.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; font-weight: 800; color: #fff;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
     }
-    
-    .logo-icon::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        transform: rotate(45deg);
-        animation: logoShine 3s infinite;
+    .logo-text { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
+    .logo-subtext { color: rgba(255,255,255,0.8); font-size: 10px; font-weight: 500; letter-spacing: 1px; margin-top: -1px; }
+    .header-right { display:flex; gap:8px; }
+    .hdr-btn {
+        width: 38px; height: 38px; border-radius: 50%;
+        background: rgba(255,255,255,0.2); border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 17px; transition: background 0.2s;
     }
+    .hdr-btn:hover { background: rgba(255,255,255,0.3); }
 
-    .logo-icon:hover {
-        transform: rotate(5deg) scale(1.05);
-        box-shadow: 0 12px 35px rgba(118, 185, 0, 0.6);
-    }
-    
-    .logo-text {
-        font-family: 'Playfair Display', serif;
-        font-weight: 700;
-        font-size: 22px;
-        background: linear-gradient(135deg, var(--accent-green), var(--green-light));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        letter-spacing: -0.5px;
-    }
-    
-    .logo-subtext {
-        font-size: 12px;
-        color: var(--text-gray);
-        margin-top: -2px;
-        letter-spacing: 2px;
-        font-weight: 500;
-    }
-    
-    /* Section principale avec carte premium et barre d'actions */
-    .main-section {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 20px;
-        animation: fadeInUp 0.8s ease-out;
-    }
-
-    /* Carte premium principale - TAILLE RÉDUITE (60%) */
-    .premium-card {
-        width: 60%; /* Prend 60% de la largeur du .main-section */
-        min-width: 250px; /* Taille minimale pour desktop */
-        flex-shrink: 0; /* Empêche de rétrécir */
-        
-        background: linear-gradient(135deg, var(--premium-color-a), var(--premium-color-b));
-        border-radius: 18px;
-        padding: 18px; 
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-        overflow: hidden; 
-        min-height: 160px; 
-        display: flex; 
-        flex-direction: column; 
-        justify-content: space-between; 
-    }
-    
-    .premium-card::before { /* Modification de before en after pour correspondre au style NVIDIA */
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.15), transparent);
-        transform: translateX(-100%);
-        animation: shimmer 3s infinite;
-        z-index: 1; /* Assurer que shimmer est au-dessus du background de la carte */
-    }
-    
-    .premium-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at 100% 0%, rgba(118, 185, 0, 0.2) 0%, transparent 40%);
-        pointer-events: none;
-        z-index: 0;
-    }
-    
-    .card-header { /* Ajout des styles manquants */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        z-index: 2;
-    }
-
-    .card-logo {
-        width: 32px;
-        height: 32px;
-        background: rgba(118, 185, 0, 0.2);
-        border: 1.5px solid rgba(118, 185, 0, 0.3);
-        color: var(--accent-green);
-        box-shadow: 0 0 10px rgba(118, 185, 0, 0.3);
-        border-radius: 8px; /* Ajout de border-radius manquant */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 13px;
-    }
-    
-    .balance-container {
-        background: rgba(118, 185, 0, 0.1);
-        border: 1px solid rgba(118, 185, 0, 0.2);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border-radius: 12px; /* Ajout de border-radius manquant */
-        padding: 12px; /* Ajout de padding manquant */
-        margin-bottom: 12px; /* Ajout de margin-bottom manquant */
-        z-index: 2;
-    }
-    
-    .balance-label {
-        font-size: 13px; /* Ajout de font-size manquant */
-        color: rgba(255, 255, 255, 0.7);
-        margin-bottom: 6px; /* Ajout de margin-bottom manquant */
-        display: flex; /* Ajout de display flex manquant */
-        align-items: center; /* Ajout de align-items manquant */
-        gap: 6px; /* Ajout de gap manquant */
-    }
-    
-    .balance-amount {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--accent-green);
-        text-shadow: 0 2px 8px rgba(118, 185, 0, 0.3);
-        letter-spacing: 0.5px; /* Ajout de letter-spacing manquant */
-    }
-    
-    .revenue-info {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 10px 12px; /* Ajout de padding manquant */
-        border-radius: 10px; /* Ajout de border-radius manquant */
-        display: flex; /* Ajout de display flex manquant */
-        justify-content: space-between; /* Ajout de justify-content manquant */
-        align-items: center; /* Ajout de align-items manquant */
-        z-index: 2;
-    }
-    
-    .revenue-label {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.7);
-    }
-    
-    .revenue-amount {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--accent-green);
-    }
-    
-    /* Barre d'actions HORIZONTALE - Remplacant la barre verticale */
-    .action-bar {
-        flex: 1; /* Prend l'espace restant (40% de la largeur du .main-section) */
-        background: var(--card-bg);
-        border-radius: 14px;
-        padding: 12px;
-        display: flex;
-        flex-direction: row; /* AFFICHAGE HORIZONTAL */
-        gap: 10px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(118, 185, 0, 0.1);
-    }
-    
-    .action-item { 
-        flex: 1; /* Distribue les 3 boutons de manière égale */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center; /* Centrer verticalement */
-        gap: 5px;
-        cursor: pointer;
-        transition: var(--transition);
-        padding: 6px 0;
-        border-radius: 8px;
-        min-height: 100%; /* S'assurer qu'il prend toute la hauteur disponible */
-    }
-
-    .action-item:hover {
-        background: rgba(118, 185, 0, 0.1);
-        transform: translateY(-2px); /* Ajout de transform manquant */
-    }
-    
-    .action-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        color: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    
-    .action-retrait .action-icon {
-        background: linear-gradient(135deg, var(--accent-green), var(--green-dark));
-    }
-    
-    .action-roue .action-icon {
-        background: linear-gradient(135deg, #008000, #006400); /* Vert foncé différent */
-    }
-    
-    .action-cadeau .action-icon {
-        background: linear-gradient(135deg, #10b981, #059669); /* Vert existant */
-    }
-    
-    .action-label {
-        font-size: 10px;
-        color: var(--text-dark);
-        font-weight: 600;
-        text-align: center;
-    }
-    
-    /* Barre de notifications */
-    .notification-bar {
-        background: var(--card-bg);
-        border: 1px solid rgba(118, 185, 0, 0.1);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        border-radius: 14px; /* Ajout de border-radius manquant */
-        padding: 16px; /* Ajout de padding manquant */
-        margin-bottom: 20px; /* Ajout de margin-bottom manquant */
-        position: relative; /* Ajout de position relative manquant */
-        overflow: hidden; /* Ajout d'overflow hidden manquant */
-        height: 70px; /* Ajout de height manquant */
-        animation: fadeInUp 1s ease-out; /* Ajout d'animation manquant */
-    }
-
-    .notification-container {
-        position: relative;
-        height: 100%;
-        overflow: hidden;
-    }
-    
-    .notification-item {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--accent-green);
-        text-align: center;
-        padding: 0 20px;
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        background: rgba(118, 185, 0, 0.1);
-        border: 1px solid rgba(118, 185, 0, 0.2);
-        border-radius: 10px;
-    }
-    
-    .notification-item.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .phone-mask {
-        color: var(--text-dark);
-        font-weight: 600;
-        letter-spacing: 1px;
-        font-family: 'Courier New', monospace;
-    }
-    
-    .amount {
-        color: var(--accent-green);
-        font-weight: 700; /* Ajout de font-weight manquant */
-        margin-left: 4px; /* Ajout de margin-left manquant */
-    }
-    
-    /* Boutons d'action horizontaux */
-    .horizontal-actions {
-        display: flex; /* Ajout de display flex manquant */
-        justify-content: space-between; /* Ajout de justify-content manquant */
-        gap: 10px; /* Ajout de gap manquant */
-        margin-bottom: 20px; /* Ajout de margin-bottom manquant */
-        animation: fadeInUp 1.2s ease-out; /* Ajout d'animation manquant */
-    }
-    
-    .h-action-btn {
-        flex: 1; /* Ajout de flex manquant */
-        background: var(--card-bg);
-        border: 1px solid rgba(118, 185, 0, 0.1);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        color: var(--text-dark);
-        border-radius: 12px; /* Ajout de border-radius manquant */
-        padding: 12px 8px; /* Ajout de padding manquant */
-        display: flex; /* Ajout de display flex manquant */
-        flex-direction: column; /* Ajout de flex-direction manquant */
-        align-items: center; /* Ajout de align-items manquant */
-        gap: 6px; /* Ajout de gap manquant */
-        text-decoration: none; /* Ajout de text-decoration manquant */
-        transition: var(--transition); /* Ajout de transition manquant */
-        cursor: pointer; /* Ajout de cursor manquant */
-    }
-    
-    .h-action-btn:hover {
-        background: rgba(118, 185, 0, 0.1);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-        transform: translateY(-3px); /* Ajout de transform manquant */
-    }
-    
-    .h-action-icon {
-        font-size: 18px; /* Ajout de font-size manquant */
-        color: var(--accent-green);
-    }
-    
-    .h-action-text {
-        font-size: 11px; /* Ajout de font-size manquant */
-        font-weight: 600; /* Ajout de font-weight manquant */
-        text-align: center; /* Ajout de text-align manquant */
-    }
-    
-    /* Section Photos Slider */
-    .photos-section { /* Ajout des styles manquants */
-        margin-bottom: 20px;
-        animation: fadeInUp 1.4s ease-out;
-    }
-
-    .photos-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--accent-green);
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
+    /* ───────────── PHOTO SLIDER ───────────── */
+    .photos-section { padding: 16px 16px 0; }
     .photo-slider {
-        background: var(--card-bg);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(118, 185, 0, 0.1);
-        border-radius: 16px;
-        overflow: hidden;
-        position: relative;
-        height: 220px;
+        position: relative; border-radius: 18px; overflow: hidden;
+        height: 200px; box-shadow: 0 8px 28px rgba(196,125,30,0.18);
+        background: var(--border);
     }
-
-    .photo-slides {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-
+    .photo-slides { position:relative; width:100%; height:100%; }
     .photo-slide {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transform: scale(1.1);
-        transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.95);
+        position: absolute; inset: 0; opacity: 0;
+        transition: opacity 0.6s ease;
     }
-
-    .photo-slide.active {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    .photo-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
+    .photo-slide.active { opacity: 1; }
+    .photo-image { width:100%; height:100%; object-fit:cover; }
     .photo-overlay {
-        position: absolute; /* Ajout de position absolute manquant */
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-        padding: 20px;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(to top, rgba(30,15,0,0.75) 0%, transparent 100%);
+        padding: 12px 14px;
     }
-    
-    .photo-title { /* Ajout des styles manquants */
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .photo-subtitle { /* Ajout des styles manquants */
-        font-size: 14px;
-        opacity: 0.9;
-    }
-
-    .photo-indicators {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px;
-        background: rgba(118, 185, 0, 0.05);
-    }
-    
+    .photo-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .photo-subtitle { font-size: 12px; color: rgba(255,255,255,0.8); }
+    .photo-indicators { display:flex; gap:6px; justify-content:center; margin-top:10px; }
     .photo-indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: rgba(118, 185, 0, 0.3);
-        transition: var(--transition);
-        cursor: pointer;
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--border); cursor: pointer; transition: all 0.3s;
     }
-    
-    .photo-indicator.active {
-        background: var(--accent-green);
-        transform: scale(1.2); /* Ajout de transform manquant */
-    }
-    
-    /* Section Posts */
-    .posts-section { /* Ajout des styles manquants */
-        margin-bottom: 80px;
-        animation: fadeInUp 1.6s ease-out;
-    }
-    
-    .posts-header { /* Ajout des styles manquants */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
+    .photo-indicator.active { background: var(--amber); width: 22px; border-radius: 4px; }
 
-    .posts-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--accent-green);
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    /* ───────────── BALANCE + ACTIONS ───────────── */
+    .main-section {
+        padding: 16px;
+        display: flex; gap: 12px;
     }
-    
+    .premium-card {
+        flex: 1;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        border-radius: 18px; padding: 18px;
+        box-shadow: 0 8px 24px rgba(196,125,30,0.35);
+        min-width: 0;
+    }
+    .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 14px; }
+    .balance-label { color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 600;
+        display: flex; align-items: center; gap: 6px; }
+    .balance-label i { font-size: 13px; }
+    .card-logo {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: rgba(255,255,255,0.25); display: flex; align-items: center;
+        justify-content: center; font-size: 12px; font-weight: 800; color: #fff;
+    }
+    .balance-container { margin-bottom: 10px; }
+    .balance-amount { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.1; }
+    .revenue-info { display:flex; justify-content:space-between; padding-top:10px;
+        border-top:1px solid rgba(255,255,255,0.2); }
+    .revenue-label { color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 500; }
+    .revenue-amount { color: #fff; font-size: 13px; font-weight: 700; }
+
+    /* Action sidebar */
+    .action-bar {
+        display: flex; flex-direction: column; gap: 8px;
+        min-width: 80px; flex-shrink: 0;
+    }
+    .action-item {
+        background: var(--card-bg); border-radius: 14px; padding: 10px 8px;
+        text-align: center; cursor: pointer; transition: all 0.2s;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(196,125,30,0.08);
+        display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .action-item:hover { border-color: var(--amber); background: var(--light-bg); }
+    .action-icon {
+        width: 36px; height: 36px; border-radius: 11px;
+        display: flex; align-items: center; justify-content: center; font-size: 15px;
+    }
+    .action-retrait .action-icon { background: rgba(239,68,68,0.12); color: #EF4444; }
+    .action-roue .action-icon { background: rgba(139,92,246,0.12); color: #8B5CF6; }
+    .action-cadeau .action-icon { background: rgba(196,125,30,0.12); color: var(--amber); }
+    .action-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+
+    /* ───────────── HORIZONTAL ACTIONS ───────────── */
+    .horizontal-actions { display:flex; gap:10px; padding:0 16px 14px; }
+    .h-action-btn {
+        flex: 1; background: var(--card-bg); border: 1px solid var(--border);
+        border-radius: 14px; padding: 13px 8px; text-align: center;
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        text-decoration: none; cursor: pointer; transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(196,125,30,0.07);
+    }
+    .h-action-btn:hover { border-color: var(--amber); background: var(--light-bg); transform: translateY(-2px); }
+    .h-action-icon { font-size: 18px; color: var(--amber); }
+    .h-action-text { font-size: 11px; font-weight: 600; color: var(--text-mid); }
+
+    /* ───────────── NOTIFICATION BAR ───────────── */
+    .notification-bar {
+        margin: 0 16px 14px;
+        background: linear-gradient(135deg, rgba(212,146,31,0.12), rgba(176,112,24,0.08));
+        border: 1px solid rgba(196,125,30,0.2);
+        border-radius: 12px; padding: 12px 14px;
+        overflow: hidden; height: 48px; position: relative;
+    }
+    .notification-container { position:relative; height:100%; }
+    .notification-item {
+        position: absolute; top: 0; left: 0; right: 0;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 13px; font-weight: 500; color: var(--text-mid);
+        opacity: 0; transition: opacity 0.5s ease;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .notification-item.visible { opacity: 1; }
+    .notification-item i { color: var(--amber); flex-shrink: 0; }
+
+    /* ───────────── POSTS SECTION ───────────── */
+    .posts-section { padding: 0 16px 16px; }
+    .posts-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .posts-title { font-size: 15px; font-weight: 700; color: var(--text-dark);
+        display: flex; align-items: center; gap: 8px; }
+    .posts-title i { color: var(--amber); }
     .post-btn {
-        background: linear-gradient(135deg, var(--accent-green), var(--green-light));
-        box-shadow: 0 4px 12px rgba(118, 185, 0, 0.3);
-        color: var(--primary-white);
-        border: none;
-        padding: 8px 15px;
-        border-radius: 10px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        background: linear-gradient(135deg, #D4921F, #B07018);
+        color: #fff; border: none; border-radius: 20px;
+        padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+        display: flex; align-items: center; gap: 6px; font-family: 'Poppins', sans-serif;
     }
-    
-    .post-btn:hover {
-        box-shadow: 0 6px 15px rgba(118, 185, 0, 0.4);
-        transform: translateY(-2px); /* Ajout de transform manquant */
-    }
-    
-    /* Styles pour le slider des posts */
-    .post-slider-container { /* Ajout des styles manquants */
-        margin-top: 15px;
-    }
-
+    .post-slider-container { position: relative; }
     .post-slider {
-        background: var(--card-bg);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(118, 185, 0, 0.1);
-        border-radius: 16px;
-        overflow: hidden;
-        position: relative;
-        height: 320px;
+        height: 320px; border-radius: 18px; overflow: hidden;
+        background: var(--card-bg); position: relative;
+        box-shadow: 0 4px 16px rgba(196,125,30,0.10); border: 1px solid var(--border);
     }
+    .post-slides { position:relative; width:100%; height:100%; }
+    .post-slide { position:absolute; inset:0; opacity:0; transition:opacity 0.5s ease; }
+    .post-slide.active { opacity:1; }
+    .post-image-container { height: 240px; overflow:hidden; background: var(--light-bg); }
+    .post-image { width:100%; height:100%; object-fit:cover; }
+    .post-content { padding: 12px 14px; }
+    .post-text { color: var(--text-dark); font-size: 13px; line-height: 1.5;
+        overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+        -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .post-indicators { display:flex; gap:6px; justify-content:center; padding:8px; }
+    .post-indicator { width:7px; height:7px; border-radius:50%; background:var(--border);
+        cursor:pointer; transition:all 0.3s; }
+    .post-indicator.active { background:var(--amber); width:20px; border-radius:4px; }
 
-    .post-slides {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    .post-slide {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.95);
-    }
-
-    .post-slide.active {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    .post-slide.prev {
-        transform: translateX(-100%);
-    }
-
-    .post-image-container {
-        width: 100%;
-        height: 250px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .post-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .post-content {
-        padding: 15px;
-        background: rgba(118, 185, 0, 0.05);
-    }
-    
-    .post-text {
-        font-size: 14px;
-        color: var(--text-dark);
-        line-height: 1.5;
-        text-align: center;
-    }
-    
-    .post-indicators {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px;
-        background: rgba(118, 185, 0, 0.05);
-    }
-    
-    .post-indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: rgba(118, 185, 0, 0.3);
-        transition: var(--transition);
-        cursor: pointer;
-    }
-    
-    .post-indicator.active {
-        background: var(--accent-green);
-        transform: scale(1.2); /* Ajout de transform manquant */
-    }
-    
-    /* Popups améliorés */
+    /* ───────────── POPUP GENERIC ───────────── */
     .popup {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(10px);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-        animation: fadeIn 0.3s ease;
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+        z-index: 2000; align-items: center; justify-content: center; padding: 20px;
     }
-    
     .popup-content {
-        background: var(--card-bg);
-        width: 100%;
-        max-width: 380px;
-        border-radius: 20px;
-        overflow: hidden;
-        animation: popupIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        border: 2px solid var(--accent-green);
-        max-height: 85vh;
-        overflow-y: auto;
+        background: var(--card-bg); border-radius: 22px;
+        width: 100%; max-width: 370px; overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.25);
     }
-    
     .popup-header {
-        padding: 20px;
-        background: linear-gradient(135deg, var(--accent-green), var(--green-dark));
-        color: var(--primary-white);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        padding: 18px 20px;
+        display: flex; justify-content: space-between; align-items: center;
     }
-    
-    .popup-header h3 {
-        font-weight: 700;
-        font-size: 18px;
-        margin: 0;
-    }
-    
-    .popup-close {
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        color: var(--primary-white);
-        font-size: 20px;
-        cursor: pointer;
-        transition: var(--transition);
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        font-weight: bold;
-    }
-    
-    .popup-close:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(1.1); /* Ajout de transform manquant */
-    }
-    
-    .popup-body {
-        padding: 25px 20px 20px 20px;
-    }
-    
-    .form-group { /* Ajout des styles manquants */
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: var(--text-dark);
-        font-size: 14px;
-    }
-    
-    .form-input, .form-textarea {
-        width: 100%;
-        padding: 12px;
-        background: rgba(118, 185, 0, 0.05);
-        border: 1px solid rgba(118, 185, 0, 0.2);
-        border-radius: 8px;
-        font-size: 14px;
-        color: var(--text-dark);
-        transition: var(--transition);
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .form-textarea { /* Ajout des styles manquants */
-        resize: vertical;
-        min-height: 100px;
-    }
-
-    .form-input:focus, .form-textarea:focus {
-        outline: none;
-        border-color: var(--accent-green);
-        box-shadow: 0 0 0 2px rgba(118, 185, 0, 0.2);
-    }
-    
-    .file-upload { /* Ajout des styles manquants */
-        position: relative;
-        display: inline-block;
-        width: 100%;
-    }
-
-    .file-upload-btn {
-        background: rgba(118, 185, 0, 0.05);
-        border: 1px dashed rgba(118, 185, 0, 0.3);
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: var(--transition);
-        width: 100%;
-        position: relative;
-    }
-    
-    .file-upload-btn:hover {
-        background: rgba(118, 185, 0, 0.1);
-        border-color: var(--accent-green);
-    }
-    
-    .file-upload-input { /* Ajout des styles manquants */
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        cursor: pointer;
-    }
-
-    .image-preview-small {
-        width: 80px;
-        height: 80px;
-        border-radius: 8px;
-        object-fit: cover;
-        border: 2px solid var(--accent-green);
-        position: absolute;
-        top: 50%;
-        right: 15px;
-        transform: translateY(-50%);
-        display: none;
-    }
-    
-    .submit-btn {
-        background: linear-gradient(135deg, var(--accent-green), var(--green-light));
-        box-shadow: 0 4px 12px rgba(118, 185, 0, 0.3);
-        color: var(--primary-white);
-        border: none;
-        padding: 15px;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: var(--transition);
-        width: 100%;
-        margin-top: 10px;
-    }
-    
-    .submit-btn:hover {
-        box-shadow: 0 6px 15px rgba(118, 185, 0, 0.4);
-        transform: translateY(-2px); /* Ajout de transform manquant */
-    }
-    
-    .community-buttons { /* Ajout des styles manquants */
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    
+    .popup-header h3 { color: #fff; font-size: 17px; font-weight: 700; }
+    .popup-close { background: rgba(255,255,255,0.2); border: none; color: #fff;
+        width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px;
+        display: flex; align-items: center; justify-content: center; }
+    .popup-body { padding: 20px; }
+    .popup-text { color: var(--text-mid); font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+    .community-buttons { display:flex; flex-direction:column; gap:10px; }
     .community-btn {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 15px;
-        border-radius: 12px;
-        text-decoration: none;
-        transition: var(--transition);
-        background: rgba(118, 185, 0, 0.05);
-        border: 1px solid rgba(118, 185, 0, 0.2);
+        display: flex; align-items: center; gap: 12px;
+        padding: 13px 15px; border-radius: 12px; text-decoration: none;
+        transition: all 0.2s;
+        background: rgba(196,125,30,0.06); border: 1px solid rgba(196,125,30,0.2);
     }
-    
-    .community-btn:hover {
-        background: rgba(118, 185, 0, 0.1);
-        transform: translateY(-3px);
+    .community-btn:hover { background: rgba(196,125,30,0.12); transform: translateY(-2px); }
+    .community-btn i { font-size: 22px; color: #2AABEE; }
+    .community-btn-text h4 { color: var(--text-dark); font-size: 14px; margin-bottom: 2px; }
+    .community-btn-text p { color: var(--text-muted); font-size: 12px; }
+
+    /* ───────────── POST FORM ───────────── */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display:block; color: var(--text-muted); font-size: 12px; font-weight:600; margin-bottom:7px; }
+    .form-textarea {
+        width: 100%; background: var(--light-bg); border: 1.5px solid var(--border);
+        border-radius: 12px; padding: 12px; color: var(--text-dark);
+        font-size: 14px; font-family: 'Poppins', sans-serif; outline: none;
+        min-height: 90px; resize: vertical; transition: border-color 0.2s;
     }
-    
-    .community-btn i {
-        font-size: 24px;
-        color: var(--accent-green);
+    .form-textarea:focus { border-color: var(--amber); }
+    .file-upload { position: relative; }
+    .file-upload-btn {
+        background: var(--light-bg); border: 2px dashed var(--border);
+        border-radius: 12px; padding: 20px; text-align: center;
+        color: var(--text-muted); cursor: pointer; font-size: 13px;
+        transition: border-color 0.2s;
     }
-    
-    .community-btn-text h4 {
-        color: var(--text-dark);
-        font-size: 15px;
-        margin-bottom: 2px;
-    }
-    
-    .community-btn-text p {
-        color: var(--text-gray);
-        font-size: 12px;
+    .file-upload-btn:hover { border-color: var(--amber); }
+    .file-upload-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width:100%; height:100%; }
+    .image-preview-small { max-width: 100%; max-height: 80px; border-radius: 8px; margin-top: 8px; display: none; }
+    .submit-btn {
+        width: 100%; background: linear-gradient(135deg, #D4921F, #B07018);
+        color: #fff; border: none; border-radius: 12px; padding: 14px;
+        font-size: 15px; font-weight: 700; cursor: pointer;
+        box-shadow: 0 5px 16px rgba(196,125,30,0.35); font-family: 'Poppins', sans-serif;
     }
 
-    /* Styles pour la barre de navigation du bas */
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: var(--card-bg);
-        display: flex;
-        justify-content: space-around;
-        padding: 10px 0;
-        border-top: 1px solid var(--border-color);
-        z-index: 1000;
-        backdrop-filter: blur(10px);
-    }
-
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-decoration: none;
-        color: var(--text-gray);
-        font-size: 10px;
-        transition: var(--transition);
-    }
-
-    .nav-item i {
-        font-size: 20px;
-        margin-bottom: 4px;
-    }
-
-    .nav-item.active {
-        color: var(--accent-green);
-    }
-
-    /* Popup de bienvenue */
+    /* ───────────── WELCOME POPUP ───────────── */
     .welcome-popup {
-        display: flex;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
+        display: flex; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+        z-index: 2500; align-items: center; justify-content: center; padding: 20px;
     }
-
     .welcome-content {
-        background: var(--card-bg);
-        border-radius: 24px;
-        width: 100%;
-        max-width: 360px;
-        overflow: hidden;
-        border: 2px solid var(--accent-green);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        background: var(--card-bg); border-radius: 24px;
+        width: 100%; max-width: 360px; overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
         animation: popupIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
+    @keyframes popupIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .welcome-header {
-        padding: 25px 20px;
-        background: linear-gradient(135deg, var(--accent-green), var(--green-dark));
-        color: white;
-        text-align: center;
-        position: relative;
+        padding: 24px 20px;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        color: white; text-align: center; position: relative;
     }
-
-    .welcome-header h3 {
-        font-size: 20px;
-        font-weight: 800;
-        margin-bottom: 10px;
+    .welcome-header h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .welcome-message { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; }
+    .welcome-close-top {
+        position: absolute; top: 12px; right: 14px;
+        background: rgba(255,255,255,0.2); border: none; color: #fff;
+        width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px;
+        display: flex; align-items: center; justify-content: center;
     }
-
-    .welcome-message {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 10px;
-        line-height: 1.4;
-    }
-
-    .welcome-body { /* Ajout des styles manquants */
-        padding: 20px 20px 20px 20px;
-    }
-    
+    .welcome-body { padding: 20px; }
     .bonus-section {
-        background: linear-gradient(135deg, var(--accent-green), var(--green-dark));
-        box-shadow: 0 4px 12px rgba(118, 185, 0, 0.3);
-        color: white;
-        padding: 15px;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        text-align: center;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        border-radius: 12px; padding: 14px; margin-bottom: 14px; text-align: center; color: #fff;
     }
-    
-    .bonus-title { /* Ajout des styles manquants */
-        font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 8px;
+    .bonus-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+    .bonus-text { font-size: 13px; opacity: 0.9; }
+    .welcome-buttons { display:flex; flex-direction:column; gap:10px; }
+    .welcome-btn {
+        padding: 13px; border-radius: 12px; font-weight: 700; cursor: pointer;
+        transition: all 0.2s; text-decoration: none; display: flex;
+        align-items: center; justify-content: center; gap: 9px;
+        font-size: 14px; border: none; font-family: 'Poppins', sans-serif;
     }
+    .button-row { display:flex; gap:10px; }
+    .button-row .welcome-btn { flex:1; }
+    .welcome-btn-join { background: linear-gradient(135deg, #D4921F, #B07018); color: #fff; }
+    .welcome-btn-close { background: var(--light-bg); color: var(--text-mid); border: 1.5px solid var(--border); }
+    .welcome-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
 
-    .bonus-text { /* Ajout des styles manquants */
-        font-size: 13px;
-        line-height: 1.4;
-        opacity: 0.9;
-    }
-    
-    .welcome-buttons { /* Ajout des styles manquants */
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 15px;
-    }
-
-    .welcome-btn { /* Ajout des styles manquants */
-        padding: 14px;
-        border-radius: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-size: 15px;
-        border: none;
-    }
-    
-    .welcome-btn-join {
-        background: linear-gradient(135deg, var(--accent-green), var(--green-dark));
-        color: #1e1e1e; /* Texte noir sur bouton vert vif */
-        font-size: 16px;
-        padding: 16px;
-    }
-    
-    .welcome-btn-close {
-        background: rgba(118, 185, 0, 0.05);
-        color: var(--text-dark);
-        border: 1px solid rgba(118, 185, 0, 0.2);
-    }
-    
-    .welcome-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-    
-    .button-row { /* Ajout des styles manquants */
-        display: flex;
-        gap: 10px;
-    }
-
-    .button-row .welcome-btn { /* Ajout des styles manquants */
-        flex: 1;
-        padding: 12px;
-        font-size: 14px;
-    }
-    
-    /* Bouton Service Client Flottant */
+    /* ───────────── FLOATING SERVICE ───────────── */
     .floating-service {
-        position: fixed;
-        bottom: 100px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent-green), var(--green-light));
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 8px 25px rgba(118, 185, 0, 0.4);
-        cursor: pointer;
-        z-index: 99;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: none;
-        overflow: hidden;
+        position: fixed; bottom: 100px; right: 18px;
+        width: 56px; height: 56px; border-radius: 50%;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        color: #fff; display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 8px 24px rgba(196,125,30,0.45); cursor: pointer;
+        z-index: 99; transition: transform 0.3s; border: none;
     }
-    
-    .floating-service i {
-        font-size: 24px;
-        font-weight: bold;
-        transition: transform 0.3s ease;
-        transform: scaleX(-1);
-    }
-    
-    .floating-service:active {
-        transform: scale(0.95);
-        animation: pulse-green 0.4s ease;
-    }
-    
-    .floating-service:active i {
-        transform: scaleX(-1) rotate(15deg) scale(1.1);
-    }
+    .floating-service:hover { transform: scale(1.08); }
+    .floating-service i { font-size: 22px; transform: scaleX(-1); }
 
-    @keyframes pulse-green {
-        0% {
-            box-shadow: 0 8px 25px rgba(118, 185, 0, 0.4);
-        }
-        50% {
-            box-shadow: 0 0 0 15px rgba(118, 185, 0, 0.2);
-        }
-        100% {
-            box-shadow: 0 8px 25px rgba(118, 185, 0, 0.4);
-        }
-    }
-    
-    .floating-service:hover {
-        transform: scale(1.05);
-        box-shadow: 0 12px 30px rgba(118, 185, 0, 0.6);
-    }
-    
-    .floating-service:hover i {
-        transform: scaleX(-1) rotate(-5deg);
-    }
-    
-    /* Popup Service Client */
     .service-popup {
-        position: fixed;
-        bottom: 170px;
-        right: 20px;
-        background: var(--card-bg);
-        border-radius: 16px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-        z-index: 100;
-        padding: 0;
-        display: none;
-        flex-direction: column;
+        position: fixed; bottom: 165px; right: 18px;
+        background: var(--card-bg); border-radius: 16px;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.18);
+        z-index: 100; display: none; flex-direction: column;
+        border: 1px solid var(--amber); width: 200px; overflow: hidden;
         animation: slideUp 0.3s ease;
-        border: 1px solid var(--accent-green);
-        width: 200px;
-        overflow: hidden;
     }
-    
+    @keyframes slideUp { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
     .service-header {
-        padding: 15px;
-        background: linear-gradient(135deg, var(--accent-green), var(--green-light));
-        color: var(--primary-white);
-        text-align: center;
-        font-weight: 700;
-        font-size: 14px;
+        padding: 13px 15px;
+        background: linear-gradient(135deg, #D4921F, #A0631A);
+        color: #fff; text-align: center; font-weight: 700; font-size: 13px;
     }
-    
     .service-option {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 15px;
-        cursor: pointer;
-        transition: var(--transition);
-        background: rgba(118, 185, 0, 0.05);
-        border: none;
-        width: 100%;
-        color: var(--text-dark);
-        font-size: 14px;
-        font-weight: 600;
+        display: flex; align-items: center; gap: 10px; padding: 13px 15px;
+        cursor: pointer; background: none; border: none; width: 100%;
+        color: var(--text-dark); font-size: 13px; font-weight: 600;
+        transition: background 0.2s;
     }
-    
-    .service-option:hover {
-        background: rgba(118, 185, 0, 0.1);
-    }
-    
-    .service-option i {
-        font-size: 18px;
-        width: 24px;
-        text-align: center;
-        color: var(--accent-green);
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    @keyframes fadeInUp {
-        from { 
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes slideDown {
-        from { 
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes slideInUp {
-        from { 
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes patternShift {
-        0% {
-            background-position: 0 0, 0 0, 50px 87.5px, 50px 87.5px, 0 0, 50px 87.5px;
-        }
-        100% {
-            background-position: 100px 175px, 100px 175px, 150px 262.5px, 150px 262.5px, 100px 175px, 150px 262.5px;
-        }
-    }
-    
-    @keyframes lightShine {
-        0% {
-            transform: translateX(-100%) translateY(-100%) rotate(45deg);
-        }
-        100% {
-            transform: translateX(100%) translateY(100%) rotate(45deg);
-        }
-    }
-    
-    @keyframes logoShine {
-        0% {
-            transform: translateX(-100%) translateY(-100%) rotate(45deg);
-        }
-        100% {
-            transform: translateX(100%) translateY(100%) rotate(45deg);
-        }
-    }
-    
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-    
-    @keyframes popupIn {
-        from { transform: scale(0.9); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        /* Stacker le main-section sur tablette/mobile */
-        .main-section {
-            flex-direction: column; 
-            gap: 15px;
-        }
+    .service-option:hover { background: var(--light-bg); }
+    .service-option i { color: var(--amber); font-size: 17px; width: 22px; text-align: center; }
 
-        /* La carte et la barre d'action reprennent toute la largeur sur mobile */
-        .premium-card {
-            width: 100%; 
-            min-width: 0;
-        }
-        
-        .action-bar {
-            width: 100%; 
-            flex-direction: row; 
-            padding: 12px;
-            min-height: auto;
-        }
-
-        .action-item {
-             min-height: auto;
-        }
-    }
-
+    /* ───────────── RESPONSIVE ───────────── */
     @media (max-width: 480px) {
-        body {
-            padding: 12px;
-        }
-        
-        .premium-card {
-            padding: 15px;
-            min-height: 150px;
-        }
-        
-        .balance-amount {
-            font-size: 22px;
-        }
-        
-        .action-icon {
-            width: 32px;
-            height: 32px;
-            font-size: 14px;
-        }
-        
-        .action-label {
-            font-size: 9px;
-        }
-        
-        .horizontal-actions {
-            gap: 8px;
-        }
-        
-        .h-action-btn {
-            padding: 10px 6px;
-        }
-        
-        .h-action-icon {
-            font-size: 16px;
-        }
-        
-        .h-action-text {
-            font-size: 10px;
-        }
-        
-        .notification-bar {
-            height: 65px;
-            padding: 14px;
-        }
-        
-        .notification-item {
-            font-size: 15px;
-        }
-        
-        .photo-slider {
-            height: 200px;
-        }
-        
-        .post-slider {
-            height: 300px;
-        }
-        
-        .post-image-container {
-            height: 220px;
-        }
-        
-        .welcome-content {
-            max-width: 300px;
-        }
-        
-        .floating-service {
-            width: 55px;
-            height: 55px;
-            bottom: 90px;
-            right: 15px;
-        }
-        
-        .service-popup {
-            width: 180px;
-            bottom: 155px;
-            right: 15px;
-        }
+        .main-section { flex-direction: column; gap: 12px; }
+        .action-bar { flex-direction: row; min-width: unset; }
+        .action-item { min-width: 0; }
+        .balance-amount { font-size: 22px; }
+        .photo-slider { height: 170px; }
+        .post-slider { height: 280px; }
+        .post-image-container { height: 200px; }
     }
-</style>
+    </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="geometric-pattern"></div>
-    <div class="blue-accent"></div>
-    <div class="purple-accent"></div>
-    <div class="light-shimmer"></div>
-    <div class="light-beam"></div>
-    
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <div class="logo-icon">NV</div>
-                <div>
-                    <div class="logo-text">NVIDIA</div>
-                    <div class="logo-subtext">TECHNOLOGIE</div>
-                </div>
-            </div>
-        </div>
+<%- include('partials/menu', { page: 'index' }) %>
 
-        <div class="photos-section">
-            <div class="photos-title">
-                <i class="fas fa-images"></i>
-                NVIDIA Technologie
-            </div>
-            
-            <div class="photo-slider" id="photoSlider">
-                <div class="photo-slides">
-                    <div class="photo-slide active">
-                        <img src="photo1.jpg" class="photo-image" alt="NVIDIA Technology">
-                        <div class="photo-overlay">
-                            <div class="photo-title">Investissez dans l'Innovation</div>
-                            <div class="photo-subtitle">Leader mondial de la technologie</div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-slide">
-                        <img src="photo2.jpg" class="photo-image" alt="Croissance Rapide">
-                        <div class="photo-overlay">
-                            <div class="photo-title">Croissance Rapide</div>
-                            <div class="photo-subtitle">Maximisez vos rendements</div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-slide">
-                        <img src="photo3.jpg" class="photo-image" alt="Communauté Active">
-                        <div class="photo-overlay">
-                            <div class="photo-title">Communauté Active</div>
-                            <div class="photo-subtitle">Rejoignez des milliers d'utilisateurs</div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-slide">
-                        <img src="photo4.jpg" class="photo-image" alt="Actions VIP">
-                        <div class="photo-overlay">
-                            <div class="photo-title">Actions VIP NVIDIA</div>
-                            <div class="photo-subtitle">Investissements exclusifs dès le 14 octobre</div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-slide">
-                        <img src="photo5.jpg" class="photo-image" alt="Innovation Technologique">
-                        <div class="photo-overlay">
-                            <div class="photo-title">Innovation Technologique</div>
-                            <div class="photo-subtitle">Expertise mondiale à votre service</div>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-slide">
-                        <img src="photo6.jpg" class="photo-image" alt="Opportunités NVIDIA">
-                        <div class="photo-overlay">
-                            <div class="photo-title">Opportunités NVIDIA</div>
-                            <div class="photo-subtitle">Diversifiez votre portefeuille</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="photo-indicators">
-                    <div class="photo-indicator active" onclick="showPhoto(0)"></div>
-                    <div class="photo-indicator" onclick="showPhoto(1)"></div>
-                    <div class="photo-indicator" onclick="showPhoto(2)"></div>
-                    <div class="photo-indicator" onclick="showPhoto(3)"></div>
-                    <div class="photo-indicator" onclick="showPhoto(4)"></div>
-                    <div class="photo-indicator" onclick="showPhoto(5)"></div>
-                </div>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-wheat-awn" style="font-size:18px"></i></div>
+            <div>
+                <div class="logo-text">NVIDIA</div>
+                <div class="logo-subtext">TECHNOLOGIE</div>
             </div>
         </div>
-        
-        <div class="main-section">
-            <div class="premium-card">
-                <div class="card-header">
-                    <div class="balance-label">
-                        <i class="fas fa-wallet"></i> Solde Principal
+        <div class="header-right">
+            <button class="hdr-btn" onclick="toggleServicePopup()"><i class="fas fa-phone-alt"></i></button>
+        </div>
+    </div>
+
+    <!-- Photo slider -->
+    <div class="photos-section">
+        <div class="photo-slider" id="photoSlider">
+            <div class="photo-slides">
+                <div class="photo-slide active">
+                    <img src="photo1.jpg" class="photo-image" alt="NVIDIA Technology">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Investissez dans l'Innovation</div>
+                        <div class="photo-subtitle">Leader mondial de la technologie</div>
                     </div>
-                    <div class="card-logo">NV</div>
                 </div>
-                
-                <div class="balance-container">
-                    <div class="balance-amount"><%= user.solde.toLocaleString() %> <%= devise %></div>
+                <div class="photo-slide">
+                    <img src="photo2.jpg" class="photo-image" alt="Croissance Rapide">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Croissance Rapide</div>
+                        <div class="photo-subtitle">Maximisez vos rendements</div>
+                    </div>
                 </div>
-                
-                <div class="revenue-info">
-                    <div class="revenue-label">Revenus Totaux</div>
-                    <div class="revenue-amount"><%= (revenus.total || 0).toLocaleString() %> <%= devise %></div>
+                <div class="photo-slide">
+                    <img src="photo3.jpg" class="photo-image" alt="Communauté Active">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Communauté Active</div>
+                        <div class="photo-subtitle">Rejoignez des milliers d'utilisateurs</div>
+                    </div>
+                </div>
+                <div class="photo-slide">
+                    <img src="photo4.jpg" class="photo-image" alt="Actions VIP">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Actions VIP NVIDIA</div>
+                        <div class="photo-subtitle">Investissements exclusifs dès le 14 octobre</div>
+                    </div>
+                </div>
+                <div class="photo-slide">
+                    <img src="photo5.jpg" class="photo-image" alt="Innovation Technologique">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Innovation Technologique</div>
+                        <div class="photo-subtitle">Expertise mondiale à votre service</div>
+                    </div>
+                </div>
+                <div class="photo-slide">
+                    <img src="photo6.jpg" class="photo-image" alt="Opportunités NVIDIA">
+                    <div class="photo-overlay">
+                        <div class="photo-title">Opportunités NVIDIA</div>
+                        <div class="photo-subtitle">Diversifiez votre portefeuille</div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="action-bar">
-                <div class="action-item action-retrait" onclick="window.location.href='/retrait'">
-                    <div class="action-icon">
-                        <i class="fas fa-hand-holding-usd"></i>
-                    </div>
-                    <div class="action-label">Retrait</div>
-                </div>
-                
-                <div class="action-item action-roue" onclick="window.location.href='/roue'">
-                    <div class="action-icon">
-                        <i class="fas fa-dice"></i>
-                    </div>
-                    <div class="action-label">Roue</div>
-                </div>
-                
-                <div class="action-item action-cadeau" onclick="window.location.href='/cadeau'">
-                    <div class="action-icon">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <div class="action-label">Cadeau</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="horizontal-actions">
-            <a href="/depot" class="h-action-btn">
-                <i class="fas fa-arrow-down h-action-icon"></i>
-                <span class="h-action-text">Dépôt</span>
-            </a>
-            
-            <a href="/faq" class="h-action-btn">
-                <i class="fas fa-play-circle h-action-icon"></i>
-                <span class="h-action-text">Tuto</span>
-            </a>
-            
-            <a href="/investissement" class="h-action-btn">
-                <i class="fas fa-crown h-action-icon"></i>
-                <span class="h-action-text">VIP</span>
-            </a>
-            
-            <button class="h-action-btn" onclick="openTelegramPopup()">
-                <i class="fab fa-telegram h-action-icon"></i>
-                <span class="h-action-text">Rejoindre</span>
-            </button>
-        </div>
-        
-        <div class="notification-bar">
-            <div class="notification-container" id="notificationContainer">
-                </div>
-        </div>
-        
-        <div class="posts-section">
-            <div class="posts-header">
-                <div class="posts-title">
-                    <i class="fas fa-newspaper"></i>
-                    Actualités Communauté
-                </div>
-                <button class="post-btn" onclick="openPostPopup()">
-                    <i class="fas fa-plus"></i>
-                    Poster
-                </button>
-            </div>
-            
-            <div class="post-slider-container">
-                <div class="post-slider" id="postSlider">
-                    <div class="post-slides">
-                        <% if (posts.length > 0) { %>
-                            <% posts.forEach((post, index) => { %>
-                                <div class="post-slide <%= index === 0 ? 'active' : '' %>">
-                                    <div class="post-image-container">
-                                        <img src="uploads/<%= post.image %>" class="post-image" alt="Post image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzIyMiIvPjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZTwvdGV4dD48L2ZzZz4='"/>
-                                    </div>
-                                    <div class="post-content">
-                                        <div class="post-text"><%= post.message %></div>
-                                    </div>
-                                </div>
-                            <% }); %>
-                        <% } else { %>
-                            <div class="post-slide active">
-                                <div class="post-image-container" style="display: flex; align-items: center; justify-content: center; color: var(--text-gray); background: var(--light-gray);">
-                                    <div style="text-align: center;">
-                                        <i class="fas fa-images" style="font-size: 40px; margin-bottom: 10px;"></i>
-                                        <p>Aucun post pour le moment</p>
-                                    </div>
-                                </div>
-                            </div>
-                        <% } %>
-                    </div>
-                    
-                    <% if (posts.length > 1) { %>
-                    <div class="post-indicators">
-                        <% posts.forEach((post, index) => { %>
-                            <div class="post-indicator <%= index === 0 ? 'active' : '' %>" onclick="showPost(<%= index %>)"></div>
-                        <% }); %>
-                    </div>
-                    <% } %>
-                </div>
+            <div class="photo-indicators">
+                <div class="photo-indicator active" onclick="showPhoto(0)"></div>
+                <div class="photo-indicator" onclick="showPhoto(1)"></div>
+                <div class="photo-indicator" onclick="showPhoto(2)"></div>
+                <div class="photo-indicator" onclick="showPhoto(3)"></div>
+                <div class="photo-indicator" onclick="showPhoto(4)"></div>
+                <div class="photo-indicator" onclick="showPhoto(5)"></div>
             </div>
         </div>
     </div>
-    
-    <button class="floating-service" onclick="toggleServicePopup()">
-        <i class="fas fa-phone-alt"></i>
-    </button>
-    
-    <div class="service-popup" id="servicePopup">
-        <div class="service-header">
-            Service Client
+
+    <!-- Balance + Actions -->
+    <div class="main-section">
+        <div class="premium-card">
+            <div class="card-header">
+                <div class="balance-label">
+                    <i class="fas fa-wallet"></i> Solde Principal
+                </div>
+                <div class="card-logo"><i class="fas fa-wheat-awn" style="font-size:14px"></i></div>
+            </div>
+            <div class="balance-container">
+                <div class="balance-amount"><%= user.solde.toLocaleString() %> <%= devise %></div>
+            </div>
+            <div class="revenue-info">
+                <div class="revenue-label">Revenus Totaux</div>
+                <div class="revenue-amount"><%= (revenus.total || 0).toLocaleString() %> <%= devise %></div>
+            </div>
         </div>
-        <button class="service-option" onclick="contactCustomerService()">
-            <i class="fas fa-comment-dots"></i>
-            <span>Nous contacter</span>
+
+        <div class="action-bar">
+            <div class="action-item action-retrait" onclick="window.location.href='/retrait'">
+                <div class="action-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                <div class="action-label">Retrait</div>
+            </div>
+            <div class="action-item action-roue" onclick="window.location.href='/roue'">
+                <div class="action-icon"><i class="fas fa-dice"></i></div>
+                <div class="action-label">Roue</div>
+            </div>
+            <div class="action-item action-cadeau" onclick="window.location.href='/cadeau'">
+                <div class="action-icon"><i class="fas fa-gift"></i></div>
+                <div class="action-label">Cadeau</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horizontal actions -->
+    <div class="horizontal-actions">
+        <a href="/depot" class="h-action-btn">
+            <i class="fas fa-arrow-down h-action-icon"></i>
+            <span class="h-action-text">Dépôt</span>
+        </a>
+        <a href="/faq" class="h-action-btn">
+            <i class="fas fa-play-circle h-action-icon"></i>
+            <span class="h-action-text">Tuto</span>
+        </a>
+        <a href="/investissement" class="h-action-btn">
+            <i class="fas fa-crown h-action-icon"></i>
+            <span class="h-action-text">VIP</span>
+        </a>
+        <button class="h-action-btn" onclick="openTelegramPopup()">
+            <i class="fab fa-telegram h-action-icon"></i>
+            <span class="h-action-text">Rejoindre</span>
         </button>
     </div>
-    
-    <div class="welcome-popup" id="welcomePopup">
-        <div class="welcome-content">
-            <div class="welcome-header">
-                <h3>NVIDIA Technologie</h3>
-                <div class="welcome-message">
-                    NVIDIA est le leader mondial de la technologie de l'informatique accélérée et de l'intelligence artificielle. Nous proposons désormais d'investir dans nos actions VIP dès le 14 octobre.
-                </div>
-                <button class="welcome-close-top" onclick="closeWelcomePopup()">&times;</button>
-            </div>
-            <div class="welcome-body">
-                <div class="bonus-section">
-                    <div class="bonus-title">🎁 Bonus d'inscription : 250 FCFA</div>
-                    <div class="bonus-text">Invitez vos amis et gagnez 20% de leur investissement</div>
-                </div>
-                
-                <div class="welcome-buttons">
-                    <div class="button-row">
-                        <a href="https://t.me/officielcanalBlackRock" class="welcome-btn welcome-btn-join">
-                            <i class="fab fa-telegram"></i>
-                            Canal
-                        </a>
-                        <a href="https://t.me/groupeofficielblackrock" class="welcome-btn welcome-btn-join">
-                            <i class="fab fa-telegram"></i>
-                            Groupe
-                        </a>
-                    </div>
-                    <button class="welcome-btn welcome-btn-close" onclick="closeWelcomePopup()">
-                        <i class="fas fa-times"></i>
-                        Fermer
-                    </button>
-                </div>
-            </div>
-        </div>
+
+    <!-- Notification bar -->
+    <div class="notification-bar">
+        <div class="notification-container" id="notificationContainer"></div>
     </div>
-    
-    <div class="popup" id="telegramPopup">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>Rejoignez notre Communauté NVIDIA</h3>
-                <button class="popup-close" onclick="closePopup('telegramPopup')">&times;</button>
+
+    <!-- Posts section -->
+    <div class="posts-section">
+        <div class="posts-header">
+            <div class="posts-title">
+                <i class="fas fa-newspaper"></i>
+                Actualités Communauté
             </div>
-            <div class="popup-body">
-                <p class="popup-text">
-                    Restez connecté avec la communauté NVIDIA et ne manquez aucune opportunité d'investissement!
-                </p>
-                <div class="community-buttons">
-                    <a href="https://t.me/officielcanalBlackRock" class="community-btn community-btn-telegram">
-                        <i class="fab fa-telegram"></i>
-                        <div class="community-btn-text">
-                            <h4>Canal Officiel</h4>
-                            <p>Annonces et actualités</p>
-                        </div>
-                    </a>
-                    <a href="https://t.me/groupeofficielblackrock" class="community-btn community-btn-telegram">
-                        <i class="fab fa-telegram"></i>
-                        <div class="community-btn-text">
-                            <h4>Groupe Discussion</h4>
-                            <p>Échangez avec la communauté</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            <button class="post-btn" onclick="openPostPopup()">
+                <i class="fas fa-plus"></i> Poster
+            </button>
         </div>
-    </div>
-    
-    <div class="popup" id="postPopup">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>Créer un post</h3>
-                <button class="popup-close" onclick="closePopup('postPopup')">&times;</button>
-            </div>
-            <div class="popup-body">
-                <form id="postForm" enctype="multipart/form-data" method="POST">
-                    <div class="form-group">
-                        <label class="form-label" for="postMessage">Message</label>
-                        <textarea id="postMessage" name="message" class="form-textarea" placeholder="Partagez votre expérience NVIDIA..." required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="postImage">Image</label>
-                        <div class="file-upload">
-                            <div class="file-upload-btn">
-                                <i class="fas fa-cloud-upload-alt" style="font-size: 24px; margin-bottom: 8px;"></i>
-                                <div>Cliquez pour télécharger une image</div>
-                                <div style="font-size: 12px; color: var(--text-gray); margin-top: 4px;">PNG, JPG, JPEG max 5MB</div>
-                                <img id="imagePreview" class="image-preview-small" alt="Aperçu">
+
+        <div class="post-slider-container">
+            <div class="post-slider" id="postSlider">
+                <div class="post-slides">
+                    <% if (posts.length > 0) { %>
+                        <% posts.forEach((post, index) => { %>
+                            <div class="post-slide <%= index === 0 ? 'active' : '' %>">
+                                <div class="post-image-container">
+                                    <img src="uploads/<%= post.image %>" class="post-image" alt="Post image"
+                                         onerror="this.parentElement.style.background='var(--light-bg)';this.style.display='none'">
+                                </div>
+                                <div class="post-content">
+                                    <div class="post-text"><%= post.message %></div>
+                                </div>
                             </div>
-                            <input type="file" id="postImage" name="image" class="file-upload-input" accept="image/*" required onchange="previewImage(this)">
+                        <% }); %>
+                    <% } else { %>
+                        <div class="post-slide active">
+                            <div class="post-image-container" style="display:flex;align-items:center;justify-content:center;background:var(--light-bg);">
+                                <div style="text-align:center;color:var(--text-muted);">
+                                    <i class="fas fa-images" style="font-size:40px;margin-bottom:10px;display:block;color:var(--border)"></i>
+                                    <p>Aucun post pour le moment</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <button type="submit" class="submit-btn">
-                        <i class="fas fa-paper-plane"></i> Publier le post
-                    </button>
-                </form>
+                    <% } %>
+                </div>
+                <% if (posts.length > 1) { %>
+                <div class="post-indicators">
+                    <% posts.forEach((post, index) => { %>
+                        <div class="post-indicator <%= index === 0 ? 'active' : '' %>" onclick="showPost(<%= index %>)"></div>
+                    <% }); %>
+                </div>
+                <% } %>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // FONCTIONS DE GESTION DES POPUPS
-        function closePopup(id) {
-            const popup = document.getElementById(id);
-            if (popup) {
-                popup.style.display = 'none';
-            }
-        }
+<!-- Floating service btn -->
+<button class="floating-service" onclick="toggleServicePopup()">
+    <i class="fas fa-phone-alt"></i>
+</button>
+<div class="service-popup" id="servicePopup">
+    <div class="service-header">Service Client</div>
+    <button class="service-option" onclick="contactCustomerService()">
+        <i class="fas fa-comment-dots"></i><span>Nous contacter</span>
+    </button>
+</div>
 
-        function closeWelcomePopup() {
-            closePopup('welcomePopup');
-        }
+<!-- Welcome popup -->
+<div class="welcome-popup" id="welcomePopup">
+    <div class="welcome-content">
+        <div class="welcome-header">
+            <h3>NVIDIA Technologie</h3>
+            <div class="welcome-message">
+                NVIDIA est le leader mondial de la technologie de l'informatique accélérée et de l'intelligence artificielle. Nous proposons désormais d'investir dans nos actions VIP dès le 14 octobre.
+            </div>
+            <button class="welcome-close-top" onclick="closeWelcomePopup()">&times;</button>
+        </div>
+        <div class="welcome-body">
+            <div class="bonus-section">
+                <div class="bonus-title">🎁 Bonus d'inscription : 250 FCFA</div>
+                <div class="bonus-text">Invitez vos amis et gagnez 20% de leur investissement</div>
+            </div>
+            <div class="welcome-buttons">
+                <div class="button-row">
+                    <a href="https://t.me/officielcanalBlackRock" class="welcome-btn welcome-btn-join">
+                        <i class="fab fa-telegram"></i> Canal
+                    </a>
+                    <a href="https://t.me/groupeofficielblackrock" class="welcome-btn welcome-btn-join">
+                        <i class="fab fa-telegram"></i> Groupe
+                    </a>
+                </div>
+                <button class="welcome-btn welcome-btn-close" onclick="closeWelcomePopup()">
+                    <i class="fas fa-times"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function openTelegramPopup() {
-            document.getElementById('telegramPopup').style.display = 'flex';
-        }
+<!-- Telegram popup -->
+<div class="popup" id="telegramPopup">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3>Rejoignez notre Communauté NVIDIA</h3>
+            <button class="popup-close" onclick="closePopup('telegramPopup')">&times;</button>
+        </div>
+        <div class="popup-body">
+            <p class="popup-text">Restez connecté avec la communauté NVIDIA et ne manquez aucune opportunité d'investissement!</p>
+            <div class="community-buttons">
+                <a href="https://t.me/officielcanalBlackRock" class="community-btn">
+                    <i class="fab fa-telegram"></i>
+                    <div class="community-btn-text">
+                        <h4>Canal Officiel</h4>
+                        <p>Annonces et actualités</p>
+                    </div>
+                </a>
+                <a href="https://t.me/groupeofficielblackrock" class="community-btn">
+                    <i class="fab fa-telegram"></i>
+                    <div class="community-btn-text">
+                        <h4>Groupe Discussion</h4>
+                        <p>Échangez avec la communauté</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function openPostPopup() {
-            document.getElementById('postPopup').style.display = 'flex';
-        }
+<!-- Post popup -->
+<div class="popup" id="postPopup">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3>Créer un post</h3>
+            <button class="popup-close" onclick="closePopup('postPopup')">&times;</button>
+        </div>
+        <div class="popup-body">
+            <form id="postForm" enctype="multipart/form-data" method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="postMessage">Message</label>
+                    <textarea id="postMessage" name="message" class="form-textarea" placeholder="Partagez votre expérience NVIDIA..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="postImage">Image</label>
+                    <div class="file-upload">
+                        <div class="file-upload-btn">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:24px;margin-bottom:8px;display:block;color:var(--amber)"></i>
+                            <div>Cliquez pour télécharger une image</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">PNG, JPG, JPEG max 5MB</div>
+                            <img id="imagePreview" class="image-preview-small" alt="Aperçu">
+                        </div>
+                        <input type="file" id="postImage" name="image" class="file-upload-input"
+                               accept="image/*" required onchange="previewImage(this)">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i> Publier le post
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
-        // BOUTON SERVICE CLIENT FLOTTANT
-        function toggleServicePopup() {
-            const popup = document.getElementById('servicePopup');
-            popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
-        }
+<script>
+// ── POPUP UTILITIES ──
+function closePopup(id) { const p = document.getElementById(id); if (p) p.style.display = 'none'; }
+function closeWelcomePopup() { closePopup('welcomePopup'); }
+function openTelegramPopup() { document.getElementById('telegramPopup').style.display = 'flex'; }
+function openPostPopup() { document.getElementById('postPopup').style.display = 'flex'; }
 
-        function contactCustomerService() {
-            window.open('https://t.me/Blackrockserviceclient', '_blank');
-            closePopup('servicePopup');
-        }
+// ── SERVICE POPUP ──
+function toggleServicePopup() {
+    const popup = document.getElementById('servicePopup');
+    popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
+}
+function contactCustomerService() {
+    window.open('https://t.me/blackrock_support', '_blank');
+    document.getElementById('servicePopup').style.display = 'none';
+}
+document.addEventListener('click', e => {
+    const sp = document.getElementById('servicePopup');
+    const fb = document.querySelector('.floating-service');
+    if (sp && fb && !sp.contains(e.target) && !fb.contains(e.target)) sp.style.display = 'none';
+});
 
-        // GÉNÉRATION DES NOTIFICATIONS
-        function generateNotifications() {
-            const container = document.getElementById('notificationContainer');
-            const notifications = [];
-            
-            for (let i = 0; i < 15; i++) {
-                const type = Math.random();
-                let notification;
-                
-                if (type < 0.5) {
-                    const phone = generatePhoneNumber();
-                    notification = { text: `2******${phone.slice(-3)} nous a rejoint` };
-                } else if (type < 0.9) {
-                    const phone = generatePhoneNumber();
-                    const amount = generateDepositAmount();
-                    notification = { text: `2******${phone.slice(-3)} a déposé <span class="amount">${amount.toLocaleString()} <%= devise %></span>` };
-                } else {
-                    const phone = generatePhoneNumber();
-                    const amount = generateWithdrawalAmount();
-                    notification = { text: `2******${phone.slice(-3)} a retiré <span class="amount">${amount.toLocaleString()} <%= devise %></span>` };
-                }
-                
-                notifications.push(notification);
-            }
-            
-            notifications.forEach((notif) => {
-                const item = document.createElement('div');
-                item.className = 'notification-item';
-                item.innerHTML = notif.text;
-                container.appendChild(item);
-            });
-            
-            let currentIndex = 0;
-            const items = container.querySelectorAll('.notification-item');
-            
-            function showNextNotification() {
-                items.forEach(item => item.classList.remove('active'));
-                if (items[currentIndex]) items[currentIndex].classList.add('active');
-                currentIndex = (currentIndex + 1) % items.length;
-            }
-            
-            if (items.length > 0) items[0].classList.add('active');
-            setInterval(showNextNotification, 3000);
-        }
-        
-        function generatePhoneNumber() {
-            const prefixes = ['65', '66', '67', '68', '69', '70', '76', '77', '78', '79'];
-            const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-            return prefix + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
-        }
-        
-        function generateDepositAmount() {
-            const amounts = [5000, 10000, 25000, 50000, 100000, 250000, 500000];
-            return amounts[Math.floor(Math.random() * amounts.length)];
-        }
-        
-        function generateWithdrawalAmount() {
-            const amounts = [2500, 5000, 12000, 20000, 45000, 80000, 150000];
-            return amounts[Math.floor(Math.random() * amounts.length)];
-        }
-        
-        // GESTION DU SLIDER PHOTOS
-        let currentPhoto = 0;
-        const photos = document.querySelectorAll('.photo-slide');
-        const photoIndicators = document.querySelectorAll('.photo-indicator');
-        
-        function showPhoto(index) {
-            photos.forEach(p => p.classList.remove('active'));
-            photoIndicators.forEach(i => i.classList.remove('active'));
-            
-            photos[index].classList.add('active');
-            photoIndicators[index].classList.add('active');
-            currentPhoto = index;
-        }
-        
-        function nextPhoto() {
-            let next = (currentPhoto + 1) % photos.length;
-            showPhoto(next);
-        }
-        
-        // GESTION DU SLIDER POSTS
-        let currentPost = 0;
-        const postSlides = document.querySelectorAll('.post-slide');
-        const postIndicators = document.querySelectorAll('.post-indicator');
-        
-        function showPost(index) {
-            if (postSlides.length === 0) return;
-            postSlides.forEach(p => {
-                p.classList.remove('active');
-                p.classList.remove('prev');
-            });
-            postIndicators.forEach(i => i.classList.remove('active'));
-            
-            postSlides[index].classList.add('active');
-            if (postIndicators[index]) postIndicators[index].classList.add('active');
-            currentPost = index;
-        }
-        
-        function nextPost() {
-            if (postSlides.length <= 1) return;
-            let next = (currentPost + 1) % postSlides.length;
-            showPost(next);
-        }
-        
-        // APERÇU DE L'IMAGE POUR LE POST
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-        
-        // INITIALISATION
-        document.addEventListener('DOMContentLoaded', () => {
-            generateNotifications();
-            setInterval(nextPhoto, 5000);
-            if (postSlides.length > 1) {
-                setInterval(nextPost, 4000);
-            }
-            
-            // Afficher le popup de bienvenue après un court délai
-            setTimeout(() => {
-                const welcomePopup = document.getElementById('welcomePopup');
-                if (welcomePopup) welcomePopup.style.display = 'flex';
-            }, 1000);
-        });
-    </script>
-    
-    <nav class="bottom-nav">
-        <a href="/" class="nav-item active">
-            <i class="fas fa-home"></i>
-            <span>Accueil</span>
-        </a>
-        <a href="/investissement" class="nav-item">
-            <i class="fas fa-crown"></i>
-            <span>VIP</span>
-        </a>
-        <a href="/compte" class="nav-item">
-            <i class="fas fa-chart-line"></i>
-            <span>Revenus</span>
-        </a>
-        <a href="/equipe" class="nav-item">
-            <i class="fas fa-users"></i>
-            <span>Équipe</span>
-        </a>
-        <a href="/compte" class="nav-item">
-            <i class="fas fa-user"></i>
-            <span>Profil</span>
-        </a>
-    </nav>
+// ── PHOTO SLIDER ──
+let currentPhoto = 0;
+const photoSlides = document.querySelectorAll('.photo-slide');
+const photoIndicators = document.querySelectorAll('.photo-indicator');
+function showPhoto(index) {
+    photoSlides.forEach(s => s.classList.remove('active'));
+    photoIndicators.forEach(i => i.classList.remove('active'));
+    currentPhoto = index;
+    if (photoSlides[index]) photoSlides[index].classList.add('active');
+    if (photoIndicators[index]) photoIndicators[index].classList.add('active');
+}
+setInterval(() => { showPhoto((currentPhoto + 1) % photoSlides.length); }, 4000);
+
+// ── POST SLIDER ──
+let currentPost = 0;
+const postSlides = document.querySelectorAll('.post-slide');
+const postIndicators = document.querySelectorAll('.post-indicator');
+function showPost(index) {
+    postSlides.forEach(s => s.classList.remove('active'));
+    postIndicators.forEach(i => i.classList.remove('active'));
+    currentPost = index;
+    if (postSlides[index]) postSlides[index].classList.add('active');
+    if (postIndicators[index]) postIndicators[index].classList.add('active');
+}
+if (postSlides.length > 1) setInterval(() => { showPost((currentPost + 1) % postSlides.length); }, 5000);
+
+// ── NOTIFICATIONS ──
+const notifications = <%- JSON.stringify(notifications || []) %>;
+let notifIndex = 0;
+function showNotifications() {
+    const container = document.getElementById('notificationContainer');
+    if (!container || notifications.length === 0) {
+        if (container) container.innerHTML = '<div class="notification-item visible" style="font-size:13px;"><i class="fas fa-bell"></i> Bienvenue sur NVIDIA Technologie !</div>';
+        return;
+    }
+    container.innerHTML = '';
+    const item = document.createElement('div');
+    item.className = 'notification-item';
+    item.innerHTML = `<i class="fas fa-bell"></i> ${notifications[notifIndex % notifications.length].message || notifications[notifIndex % notifications.length]}`;
+    container.appendChild(item);
+    setTimeout(() => item.classList.add('visible'), 50);
+    notifIndex++;
+}
+showNotifications();
+setInterval(() => {
+    const current = document.querySelector('.notification-item.visible');
+    if (current) { current.classList.remove('visible'); setTimeout(showNotifications, 500); }
+    else showNotifications();
+}, 3500);
+
+// ── IMAGE PREVIEW ──
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// ── DISABLE ZOOM ──
+document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault());
+</script>
 </body>
 </html>

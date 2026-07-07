@@ -4,120 +4,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tutoriels - NVIDIA Technologie</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root { --primary:#76b900; --dark:#1a1a1a; --gray:#000; --gray-dark:#333; --light:#f5f7fa; --dark-light:#b0b0b0; --border-radius:12px; --transition:all 0.3s cubic-bezier(0.25,0.8,0.25,1); }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
-        body { background-color:var(--gray); color:var(--light); max-width:430px; margin:0 auto; line-height:1.6; padding-bottom:100px; }
-        .tutorial-container { background:var(--dark); min-height:100vh; position:relative; }
-        .tutorial-nav { display:flex; overflow-x:auto; background:var(--dark); position:sticky; top:0; z-index:10; padding:0 15px; border-bottom:1px solid var(--gray-dark); scrollbar-width:none; }
-        .tutorial-nav::-webkit-scrollbar { display:none; }
-        .nav-item { padding:16px 12px; margin:0 4px; white-space:nowrap; font-weight:500; color:var(--dark-light); position:relative; transition:var(--transition); font-size:14px; text-decoration:none; display:inline-block; cursor:pointer; }
-        .nav-item.active { color:var(--primary); font-weight:600; }
-        .nav-item.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:24px; height:3px; background:var(--primary); border-radius:3px 3px 0 0; }
-        .nav-item:hover { color:var(--primary); }
-        .tutorial-content { padding:20px; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins','Segoe UI',sans-serif; }
+        body { background:#F5EFE6; color:#3D2B1F; min-height:100vh; padding-bottom:90px; }
+        .container { max-width:430px; margin:0 auto; }
+
+        .page-header {
+            background: linear-gradient(135deg, #D4921F, #A0631A);
+            padding: 50px 20px 0; text-align:center; color:#fff;
+        }
+        .page-header h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
+        .page-header p { font-size:13px; color:rgba(255,255,255,0.85); margin-bottom:0; }
+
+        /* Tab nav */
+        .tab-nav {
+            background:linear-gradient(135deg,#D4921F,#A0631A);
+            display:flex; overflow-x:auto; padding:0 16px;
+            scrollbar-width:none; border-bottom:none;
+        }
+        .tab-nav::-webkit-scrollbar { display:none; }
+        .tab-item {
+            padding:14px 14px; white-space:nowrap; font-weight:600;
+            color:rgba(255,255,255,0.65); position:relative; cursor:pointer;
+            font-size:14px; transition:color 0.2s; flex-shrink:0;
+        }
+        .tab-item.active { color:#fff; }
+        .tab-item.active::after {
+            content:''; position:absolute; bottom:0; left:50%;
+            transform:translateX(-50%); width:24px; height:3px;
+            background:#fff; border-radius:3px 3px 0 0;
+        }
+
+        .content { padding:16px; }
         .section { display:none; }
         .section.active { display:block; }
-        .section-title { color:var(--primary); margin-bottom:16px; font-size:1.5rem; font-weight:700; position:relative; padding-left:12px; }
-        .section-title::before { content:''; position:absolute; left:0; top:0; height:100%; width:4px; background:var(--primary); border-radius:4px; }
-        .section-description { margin-bottom:24px; color:var(--dark-light); font-size:15px; }
-        .tutorial-buttons { display:flex; flex-direction:column; gap:16px; margin:20px 0 30px; }
-        .tutorial-btn { display:flex; align-items:center; padding:18px 20px; border-radius:var(--border-radius); background:var(--gray-dark); box-shadow:0 4px 12px rgba(0,0,0,0.4); transition:var(--transition); text-decoration:none; color:var(--light); border:2px solid transparent; }
-        .tutorial-btn:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(118,185,0,0.2); border-color:var(--primary); }
-        .tutorial-btn-telegram { background:linear-gradient(135deg,#2AABEE,#229ED9); color:white; }
-        .tutorial-btn-whatsapp { background:linear-gradient(135deg,#25D366,#128C7E); color:white; }
-        .btn-icon { font-size:28px; margin-right:16px; min-width:32px; }
-        .btn-text h3 { font-size:16px; font-weight:600; margin-bottom:4px; }
-        .btn-text p { font-size:13px; opacity:0.85; }
-        .steps-container { background:var(--gray-dark); border-radius:var(--border-radius); padding:20px; margin-bottom:20px; }
-        .step { display:flex; gap:16px; margin-bottom:20px; }
+
+        .sec-title {
+            font-size:20px; font-weight:800; color:#C47D1E; margin-bottom:6px;
+            padding-left:12px; border-left:4px solid #C47D1E; border-radius:0 4px 4px 0;
+        }
+        .sec-desc { font-size:14px; color:#A87D50; margin-bottom:20px; }
+
+        /* Video/Link buttons */
+        .tuto-btns { display:flex; flex-direction:column; gap:12px; margin-bottom:22px; }
+        .tuto-btn {
+            display:flex; align-items:center; padding:16px 18px; border-radius:14px;
+            text-decoration:none; transition:all 0.2s;
+            box-shadow:0 4px 14px rgba(0,0,0,0.08);
+        }
+        .tuto-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(0,0,0,0.12); }
+        .tuto-btn-telegram { background:linear-gradient(135deg,#2AABEE,#229ED9); color:#fff; }
+        .btn-ico { font-size:26px; margin-right:14px; min-width:30px; }
+        .btn-txt h3 { font-size:15px; font-weight:700; margin-bottom:3px; }
+        .btn-txt p { font-size:12px; opacity:0.88; }
+
+        /* Steps */
+        .steps-box {
+            background:#fff; border-radius:16px; padding:18px;
+            border:1px solid #F0E0C8; box-shadow:0 2px 10px rgba(196,125,30,0.08);
+            margin-bottom:14px;
+        }
+        .step { display:flex; gap:14px; margin-bottom:18px; }
         .step:last-child { margin-bottom:0; }
-        .step-number { width:32px; height:32px; background:var(--primary); color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0; margin-top:2px; }
-        .step-content h4 { color:var(--primary); font-size:15px; margin-bottom:4px; }
-        .step-content p { color:var(--dark-light); font-size:13px; }
-        .tip-box { background:rgba(118,185,0,0.1); border-left:3px solid var(--primary); border-radius:0 var(--border-radius) var(--border-radius) 0; padding:14px 16px; margin-bottom:20px; }
-        .tip-box p { color:var(--dark-light); font-size:13px; }
-        .tip-box strong { color:var(--primary); }
+        .step-num {
+            width:32px; height:32px; border-radius:50%; flex-shrink:0;
+            background:linear-gradient(135deg,#D4921F,#B07018);
+            display:flex; align-items:center; justify-content:center;
+            font-weight:800; font-size:13px; color:#fff; margin-top:2px;
+        }
+        .step-body h4 { color:#C47D1E; font-size:14px; margin-bottom:3px; }
+        .step-body p { color:#7D5A38; font-size:13px; line-height:1.5; }
+
+        /* Tips */
+        .tip-card {
+            background:#FFFBF0; border:1px solid #F5D78A; border-left:4px solid #C47D1E;
+            border-radius:0 12px 12px 0; padding:13px 15px; margin-bottom:12px;
+            font-size:13px; color:#7D5A38; line-height:1.5;
+        }
+        .tip-card strong { color:#C47D1E; }
     </style>
 </head>
 <body>
-<%- include('partials/menu', { page: '' }) %>
+<%- include('partials/menu', { page: 'index' }) %>
 
-<div class="tutorial-container">
-    <div class="tutorial-nav">
-        <span class="nav-item active" onclick="showSection('depot', this)">Dépôt</span>
-        <span class="nav-item" onclick="showSection('retrait', this)">Retrait</span>
-        <span class="nav-item" onclick="showSection('investir', this)">Investir</span>
-        <span class="nav-item" onclick="showSection('astuces', this)">Astuces</span>
+<div class="container">
+    <div class="page-header">
+        <h1><i class="fas fa-book-open"></i> Tutoriels</h1>
+        <p>Guides pas à pas pour bien démarrer</p>
+    </div>
+    <div class="tab-nav">
+        <span class="tab-item active" onclick="showSection('depot',this)">Dépôt</span>
+        <span class="tab-item" onclick="showSection('retrait',this)">Retrait</span>
+        <span class="tab-item" onclick="showSection('investir',this)">Investir</span>
+        <span class="tab-item" onclick="showSection('astuces',this)">Astuces</span>
     </div>
 
-    <div class="tutorial-content">
+    <div class="content">
         <!-- Dépôt -->
         <div class="section active" id="section-depot">
-            <div class="section-title">Comment déposer</div>
-            <div class="section-description">Rechargez votre compte via Mobile Money pour commencer à investir.</div>
-            <div class="tutorial-buttons">
-                <a href="https://t.me/sonycanal/22" target="_blank" class="tutorial-btn tutorial-btn-telegram">
-                    <span class="btn-icon"><i class="fab fa-telegram"></i></span>
-                    <div class="btn-text"><h3>Tutoriel Telegram (XAF)</h3><p>Pour les utilisateurs Cameroun</p></div>
+            <div class="sec-title">Comment déposer</div>
+            <div class="sec-desc">Rechargez votre compte via Mobile Money pour commencer à investir.</div>
+            <div class="tuto-btns">
+                <a href="https://t.me/sonycanal/22" target="_blank" class="tuto-btn tuto-btn-telegram">
+                    <span class="btn-ico"><i class="fab fa-telegram"></i></span>
+                    <div class="btn-txt"><h3>Tutoriel Telegram (XAF)</h3><p>Pour les utilisateurs Cameroun</p></div>
                 </a>
-                <a href="https://t.me/sonycanal/23" target="_blank" class="tutorial-btn tutorial-btn-telegram">
-                    <span class="btn-icon"><i class="fab fa-telegram"></i></span>
-                    <div class="btn-text"><h3>Tutoriel Telegram (XOF)</h3><p>Pour les autres pays</p></div>
+                <a href="https://t.me/sonycanal/23" target="_blank" class="tuto-btn tuto-btn-telegram">
+                    <span class="btn-ico"><i class="fab fa-telegram"></i></span>
+                    <div class="btn-txt"><h3>Tutoriel Telegram (XOF)</h3><p>Pour les autres pays</p></div>
                 </a>
             </div>
-            <div class="steps-container">
-                <div class="step"><div class="step-number">1</div><div class="step-content"><h4>Allez dans Dépôt</h4><p>Cliquez sur "Dépôt" dans le menu de navigation.</p></div></div>
-                <div class="step"><div class="step-number">2</div><div class="step-content"><h4>Choisissez votre pays et opérateur</h4><p>Sélectionnez votre pays et l'opérateur Mobile Money que vous utilisez.</p></div></div>
-                <div class="step"><div class="step-number">3</div><div class="step-content"><h4>Entrez le montant</h4><p>Minimum 200 FCFA. Entrez votre numéro Mobile Money et votre email.</p></div></div>
-                <div class="step"><div class="step-number">4</div><div class="step-content"><h4>Confirmez sur votre téléphone</h4><p>Vous recevrez une notification. Entrez votre PIN Mobile Money pour confirmer.</p></div></div>
-                <div class="step"><div class="step-number">5</div><div class="step-content"><h4>Crédit automatique</h4><p>Votre solde est mis à jour automatiquement après validation du paiement.</p></div></div>
+            <div class="steps-box">
+                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Allez dans Dépôt</h4><p>Cliquez sur "Dépôt" dans le menu de navigation.</p></div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Choisissez votre pays et opérateur</h4><p>Sélectionnez votre pays et l'opérateur Mobile Money que vous utilisez.</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Entrez le montant</h4><p>Minimum 200 FCFA. Entrez votre numéro Mobile Money et votre email.</p></div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Confirmez sur votre téléphone</h4><p>Vous recevrez une notification. Entrez votre PIN Mobile Money pour confirmer.</p></div></div>
+                <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Crédit automatique</h4><p>Votre solde est mis à jour automatiquement après validation du paiement.</p></div></div>
             </div>
         </div>
 
         <!-- Retrait -->
         <div class="section" id="section-retrait">
-            <div class="section-title">Comment retirer</div>
-            <div class="section-description">Retirez vos gains sur votre compte Mobile Money.</div>
-            <div class="tip-box"><p><strong>⚠️ Conditions:</strong> Vous devez avoir un plan actif, un dépôt validé, un portefeuille configuré et un code PIN créé. Retraits disponibles Lun-Sam 9h-19h GMT.</p></div>
-            <div class="steps-container">
-                <div class="step"><div class="step-number">1</div><div class="step-content"><h4>Configurez votre portefeuille</h4><p>Allez dans "Profil" → "Portefeuille" et configurez votre compte Mobile Money de destination.</p></div></div>
-                <div class="step"><div class="step-number">2</div><div class="step-content"><h4>Créez votre PIN</h4><p>Créez un code PIN de transaction de 4 chiffres pour sécuriser vos retraits.</p></div></div>
-                <div class="step"><div class="step-number">3</div><div class="step-content"><h4>Allez dans Retrait</h4><p>Accédez à la section Retrait depuis votre profil.</p></div></div>
-                <div class="step"><div class="step-number">4</div><div class="step-content"><h4>Entrez le montant et le PIN</h4><p>Minimum 1 200 FCFA. Confirmez avec votre PIN de transaction.</p></div></div>
-                <div class="step"><div class="step-number">5</div><div class="step-content"><h4>Traitement sous 24h</h4><p>Votre retrait sera traité par notre équipe dans les 24 heures.</p></div></div>
+            <div class="sec-title">Comment retirer</div>
+            <div class="sec-desc">Retirez vos gains sur votre compte Mobile Money.</div>
+            <div class="tip-card"><strong>⚠️ Conditions :</strong> Vous devez avoir un plan actif, un dépôt validé, un portefeuille configuré et un code PIN créé. Retraits disponibles Lun-Sam 9h-19h GMT.</div>
+            <div class="steps-box">
+                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Configurez votre portefeuille</h4><p>Allez dans "Profil" → "Portefeuille" et configurez votre compte Mobile Money de destination.</p></div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Créez votre PIN</h4><p>Créez un code PIN de transaction de 4 chiffres pour sécuriser vos retraits.</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Allez dans Retrait</h4><p>Accédez à la section Retrait depuis votre profil.</p></div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Entrez le montant et le PIN</h4><p>Minimum 1 200 FCFA. Confirmez avec votre PIN de transaction.</p></div></div>
+                <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Traitement sous 24h</h4><p>Votre retrait sera traité par notre équipe dans les 24 heures.</p></div></div>
             </div>
         </div>
 
         <!-- Investir -->
         <div class="section" id="section-investir">
-            <div class="section-title">Comment investir</div>
-            <div class="section-description">Choisissez un plan et commencez à générer des revenus passifs.</div>
-            <div class="tutorial-buttons">
-                <a href="https://t.me/sonycanal/21" target="_blank" class="tutorial-btn tutorial-btn-telegram">
-                    <span class="btn-icon"><i class="fab fa-telegram"></i></span>
-                    <div class="btn-text"><h3>Tutoriel Investissement</h3><p>Voir la vidéo complète sur Telegram</p></div>
+            <div class="sec-title">Comment investir</div>
+            <div class="sec-desc">Choisissez un plan et commencez à générer des revenus passifs.</div>
+            <div class="tuto-btns">
+                <a href="https://t.me/sonycanal/21" target="_blank" class="tuto-btn tuto-btn-telegram">
+                    <span class="btn-ico"><i class="fab fa-telegram"></i></span>
+                    <div class="btn-txt"><h3>Tutoriel Investissement</h3><p>Voir la vidéo complète sur Telegram</p></div>
                 </a>
             </div>
-            <div class="steps-container">
-                <div class="step"><div class="step-number">1</div><div class="step-content"><h4>Rechargez votre solde</h4><p>Assurez-vous d'avoir assez de FCFA sur votre solde avant de choisir un plan.</p></div></div>
-                <div class="step"><div class="step-number">2</div><div class="step-content"><h4>Allez dans "Action"</h4><p>Cliquez sur l'onglet "Action" dans le menu bas.</p></div></div>
-                <div class="step"><div class="step-number">3</div><div class="step-content"><h4>Choisissez un plan</h4><p>Les plans vont de 3 000 à 600 000 FCFA avec des rendements de 10.5% à 19.5%/jour.</p></div></div>
-                <div class="step"><div class="step-number">4</div><div class="step-content"><h4>Confirmez l'achat</h4><p>Votre solde est débité immédiatement et votre plan commence.</p></div></div>
-                <div class="step"><div class="step-number">5</div><div class="step-content"><h4>Collectez chaque jour</h4><p>Revenez chaque 24h sur "Profil" pour collecter vos revenus journaliers.</p></div></div>
+            <div class="steps-box">
+                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Rechargez votre solde</h4><p>Assurez-vous d'avoir assez de FCFA sur votre solde avant de choisir un plan.</p></div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Allez dans "Action"</h4><p>Cliquez sur l'onglet "Action" dans le menu du bas.</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Choisissez un plan</h4><p>Les plans vont de 3 000 à 600 000 FCFA avec des rendements de 10.5% à 19.5%/jour.</p></div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Confirmez l'achat</h4><p>Votre solde est débité immédiatement et votre plan commence.</p></div></div>
+                <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Collectez chaque jour</h4><p>Revenez chaque 24h sur "Profil" pour collecter vos revenus journaliers.</p></div></div>
             </div>
         </div>
 
         <!-- Astuces -->
         <div class="section" id="section-astuces">
-            <div class="section-title">Astuces &amp; Conseils</div>
-            <div class="section-description">Maximisez vos gains avec ces conseils.</div>
-            <div class="tip-box"><p><strong>💡 Parrainage:</strong> Invitez des amis et gagnez 20% sur chaque investissement qu'ils font. C'est la méthode la plus rapide pour augmenter vos gains!</p></div>
-            <div class="tip-box"><p><strong>🎰 Roue de la chance:</strong> Tournez la roue gratuite toutes les 48 heures pour gagner jusqu'à 2 000 FCFA sans rien dépenser!</p></div>
-            <div class="tip-box"><p><strong>👑 Niveaux VIP:</strong> Plus vous avez de filleuls actifs, plus votre niveau VIP est élevé et plus vous gagnez de salaire journalier.</p></div>
-            <div class="tip-box"><p><strong>📊 Réinvestir:</strong> Utilisez vos gains quotidiens pour acheter de nouveaux plans et augmenter votre revenu passif progressivement.</p></div>
+            <div class="sec-title">Astuces &amp; Conseils</div>
+            <div class="sec-desc">Maximisez vos gains avec ces conseils.</div>
+            <div class="tip-card"><strong>💡 Parrainage :</strong> Invitez des amis et gagnez 20% sur chaque investissement qu'ils font. C'est la méthode la plus rapide pour augmenter vos gains !</div>
+            <div class="tip-card"><strong>🎰 Machine à sous :</strong> Jouez gratuitement toutes les 48 heures pour gagner jusqu'à 2 000 FCFA sans rien dépenser !</div>
+            <div class="tip-card"><strong>👑 Niveaux VIP :</strong> Plus vous avez de filleuls actifs, plus votre niveau VIP est élevé et plus vous gagnez de salaire journalier.</div>
+            <div class="tip-card"><strong>📊 Réinvestir :</strong> Utilisez vos gains quotidiens pour acheter de nouveaux plans et augmenter votre revenu passif progressivement.</div>
         </div>
     </div>
 </div>
@@ -125,7 +173,7 @@
 <script>
 function showSection(section, el) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.tab-item').forEach(n => n.classList.remove('active'));
     document.getElementById('section-' + section).classList.add('active');
     el.classList.add('active');
 }
