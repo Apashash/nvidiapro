@@ -412,10 +412,20 @@
       <div class="plan-gain">+<%= gain.toLocaleString('fr-FR',{maximumFractionDigits:0}) %> FCFA/jour</div>
     </div>
     <div class="card-actions">
-      <button class="icon-btn icon-btn-edit" onclick='openPlanModal(<%= p.id %>,<%- JSON.stringify(p.nom) %>,<%= p.prix %>,<%= p.duree_jours %>,<%= p.rendement_journalier %>,"<%- (p.description||"").replace(/"/g,"&quot;") %>")'>
+      <button class="icon-btn icon-btn-edit"
+        data-pid="<%= p.id %>"
+        data-nom="<%- (p.nom||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
+        data-prix="<%= p.prix %>"
+        data-duree="<%= p.duree_jours %>"
+        data-rend="<%= p.rendement_journalier %>"
+        data-desc="<%- (p.description||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
+        onclick="openPlanModalBtn(this)">
         <i class="fas fa-pen"></i>
       </button>
-      <button class="icon-btn icon-btn-del" onclick="deletePlan(<%= p.id %>,<%- JSON.stringify(p.nom) %>)">
+      <button class="icon-btn icon-btn-del"
+        data-pid="<%= p.id %>"
+        data-nom="<%- (p.nom||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
+        onclick="deletePlanBtn(this)">
         <i class="fas fa-trash"></i>
       </button>
     </div>
@@ -1061,6 +1071,15 @@ async function saveBalance() {
 }
 
 // ── Plan edit ───────────────────────────────────────────────────────────
+function openPlanModalBtn(btn) {
+  document.getElementById('planId').value    = btn.dataset.pid;
+  document.getElementById('planNom').value   = btn.dataset.nom;
+  document.getElementById('planPrix').value  = btn.dataset.prix;
+  document.getElementById('planDuree').value = btn.dataset.duree;
+  document.getElementById('planRend').value  = btn.dataset.rend;
+  document.getElementById('planDesc').value  = btn.dataset.desc;
+  openModal('planModal');
+}
 function openPlanModal(id, nom, prix, duree, rend, desc) {
   document.getElementById('planId').value    = id;
   document.getElementById('planNom').value   = nom;
@@ -1100,6 +1119,7 @@ async function addPlan() {
   if (d.success) { closeModal('addPlanModal'); toast('✓ Plan ajouté', 'ok'); setTimeout(() => location.reload(), 900); }
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
+function deletePlanBtn(btn) { deletePlan(btn.dataset.pid, btn.dataset.nom); }
 async function deletePlan(id, nom) {
   if (!confirm('Supprimer le plan "' + nom + '" ? Cette action est irréversible.')) return;
   const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'delete_plan', id }) });

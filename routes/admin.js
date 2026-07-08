@@ -404,7 +404,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
 async function getUserById(id) {
   const [[user]] = await db.query(`
     SELECT u.*, s.solde, v.niveau as niveau_vip,
-      (SELECT COUNT(*) FROM filleuls f WHERE f.parrain_id=u.id) as nb_filleuls,
+      (SELECT COUNT(*) FROM filleuls f WHERE f.user_id=u.id) as nb_filleuls,
       (SELECT COUNT(*) FROM commandes c WHERE c.user_id=u.id AND c.statut='actif') as nb_commandes,
       (SELECT u2.nom FROM utilisateurs u2 WHERE u2.id=u.parrain_id) as parrain_nom
     FROM utilisateurs u
