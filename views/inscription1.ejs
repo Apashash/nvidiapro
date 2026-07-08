@@ -80,6 +80,14 @@
         }
         .input-wrap select { cursor:pointer; -webkit-appearance:none; max-width:95px; }
         .phone-divider { width:1px; height:22px; background:#E8D5B0; flex-shrink:0; }
+        .input-wrap.locked { background:#F3ECDE; border-color:#D9C49A; }
+        .input-wrap.locked input {
+            color:#7D5A38; font-weight:600; cursor:not-allowed;
+        }
+        .lock-icon {
+            width:40px; display:flex; align-items:center; justify-content:center;
+            color:#A87D50; font-size:14px; flex-shrink:0;
+        }
         .eye-toggle {
             position:absolute; right:0; top:0; bottom:0;
             background:none; border:none; cursor:pointer;
@@ -127,6 +135,17 @@
         <div class="form-title">Rejoignez Altiora</div>
 
         <form action="/inscription1" method="post" id="signup-form">
+            <% if (typeof code_parrain !== 'undefined' && code_parrain) { %>
+            <div class="form-group">
+                <label class="form-label">Code d'invitation</label>
+                <div class="input-wrap locked">
+                    <div class="input-icon"><i class="fas fa-ticket-alt"></i></div>
+                    <input type="text" value="<%= code_parrain %>" readonly tabindex="-1">
+                    <div class="lock-icon"><i class="fas fa-lock"></i></div>
+                </div>
+            </div>
+            <% } %>
+
             <div class="form-group">
                 <label class="form-label">Nom complet</label>
                 <div class="input-wrap">
