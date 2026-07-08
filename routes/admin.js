@@ -462,7 +462,8 @@ router.get('/adminxyz/utilisateurs/:id/transactions', requireAdminAuth, async (r
 
 // ── Logout ─────────────────────────────────────────────────────────────────────
 router.get('/adminxyz/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/adminxyz'));
+  delete req.session.security_authenticated;
+  res.redirect('/adminxyz');
 });
 
 module.exports = router;
