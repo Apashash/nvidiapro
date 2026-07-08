@@ -1,7 +1,10 @@
 <% 
 // Logic equivalent to PHP session and DB initialization
-// Assuming user, filleuls_actifs, filleuls_inscrits, est_eligible, 
-// message_eligibilite, code_message, and devise are passed to the template.
+// user, filleuls_actifs, filleuls_inscrits, est_eligible, message_eligibilite,
+// error, success are passed to the template; code_message is derived below.
+const code_message = success
+    ? `<div class="alert success">✅ ${success}</div>`
+    : (error ? `<div class="alert error">❌ ${error}</div>` : '');
 %>
 <!DOCTYPE html>
 <html lang="fr">
