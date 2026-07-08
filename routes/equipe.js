@@ -58,12 +58,17 @@ router.get('/equipe', requireAuth, async (req, res) => {
 
     const [[vip]] = await db.query('SELECT * FROM vip WHERE user_id = ?', [user_id]);
 
+    const baseUrl = process.env.REPLIT_DEV_DOMAIN
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : `${req.protocol}://${req.get('host')}`;
+
     res.render('equipe', {
       user,
       filleuls_niveau1: f1, filleuls_niveau2: f2, filleuls_niveau3: f3,
       invest_niveau1: inv1, invest_niveau2: inv2, invest_niveau3: inv3,
       filleuls_details,
       vip: vip || { niveau: 0, invitations_actuelles: 0, invitations_requises: 3 },
+      baseUrl,
     });
   } catch (e) {
     console.error(e);
