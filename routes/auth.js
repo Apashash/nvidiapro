@@ -59,6 +59,7 @@ router.post('/connexion', async (req, res) => {
 
 // GET /inscription — rend directement la page (évite le redirect que Safari mobile télécharge)
 router.get('/inscription', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   const p = req.query.p || '';
   if (p) req.session.parrain_code = p;
   const code_parrain = p || req.session.parrain_code || '';
@@ -69,6 +70,7 @@ router.get('/inscription', (req, res) => {
 
 // GET /inscription1
 router.get('/inscription1', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   const code_parrain = req.query.p || req.session.parrain_code || '';
   if (req.query.p) req.session.parrain_code = req.query.p;
   const error = req.session.error || null;
