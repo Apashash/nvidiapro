@@ -12,7 +12,20 @@ router.get('/cadeau', requireAuth, async (req, res) => {
     const success = req.session.cadeau_success || null;
     delete req.session.cadeau_error;
     delete req.session.cadeau_success;
-    res.render('cadeau', { user, vip, error, success });
+
+    // Filleuls actifs (ayant investi) et inscrits
+    const [[{ filleuls_actifs }]] = await db.query(
+      `SELECT COUNT(DISTINCT i.user_id) AS filleuls_actifs
+       FROM utilisateurs u2
+       LEFT JOIN investissements i ON i.user_id = u2.id AND i.statut = 'actif'
+       WHERE u2.parrain_id = ?`, [user_id]);
+    const [[{ filleuls_inscrits }]] = await db.query(
+      `SELECT COUNT(*) AS filleuls_inscrits FROM utilisateurs WHERE parrain_id = ?`, [user_id]);
+
+    const est_eligible = filleuls_actifs >= 10 || filleuls_inscrits >= 50;
+    const message_eligibilite = `Pour créer vos propres codes cadeau, vous devez avoir soit 10 filleuls actifs (ayant investi), soit 50 filleuls inscrits. Actuellement : ${filleuls_actifs} actifs / ${filleuls_inscrits} inscrits.`;
+
+    res.render('cadeau', { user, vip, error, success, filleuls_actifs, filleuls_inscrits, est_eligible, message_eligibilite });
   } catch (e) { console.error(e); res.redirect('/'); }
 });
 
