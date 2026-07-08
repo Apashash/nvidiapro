@@ -112,10 +112,8 @@
     /* ───────────── BALANCE + ACTIONS ───────────── */
     .main-section {
         padding: 16px;
-        display: flex; gap: 12px;
     }
     .premium-card {
-        flex: 1;
         background: linear-gradient(135deg, #D4921F, #A0631A);
         border-radius: 18px; padding: 18px;
         box-shadow: 0 8px 24px rgba(196,125,30,0.35);
@@ -137,27 +135,7 @@
     .revenue-label { color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 500; }
     .revenue-amount { color: #fff; font-size: 13px; font-weight: 700; }
 
-    /* Action sidebar */
-    .action-bar {
-        display: flex; flex-direction: column; gap: 8px;
-        min-width: 80px; flex-shrink: 0;
-    }
-    .action-item {
-        background: var(--card-bg); border-radius: 14px; padding: 10px 8px;
-        text-align: center; cursor: pointer; transition: all 0.2s;
-        border: 1px solid var(--border);
-        box-shadow: 0 2px 8px rgba(196,125,30,0.08);
-        display: flex; flex-direction: column; align-items: center; gap: 5px;
-    }
-    .action-item:hover { border-color: var(--amber); background: var(--light-bg); }
-    .action-icon {
-        width: 36px; height: 36px; border-radius: 11px;
-        display: flex; align-items: center; justify-content: center; font-size: 15px;
-    }
-    .action-retrait .action-icon { background: rgba(239,68,68,0.12); color: #EF4444; }
-    .action-roue .action-icon { background: rgba(139,92,246,0.12); color: #8B5CF6; }
-    .action-cadeau .action-icon { background: rgba(196,125,30,0.12); color: var(--amber); }
-    .action-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+    /* Action sidebar removed — now uses same .h-action-btn style */
 
     /* ───────────── HORIZONTAL ACTIONS ───────────── */
     .horizontal-actions { display:flex; gap:10px; padding:0 16px 14px; }
@@ -452,23 +430,25 @@
             </div>
         </div>
 
-        <div class="action-bar">
-            <div class="action-item action-retrait" onclick="window.location.href='/retrait'">
-                <div class="action-icon"><i class="fas fa-hand-holding-usd"></i></div>
-                <div class="action-label">Retrait</div>
-            </div>
-            <div class="action-item action-roue" onclick="window.location.href='/roue'">
-                <div class="action-icon"><i class="fas fa-dice"></i></div>
-                <div class="action-label">Roue</div>
-            </div>
-            <div class="action-item action-cadeau" onclick="window.location.href='/cadeau'">
-                <div class="action-icon"><i class="fas fa-gift"></i></div>
-                <div class="action-label">Cadeau</div>
-            </div>
-        </div>
     </div>
 
-    <!-- Horizontal actions -->
+    <!-- Retrait / Roue / Cadeau -->
+    <div class="horizontal-actions">
+        <a href="/retrait" class="h-action-btn">
+            <i class="fas fa-hand-holding-usd h-action-icon"></i>
+            <span class="h-action-text">Retrait</span>
+        </a>
+        <a href="/roue" class="h-action-btn">
+            <i class="fas fa-dice h-action-icon"></i>
+            <span class="h-action-text">Roue</span>
+        </a>
+        <a href="/cadeau" class="h-action-btn">
+            <i class="fas fa-gift h-action-icon"></i>
+            <span class="h-action-text">Cadeau</span>
+        </a>
+    </div>
+
+    <!-- Dépôt / Tuto / VIP / Rejoindre -->
     <div class="horizontal-actions">
         <a href="/depot" class="h-action-btn">
             <i class="fas fa-arrow-down h-action-icon"></i>
