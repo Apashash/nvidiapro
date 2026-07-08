@@ -57,15 +57,20 @@ router.post('/connexion', async (req, res) => {
   }
 });
 
-// GET /inscription → redirige vers le vrai formulaire (garde le code parrain)
+// GET /inscription — rend directement la page (évite le redirect que Safari mobile télécharge)
 router.get('/inscription', (req, res) => {
-  if (req.query.p) req.session.parrain_code = req.query.p;
-  res.redirect('/inscription1');
+  const p = req.query.p || '';
+  if (p) req.session.parrain_code = p;
+  const code_parrain = p || req.session.parrain_code || '';
+  const error = req.session.error || null;
+  delete req.session.error;
+  res.render('inscription1', { code_parrain, error, pays_eligibles: paysEligibles });
 });
 
 // GET /inscription1
 router.get('/inscription1', (req, res) => {
-  const code_parrain = req.session.parrain_code || '';
+  const code_parrain = req.query.p || req.session.parrain_code || '';
+  if (req.query.p) req.session.parrain_code = req.query.p;
   const error = req.session.error || null;
   delete req.session.error;
   res.render('inscription1', { code_parrain, error, pays_eligibles: paysEligibles });
