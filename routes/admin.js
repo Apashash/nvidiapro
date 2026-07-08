@@ -418,7 +418,7 @@ router.get('/adminxyz/utilisateurs/:id', requireAdminAuth, async (req, res) => {
   try {
     const user = await getUserById(req.params.id);
     if (!user) return res.redirect('/adminxyz/dashboard?t=utilisateurs');
-    res.render('admin_user', { user, section: 'menu', pageTitle: user.nom, backUrl: '/adminxyz/dashboard?t=utilisateurs', transactions: [], depots: [], retraits: [] });
+    res.render('admin_user', { user, section: 'menu', pageTitle: user.nom, backUrl: '/adminxyz/utilisateurs', transactions: [], depots: [], retraits: [] });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
