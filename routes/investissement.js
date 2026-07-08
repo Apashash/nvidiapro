@@ -56,15 +56,15 @@ router.get('/investissement', requireAuth, async (req, res) => {
 router.post('/acheter-action', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   const plan_id = parseInt(req.body.plan_id);
-  const montant = parseFloat(req.body.prix);
 
   try {
     const [[plan]] = await db.query('SELECT * FROM planinvestissement WHERE id = ?', [plan_id]);
-    if (!plan) return res.redirect('/investissement');
+    if (!plan) return res.json({ success: false, message: 'Plan introuvable' });
+    const montant = parseFloat(plan.prix);
 
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
-    if (solde < montant) return res.redirect('/depot');
+    if (solde < montant) return res.json({ success: false, message: 'Solde insuffisant' });
 
     const gain_journalier = plan.prix * (plan.rendement_journalier / 100);
     const duree = parseInt(plan.duree_jours);
