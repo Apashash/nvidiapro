@@ -300,7 +300,21 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({ pays, operateur, numero: indicatif + numero, nom, montant }),
         });
-        const data = await resp.json();
+
+        // If redirected to login page, session expired
+        if (resp.redirected || resp.url.includes('/connexion')) {
+            window.location.href = '/connexion';
+            return;
+        }
+
+        const text = await resp.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch(e) {
+            // Server returned HTML (session expired or server error)
+            window.location.href = '/connexion';
+            return;
+        }
 
         if (data.success) {
             document.getElementById('pop-montant').textContent   = parseInt(montant).toLocaleString('fr-FR') + ' FCFA';
