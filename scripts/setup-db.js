@@ -28,7 +28,9 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
   code_parrainage VARCHAR(50) UNIQUE,
   date_inscription TIMESTAMP DEFAULT NOW(),
   last_spin_time TIMESTAMP,
-  is_admin BOOLEAN DEFAULT false
+  is_admin BOOLEAN DEFAULT false,
+  is_banned BOOLEAN DEFAULT false,
+  retrait_bloque BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS soldes (
@@ -143,6 +145,19 @@ CREATE TABLE IF NOT EXISTS pieces (
   solde NUMERIC(15,2) DEFAULT 0,
   solde_precedent NUMERIC(15,2) DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS app_parametres (
+  cle VARCHAR(100) PRIMARY KEY,
+  valeur TEXT
+);
+
+CREATE TABLE IF NOT EXISTS vip_paliers (
+  id SERIAL PRIMARY KEY,
+  niveau INTEGER UNIQUE NOT NULL,
+  label VARCHAR(255),
+  filleuls_requis INTEGER DEFAULT 0,
+  montant_cadeau NUMERIC(15,2) DEFAULT 0
+);
 `;
 
 // rendement_journalier values computed from original absolute gains:
@@ -170,7 +185,13 @@ async function setup() {
   try {
     console.log('Creating tables…');
     await client.query(SCHEMA);
-    console.log('✓ Schema ready (15 tables)');
+    // Add columns that may be missing from older installs (idempotent)
+    const alterations = [
+      `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false`,
+      `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS retrait_bloque BOOLEAN DEFAULT false`,
+    ];
+    for (const sql of alterations) await client.query(sql);
+    console.log('✓ Schema ready (17 tables)');
 
     console.log('Seeding investment plans…');
     const res = await client.query(SEED_PLANS);
