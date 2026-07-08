@@ -85,16 +85,31 @@ router.get('/historique', requireAuth, async (req, res) => {
   try {
     const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
 
-    const [transactions] = await db.query(`
+    const PAGE_SIZE = 30;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const offset = (page - 1) * PAGE_SIZE;
+
+    const unionQuery = `
       (SELECT 'depot' as type, montant, date_depot as date, statut FROM depots WHERE user_id = ?)
       UNION ALL
       (SELECT 'retrait' as type, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
       UNION ALL
       (SELECT 'revenu' as type, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
-      ORDER BY date DESC
-    `, [user_id, user_id, user_id]);
+    `;
 
-    res.render('historique', { user, transactions });
+    const [[countRow]] = await db.query(
+      `SELECT COUNT(*)::int as total FROM (${unionQuery}) as t`,
+      [user_id, user_id, user_id]
+    );
+    const total = countRow ? countRow.total : 0;
+    const total_pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+    const [transactions] = await db.query(
+      `${unionQuery} ORDER BY date DESC LIMIT ? OFFSET ?`,
+      [user_id, user_id, user_id, PAGE_SIZE, offset]
+    );
+
+    res.render('historique', { user, transactions, page, total_pages, total });
   } catch (e) {
     console.error(e);
     res.redirect('/compte');

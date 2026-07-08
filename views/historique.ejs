@@ -54,6 +54,15 @@
         .empty-icon { font-size:52px; color:#E8D5B0; margin-bottom:16px; }
         .empty-title { font-size:16px; font-weight:600; color:#7D5A38; }
         .empty-msg { font-size:13px; color:#A87D50; margin-top:6px; }
+
+        .pagination { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:16px; }
+        .page-btn {
+            flex:1; text-align:center; padding:12px; border-radius:12px;
+            background:#fff; border:1px solid #E8D5B0; color:#C47D1E;
+            font-weight:700; font-size:13px; text-decoration:none;
+        }
+        .page-btn.disabled { color:#D8C4A0; pointer-events:none; opacity:0.6; }
+        .page-info { font-size:12px; color:#A87D50; white-space:nowrap; }
     </style>
 </head>
 <body>
@@ -90,6 +99,13 @@
                 <% }); %>
             </ul>
         </div>
+        <% if (total_pages > 1) { %>
+        <div class="pagination">
+            <a href="/historique?page=<%= page - 1 %>" class="page-btn <%= page <= 1 ? 'disabled' : '' %>"><i class="fas fa-chevron-left"></i> Préc.</a>
+            <span class="page-info">Page <%= page %> / <%= total_pages %></span>
+            <a href="/historique?page=<%= page + 1 %>" class="page-btn <%= page >= total_pages ? 'disabled' : '' %>">Suiv. <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <% } %>
         <% } else { %>
         <div class="empty-state">
             <div class="empty-icon"><i class="fas fa-receipt"></i></div>
