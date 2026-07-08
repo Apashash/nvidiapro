@@ -308,6 +308,29 @@
     </div>
 </div>
 
+<!-- Success Popup -->
+<div class="popup" id="successPopup" style="display:none;">
+    <div class="popup-box" style="text-align:center; padding: 32px 24px;">
+        <div style="width:72px;height:72px;background:#c8820a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 style="color:#c8820a;font-size:1.25rem;margin-bottom:8px;">Achat effectué avec succès !</h3>
+        <p id="success-plan-name" style="font-weight:700;font-size:1.05rem;margin-bottom:6px;color:#333;"></p>
+        <p style="color:#666;font-size:0.93rem;margin-bottom:20px;">Votre investissement est maintenant actif. Les gains seront crédités quotidiennement.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;">
+            <div style="background:#fdf5e6;border-radius:10px;padding:12px;">
+                <div id="success-montant" style="font-weight:800;font-size:1.1rem;color:#c8820a;"></div>
+                <div style="font-size:0.78rem;color:#888;">Montant investi</div>
+            </div>
+            <div style="background:#fdf5e6;border-radius:10px;padding:12px;">
+                <div id="success-gain" style="font-weight:800;font-size:1.1rem;color:#c8820a;"></div>
+                <div style="font-size:0.78rem;color:#888;">Gain / jour</div>
+            </div>
+        </div>
+        <button class="btn-confirm" onclick="fermerSuccessPopup()">OK</button>
+    </div>
+</div>
+
 <!-- Insufficient Balance -->
 <div class="floater-overlay" id="insufficientBalanceFloater">
     <div class="floater-box">
@@ -411,14 +434,23 @@ document.getElementById('confirmerInvestBtn').addEventListener('click', function
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            window.location.reload();
+            fermerPopup();
+            document.getElementById('success-plan-name').textContent = data.plan_name;
+            document.getElementById('success-montant').textContent = parseInt(data.montant).toLocaleString() + ' FCFA';
+            document.getElementById('success-gain').textContent = parseInt(data.gain_journalier).toLocaleString() + ' FCFA';
+            document.getElementById('successPopup').style.display = 'flex';
         } else {
             showAlert(data.message || "Erreur lors de l'investissement", 'error');
             fermerPopup(); this.disabled = false; this.textContent = "Confirmer l'achat";
         }
     })
-    .catch(() => { showAlert('Erreur de connexion', 'error'); fermerPopup(); this.disabled = false; });
+    .catch(() => { showAlert('Erreur de connexion', 'error'); fermerPopup(); this.disabled = false; this.textContent = "Confirmer l'achat"; });
 });
+
+function fermerSuccessPopup() {
+    document.getElementById('successPopup').style.display = 'none';
+    window.location.reload();
+}
 
 function showAlert(msg, type) {
     const el = document.getElementById('alertMessage');

@@ -96,21 +96,12 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
       }
       await conn.commit();
 
-      const [[dates]] = await conn.query(
-        'SELECT date_debut, date_fin FROM commandes WHERE user_id = ? ORDER BY id DESC LIMIT 1',
-        [user_id]
-      );
-
-      res.render('acheter_action', {
+      res.json({
+        success: true,
         plan_name: plan.nom,
         montant,
-        plan_img: plan.image_url,
         gain_journalier,
         duree: parseInt(plan.duree_jours),
-        date_debut: dates.date_debut,
-        date_fin: dates.date_fin,
-        plan_desc: plan.description,
-        user_id,
       });
     } catch (e) {
       await conn.rollback();
