@@ -30,7 +30,10 @@ French-language mobile investment platform for West African users (Cameroun, Cô
 ## Database
 Replit built-in PostgreSQL (via `DATABASE_URL` env var, auto-provisioned).
 `config/db.js` is a mysql2-compatible wrapper around `pg` (converts `?` → `$N` placeholders, returns `[rows, fields]` tuples, provides `getConnection()` with transaction support).
-Schema is in the Replit database. Seed data (planinvestissement) is pre-loaded.
+
+**First-time setup:** after cloning/importing, run `npm run setup-db` to create all 15 tables and seed the 11 investment plans. The script is idempotent (`IF NOT EXISTS` / `ON CONFLICT DO NOTHING`) and safe to re-run.
+
+Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, `planinvestissement`, `commandes`, `depots`, `retraits`, `portefeuilles`, `transaction_passwords`, `historique_revenus`, `posts`, `codes_utilises`, `filleuls`, `connexions_journalieres`, `pieces`.
 
 ## Security Notes
 - Passwords stored plaintext in DB (matches original PHP — do not add bcrypt without a migration)
