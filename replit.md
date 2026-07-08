@@ -3,7 +3,7 @@
 ## Overview
 French-language mobile investment platform for West African users (Cameroun, Côte d'Ivoire, Sénégal, etc.).
 
-**Stack:** Node.js + Express.js + EJS templates + MySQL (external) + express-session
+**Stack:** Node.js + Express.js + EJS templates + PostgreSQL (Replit built-in, via mysql2-compatible wrapper) + express-session
 
 **Port:** 3000
 
