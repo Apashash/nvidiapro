@@ -21,9 +21,6 @@ router.get('/compte', requireAuth, async (req, res) => {
       ORDER BY date DESC LIMIT 20
     `, [user_id, user_id, user_id]);
 
-    const [tpRows] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ?', [user_id]);
-    const has_transaction_password = tpRows.length > 0;
-
     const [commandes] = await db.query("SELECT * FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE", [user_id]);
     const has_active_command = commandes.length > 0;
 
@@ -72,7 +69,6 @@ router.get('/compte', requireAuth, async (req, res) => {
     res.render('compte', {
       user, solde, pieces, revenus: rev, vip, transactions,
       has_active_command, can_collect, next_payment_info, custom_id,
-      has_transaction_password,
       success: req.session.success_compte || null,
       error: req.session.error_compte || null,
     });

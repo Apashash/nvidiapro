@@ -46,7 +46,7 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
 
     const [users] = await db.query('SELECT u.*, s.solde FROM utilisateurs u LEFT JOIN soldes s ON u.id = s.user_id ORDER BY u.id DESC LIMIT 50');
     const [depots] = await db.query("SELECT d.*, u.nom, u.telephone FROM depots d LEFT JOIN utilisateurs u ON d.user_id = u.id ORDER BY d.date_depot DESC LIMIT 50");
-    const [retraits] = await db.query("SELECT r.*, u.nom, u.telephone, p.numero_telephone as wallet_num, p.methode_paiement FROM retraits r LEFT JOIN utilisateurs u ON r.user_id = u.id LEFT JOIN portefeuilles p ON r.user_id = p.user_id ORDER BY r.date_demande DESC LIMIT 50");
+    const [retraits] = await db.query("SELECT r.*, u.nom, u.telephone FROM retraits r LEFT JOIN utilisateurs u ON r.user_id = u.id ORDER BY r.date_demande DESC LIMIT 50");
     const [posts] = await db.query("SELECT p.*, u.nom FROM posts p LEFT JOIN utilisateurs u ON p.user_id = u.id WHERE p.statut = 'en_attente' ORDER BY p.date_creation DESC LIMIT 30");
 
     res.render('admin', {

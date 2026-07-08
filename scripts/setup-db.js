@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
   parrain_id INTEGER REFERENCES utilisateurs(id),
   code_parrainage VARCHAR(50) UNIQUE,
   date_inscription TIMESTAMP DEFAULT NOW(),
-  last_spin_time TIMESTAMP,
-  transaction_password VARCHAR(10)
+  last_spin_time TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS soldes (
@@ -92,21 +91,6 @@ CREATE TABLE IF NOT EXISTS retraits (
   statut VARCHAR(50) DEFAULT 'en_attente',
   date_demande TIMESTAMP DEFAULT NOW(),
   date_traitement TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS portefeuilles (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES utilisateurs(id),
-  nom_portefeuille VARCHAR(255),
-  pays VARCHAR(100),
-  methode_paiement VARCHAR(100),
-  numero_telephone VARCHAR(50)
-);
-
-CREATE TABLE IF NOT EXISTS transaction_passwords (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER UNIQUE REFERENCES utilisateurs(id),
-  password VARCHAR(10)
 );
 
 -- commande_id links a revenue entry to a specific investment order.

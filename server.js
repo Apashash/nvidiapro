@@ -36,7 +36,6 @@ app.use('/', require('./routes/depot'));
 app.use('/', require('./routes/retrait'));
 app.use('/', require('./routes/compte'));
 app.use('/', require('./routes/equipe'));
-app.use('/', require('./routes/portefeuille'));
 app.use('/', require('./routes/roue'));
 app.use('/', require('./routes/salaire'));
 app.use('/', require('./routes/cadeau'));

@@ -248,19 +248,9 @@
                 <span class="menu-txt">Retrait</span>
                 <i class="fas fa-chevron-right menu-arr"></i>
             </a>
-            <a href="/portefeuille" class="menu-item">
-                <span class="menu-ico"><i class="fas fa-wallet"></i></span>
-                <span class="menu-txt">Portefeuille</span>
-                <i class="fas fa-chevron-right menu-arr"></i>
-            </a>
             <div class="menu-item" onclick="openTxModal()">
                 <span class="menu-ico"><i class="fas fa-exchange-alt"></i></span>
                 <span class="menu-txt">Historique des Transactions</span>
-                <i class="fas fa-chevron-right menu-arr"></i>
-            </div>
-            <div class="menu-item" onclick="openPinModal()">
-                <span class="menu-ico"><i class="fas fa-lock"></i></span>
-                <span class="menu-txt"><%= has_transaction_password ? 'Modifier le code PIN' : 'Créer un code PIN' %></span>
                 <i class="fas fa-chevron-right menu-arr"></i>
             </div>
             <a href="/tuto" class="menu-item">
@@ -279,23 +269,6 @@
                 <i class="fas fa-chevron-right menu-arr"></i>
             </a>
         </div>
-    </div>
-</div>
-
-<!-- PIN Modal -->
-<div class="modal" id="pinModal">
-    <div class="modal-box">
-        <div class="modal-head">
-            <div class="modal-title"><i class="fas fa-lock"></i> <%= has_transaction_password ? 'Modifier le PIN' : 'Créer un PIN' %></div>
-            <button class="modal-close-btn" onclick="closePinModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <% if (has_transaction_password) { %>
-        <div class="fg"><label>Ancien PIN</label><input type="password" id="old_pin" maxlength="4" placeholder="****" inputmode="numeric"></div>
-        <% } %>
-        <div class="fg"><label>Nouveau PIN (4 chiffres)</label><input type="password" id="new_pin" maxlength="4" placeholder="****" inputmode="numeric"></div>
-        <div class="fg"><label>Confirmer le PIN</label><input type="password" id="confirm_pin" maxlength="4" placeholder="****" inputmode="numeric"></div>
-        <button class="modal-btn" onclick="savePin()">Enregistrer</button>
-        <div class="modal-msg" id="pinMsg"></div>
     </div>
 </div>
 
@@ -349,27 +322,9 @@ function copyId(btn) {
         try { document.execCommand('copy'); } catch(e) {}
     });
 }
-function openPinModal() { document.getElementById('pinModal').classList.add('active'); }
-function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
 function openTxModal() { document.getElementById('txModal').classList.add('active'); }
 function closeTxModal() { document.getElementById('txModal').classList.remove('active'); }
-document.getElementById('pinModal').addEventListener('click', e => { if (e.target === document.getElementById('pinModal')) closePinModal(); });
 document.getElementById('txModal').addEventListener('click', e => { if (e.target === document.getElementById('txModal')) closeTxModal(); });
-
-async function savePin() {
-    const old_pin = document.getElementById('old_pin') ? document.getElementById('old_pin').value : '';
-    const new_pin = document.getElementById('new_pin').value;
-    const confirm_pin = document.getElementById('confirm_pin').value;
-    const msg = document.getElementById('pinMsg');
-    if (new_pin !== confirm_pin) { msg.textContent = 'Les PIN ne correspondent pas.'; msg.style.color = '#DC2626'; return; }
-    if (!/^\d{4}$/.test(new_pin)) { msg.textContent = 'Le PIN doit être 4 chiffres.'; msg.style.color = '#DC2626'; return; }
-    try {
-        const res = await fetch('/update_transaction_password', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:`old_pin=${old_pin}&new_pin=${new_pin}&confirm_pin=${confirm_pin}` });
-        const data = await res.json();
-        msg.textContent = data.message; msg.style.color = data.success ? '#16A34A' : '#DC2626';
-        if (data.success) setTimeout(() => location.reload(), 1200);
-    } catch(e) { msg.textContent = 'Erreur réseau'; msg.style.color = '#DC2626'; }
-}
 
 async function collectGain() {
     const btn = document.getElementById('collectBtn');

@@ -113,18 +113,6 @@
 
         <% if (message) { %><%- message %><% } %>
 
-        <% if (!has_wallet) { %>
-        <div class="warning-card">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>Portefeuille non configuré. <a href="/portefeuille">Configurer maintenant</a></span>
-        </div>
-        <% } %>
-        <% if (!has_transaction_password) { %>
-        <div class="warning-card">
-            <i class="fas fa-lock"></i>
-            <span>Créez d'abord un code PIN. <a href="/compte">Créer le PIN</a></span>
-        </div>
-        <% } %>
         <% if (!retraits_disponibles) { %>
         <div class="warning-card">
             <i class="fas fa-clock"></i>
@@ -136,17 +124,12 @@
             ℹ️ Montant minimum: <strong>1 200 FCFA</strong> — Un seul retrait par 24h — Traitement sous 24h.
         </div>
 
-        <% if (has_wallet && wallet_data) { %>
         <div class="wallet-card">
-            <h3><i class="fas fa-wallet"></i> Portefeuille de destination</h3>
-            <div class="wallet-row"><span class="wallet-key">Nom</span><span class="wallet-val"><%= wallet_data.nom_portefeuille %></span></div>
-            <div class="wallet-row"><span class="wallet-key">Méthode</span><span class="wallet-val"><%= wallet_data.methode_paiement %></span></div>
-            <div class="wallet-row"><span class="wallet-key">Numéro</span><span class="wallet-val"><%= wallet_data.numero_telephone %></span></div>
-            <div class="wallet-row"><span class="wallet-key">Pays</span><span class="wallet-val"><%= wallet_data.pays %></span></div>
+            <h3><i class="fas fa-mobile-alt"></i> Destination du retrait</h3>
+            <div class="wallet-row"><span class="wallet-key">Numéro</span><span class="wallet-val"><%= user.telephone %></span></div>
         </div>
-        <% } %>
 
-        <% if (has_wallet && has_transaction_password && retraits_disponibles) { %>
+        <% if (retraits_disponibles) { %>
         <div class="form-card">
             <h3><i class="fas fa-arrow-up"></i> Effectuer un retrait</h3>
             <form action="/retrait" method="POST">
@@ -155,11 +138,6 @@
                     <label class="form-label">Montant à retirer (FCFA)</label>
                     <input type="number" name="montant" min="1200" max="<%= solde %>" step="100"
                            placeholder="Minimum 1 200 FCFA" required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Code PIN de transaction (4 chiffres)</label>
-                    <input type="password" name="transaction_password" maxlength="4"
-                           placeholder="****" inputmode="numeric" required class="form-input">
                 </div>
                 <button type="submit" class="btn-submit">
                     <i class="fas fa-paper-plane"></i> Demander le retrait

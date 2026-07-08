@@ -11,13 +11,6 @@ router.get('/retrait', requireAuth, async (req, res) => {
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
 
-    const [walletRows] = await db.query('SELECT * FROM portefeuilles WHERE user_id = ?', [user_id]);
-    const has_wallet = walletRows.length > 0;
-    const wallet_data = has_wallet ? walletRows[0] : null;
-
-    const [tpRows] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ?', [user_id]);
-    const has_transaction_password = tpRows.length > 0;
-
     const hGmt = parseInt(new Date().toUTCString().split(' ')[4].split(':')[0]);
     const day = new Date().getUTCDay(); // 0=Sun, 6=Sat
     const retraits_disponibles = day >= 1 && day <= 6 && hGmt >= 9 && hGmt < 19;
@@ -25,7 +18,7 @@ router.get('/retrait', requireAuth, async (req, res) => {
     const message = req.session.retrait_message || null;
     delete req.session.retrait_message;
 
-    res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message });
+    res.render('retrait', { user, solde, retraits_disponibles, message });
   } catch (e) {
     console.error(e);
     res.redirect('/');
@@ -39,21 +32,12 @@ router.post('/retrait', requireAuth, async (req, res) => {
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
 
-    const [walletRows] = await db.query('SELECT * FROM portefeuilles WHERE user_id = ?', [user_id]);
-    const has_wallet = walletRows.length > 0;
-    const wallet_data = has_wallet ? walletRows[0] : null;
-
-    const [tpRows] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ?', [user_id]);
-    const has_transaction_password = tpRows.length > 0;
-
     const hGmt = parseInt(new Date().toUTCString().split(' ')[4].split(':')[0]);
     const day = new Date().getUTCDay();
     const retraits_disponibles = day >= 1 && day <= 6 && hGmt >= 9 && hGmt < 19;
 
     const erreurs = [];
-    if (!has_wallet) erreurs.push('wallet');
-    else if (!has_transaction_password) erreurs.push('password');
-    else if (!retraits_disponibles) erreurs.push('Les retraits sont disponibles du lundi au samedi de 9h à 19h GMT.');
+    if (!retraits_disponibles) erreurs.push('Les retraits sont disponibles du lundi au samedi de 9h à 19h GMT.');
     else {
       const [[cmds]] = await db.query("SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE", [user_id]);
       if (Number(cmds.nb) === 0) erreurs.push("Vous devez avoir au moins un plan d'investissement en cours pour effectuer un retrait.");
@@ -69,30 +53,20 @@ router.post('/retrait', requireAuth, async (req, res) => {
     }
 
     if (erreurs.length) {
-      let msg;
-      if (erreurs[0] === 'wallet') msg = "<div class='notification error'>Vous devez d'abord configurer votre portefeuille.</div>";
-      else if (erreurs[0] === 'password') msg = "<div class='notification error'>Vous devez d'abord créer un mot de passe de transaction.</div>";
-      else msg = `<div class='notification error'>${erreurs[0]}</div>`;
-      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: msg });
+      const msg = `<div class='notification error'>${erreurs[0]}</div>`;
+      return res.render('retrait', { user, solde, retraits_disponibles, message: msg });
     }
 
     const montant = parseFloat(req.body.montant);
-    const transaction_password = req.body.transaction_password || '';
 
-    if (!montant || !transaction_password) {
-      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Veuillez remplir tous les champs.</div>" });
+    if (!montant) {
+      return res.render('retrait', { user, solde, retraits_disponibles, message: "<div class='notification error'>Veuillez remplir tous les champs.</div>" });
     }
     if (montant > solde) {
-      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Solde insuffisant.</div>" });
+      return res.render('retrait', { user, solde, retraits_disponibles, message: "<div class='notification error'>Solde insuffisant.</div>" });
     }
     if (montant < 1200) {
-      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Le montant minimum de retrait est de 1 200 XOF.</div>" });
-    }
-
-    // Verify transaction password
-    const [[tp]] = await db.query('SELECT * FROM transaction_passwords WHERE user_id = ? AND password = ?', [user_id, transaction_password]);
-    if (!tp) {
-      return res.render('retrait', { user, solde, has_wallet, wallet_data, has_transaction_password, retraits_disponibles, message: "<div class='notification error'>Mot de passe de transaction incorrect.</div>" });
+      return res.render('retrait', { user, solde, retraits_disponibles, message: "<div class='notification error'>Le montant minimum de retrait est de 1 200 XOF.</div>" });
     }
 
     const conn = await db.getConnection();
@@ -101,7 +75,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
       await conn.query('UPDATE soldes SET solde = solde - ? WHERE user_id = ?', [montant, user_id]);
       await conn.query(
         "INSERT INTO retraits (user_id, montant, methode, numero_compte, statut) VALUES (?, ?, ?, ?, 'en_attente')",
-        [user_id, montant, wallet_data.methode_paiement, wallet_data.numero_telephone]
+        [user_id, montant, 'Mobile Money', user.telephone]
       );
       await conn.commit();
     } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
