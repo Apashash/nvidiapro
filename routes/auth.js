@@ -103,7 +103,7 @@ router.post('/inscription1', async (req, res) => {
     }
 
     // Generate referral code
-    const code_parrainage = 'NV' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 999);
+    const code_parrainage = 'AL' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 999);
 
     const conn = await db.getConnection();
     try {
