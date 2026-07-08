@@ -25,64 +25,97 @@
     }
     .topbar-title { color:#fff; font-size:1.05rem; font-weight:700; }
 
-    /* ── Sidebar overlay ── */
-    .overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:400;
-      opacity:0; pointer-events:none; transition:opacity 0.25s;
-    }
+    /* ── Sidebar ── */
+    .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:400; opacity:0; pointer-events:none; transition:opacity 0.25s; }
     .overlay.open { opacity:1; pointer-events:all; }
-
-    .sidebar {
-      position:fixed; top:0; left:0; width:290px; height:100%;
-      background:#fff; z-index:500;
-      transform:translateX(-100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1);
-      display:flex; flex-direction:column; overflow:hidden;
-    }
+    .sidebar { position:fixed; top:0; left:0; width:290px; height:100%; background:#fff; z-index:500; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; overflow:hidden; }
     .sidebar.open { transform:translateX(0); }
-
     .sidebar-header { background:#E8931A; padding:22px 20px 18px; position:relative; flex-shrink:0; }
-    .sidebar-close {
-      position:absolute; top:14px; right:14px; width:32px; height:32px;
-      background:rgba(255,255,255,0.25); border:none; border-radius:50%;
-      color:#fff; font-size:1rem; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .sidebar-shield {
-      width:50px; height:50px; background:rgba(255,255,255,0.25);
-      border-radius:14px; display:flex; align-items:center; justify-content:center;
-      margin-bottom:12px; font-size:1.4rem; color:#fff;
-    }
+    .sidebar-close { position:absolute; top:14px; right:14px; width:32px; height:32px; background:rgba(255,255,255,0.25); border:none; border-radius:50%; color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .sidebar-shield { width:50px; height:50px; background:rgba(255,255,255,0.25); border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:1.4rem; color:#fff; }
     .sidebar-header h2 { color:#fff; font-size:1.15rem; font-weight:800; }
     .sidebar-header p  { color:rgba(255,255,255,0.8); font-size:0.78rem; margin-top:2px; }
-
     .sidebar-nav { flex:1; overflow-y:auto; padding:8px 0; }
-    .nav-item {
-      display:flex; align-items:center; gap:14px; padding:13px 20px;
-      border-left:3px solid transparent; text-decoration:none; transition:background 0.15s;
-    }
+    .nav-item { display:flex; align-items:center; gap:14px; padding:13px 20px; border-left:3px solid transparent; text-decoration:none; transition:background 0.15s; }
     .nav-item:hover { background:#FFF8F0; }
     .nav-item.active { background:#FFF3E0; border-left-color:#E8931A; }
     .nav-item.active .nav-label { color:#E8931A; font-weight:700; }
-    .nav-icon {
-      width:36px; height:36px; border-radius:10px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:0.95rem; flex-shrink:0;
-    }
+    .nav-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; }
     .nav-label { font-size:0.95rem; color:#2a2a2a; font-weight:500; }
-
     .sidebar-footer { padding:14px 16px; border-top:1px solid #f0f0f0; }
-    .sidebar-footer a {
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      background:#fff; border:1.5px solid #e0e0e0; border-radius:12px;
-      padding:12px; color:#555; text-decoration:none;
-      font-size:0.9rem; font-weight:600; transition:background 0.15s;
-    }
+    .sidebar-footer a { display:flex; align-items:center; justify-content:center; gap:8px; background:#fff; border:1.5px solid #e0e0e0; border-radius:12px; padding:12px; color:#555; text-decoration:none; font-size:0.9rem; font-weight:600; transition:background 0.15s; }
     .sidebar-footer a:hover { background:#f5f5f5; }
 
     /* ── Main ── */
     .main { padding:16px; max-width:680px; margin:0 auto; }
 
-    /* ── Stat cards ── */
+    /* ── Page header ── */
+    .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .page-header-left { display:flex; align-items:center; gap:12px; }
+    .page-icon { width:44px; height:44px; background:#E8931A; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem; }
+    .page-title { font-size:1.2rem; font-weight:800; }
+    .page-count { font-size:0.8rem; color:#888; margin-top:1px; }
+    .btn-add { background:#E8931A; color:#fff; border:none; border-radius:20px; padding:10px 18px; font-size:0.88rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; text-decoration:none; }
+    .btn-add:hover { background:#d4820e; }
+
+    /* ── Search ── */
+    .search-box { background:#fff; border-radius:12px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+    .search-box i { color:#bbb; }
+    .search-box input { border:none; outline:none; flex:1; font-size:0.9rem; background:transparent; color:#1a1a1a; }
+    .search-box input::placeholder { color:#bbb; }
+
+    /* ── Cards ── */
+    .card { background:#fff; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 1px 6px rgba(0,0,0,0.06); position:relative; }
+    .card-row { display:flex; align-items:center; justify-content:space-between; }
+    .card-actions { display:flex; gap:8px; }
+
+    /* Plan cards */
+    .plan-card { background:#fff; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 1px 6px rgba(0,0,0,0.06); display:flex; align-items:flex-start; justify-content:space-between; }
+    .plan-body { flex:1; }
+    .plan-name { font-size:1rem; font-weight:800; margin-bottom:4px; }
+    .plan-meta { font-size:0.82rem; color:#555; margin-bottom:6px; }
+    .plan-meta strong { color:#1a1a1a; }
+    .plan-rend { font-size:0.88rem; font-weight:700; margin-bottom:2px; }
+    .plan-gain { font-size:0.8rem; color:#555; }
+    .icon-btn { width:36px; height:36px; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+    .icon-btn-edit { background:#EFF6FF; color:#3b82f6; }
+    .icon-btn-del  { background:#FEF2F2; color:#ef4444; }
+    .icon-btn-edit:hover { background:#dbeafe; }
+    .icon-btn-del:hover  { background:#fee2e2; }
+
+    /* User cards */
+    .avatar { width:44px; height:44px; border-radius:12px; background:#E8931A; color:#fff; font-size:1.1rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .user-name { font-size:0.95rem; font-weight:700; }
+    .user-sub  { font-size:0.78rem; color:#888; margin-top:1px; }
+    .user-balance { font-size:0.95rem; font-weight:800; color:#E8931A; margin-top:4px; }
+    .ref-row { display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap; }
+    .ref-code { font-size:0.78rem; font-weight:700; color:#6366f1; background:#EEF2FF; padding:3px 10px; border-radius:20px; }
+    .copy-btn { background:#EFF6FF; border:none; border-radius:6px; padding:3px 10px; font-size:0.75rem; color:#3b82f6; cursor:pointer; display:flex; align-items:center; gap:4px; font-weight:600; }
+    .copy-btn:hover { background:#dbeafe; }
+    .menu-btn { width:36px; height:36px; background:#FFF3E0; border:none; border-radius:10px; cursor:pointer; color:#E8931A; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+
+    /* Depot / Retrait cards */
+    .dep-amount { font-size:1.1rem; font-weight:800; color:#E8931A; margin:4px 0; }
+    .dep-ref { font-size:0.78rem; font-weight:700; color:#E8931A; background:#FFF3E0; padding:3px 10px; border-radius:20px; cursor:pointer; }
+    .dep-meta { font-size:0.8rem; color:#888; }
+
+    /* Retrait amount blue */
+    .ret-amount { font-size:1.1rem; font-weight:800; color:#3b82f6; margin:4px 0; }
+
+    /* Transaction cards */
+    .tx-type { font-size:0.88rem; font-weight:700; }
+    .tx-user { font-size:0.78rem; color:#888; }
+    .tx-date { font-size:0.75rem; color:#aaa; }
+    .tx-amount { font-size:1rem; font-weight:800; color:#22c55e; }
+
+    /* Status badges */
+    .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; }
+    .badge-pending  { background:#FFF7ED; color:#EA580C; }
+    .badge-valid    { background:#F0FDF4; color:#16a34a; border:1px solid #bbf7d0; }
+    .badge-rejected { background:#FEF2F2; color:#dc2626; border:1px solid #fecaca; }
+    .badge-admin    { background:#EEF2FF; color:#4f46e5; }
+
+    /* Stat cards dashboard */
     .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
     .stat-card { background:#fff; border-radius:16px; padding:18px 16px; box-shadow:0 1px 6px rgba(0,0,0,0.07); }
     .stat-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; font-size:1.15rem; }
@@ -90,7 +123,7 @@
     .stat-sub  { font-size:0.7rem; color:#888; font-weight:600; margin-top:2px; }
     .stat-label{ font-size:0.82rem; color:#555; margin-top:4px; }
 
-    /* ── Chart card ── */
+    /* Chart */
     .chart-card { background:#fff; border-radius:16px; padding:18px 16px; box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px; }
     .chart-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
     .chart-icon { width:36px; height:36px; background:#FFF3E0; border-radius:10px; display:flex; align-items:center; justify-content:center; }
@@ -100,8 +133,6 @@
     .chart-legend { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
     .legend-dot { width:10px; height:10px; border-radius:3px; }
     .legend-item { display:flex; align-items:center; gap:5px; font-size:0.75rem; color:#555; }
-
-    /* Today vs Yesterday mini cards */
     .tvh-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
     .tvh-card { background:#fff; border-radius:12px; padding:12px 14px; border:1px solid #f0f0f0; }
     .tvh-label { font-size:0.72rem; color:#888; margin-bottom:4px; }
@@ -110,8 +141,6 @@
     .tvh-diff  { font-size:0.72rem; margin-top:2px; }
     .tvh-diff.down { color:#ef4444; }
     .tvh-diff.up   { color:#22c55e; }
-
-    /* ── Revenue card ── */
     .rev-card { background:#fff; border-radius:16px; padding:18px 16px; box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px; }
     .rev-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
     .rev-icon { width:40px; height:40px; background:#E8F5E9; border-radius:12px; display:flex; align-items:center; justify-content:center; }
@@ -119,55 +148,59 @@
     .rev-card h3 { font-size:1rem; font-weight:700; }
     .rev-card .rev-sub { font-size:0.78rem; color:#888; }
     .rev-card p { font-size:0.85rem; color:#555; line-height:1.5; margin-bottom:14px; }
-    .btn-rev {
-      width:100%; background:#22c55e; color:#fff; border:none; border-radius:12px;
-      padding:14px; font-size:0.95rem; font-weight:700; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.2s;
-    }
+    .btn-rev { width:100%; background:#22c55e; color:#fff; border:none; border-radius:12px; padding:14px; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.2s; }
     .btn-rev:hover { background:#16a34a; }
     .btn-rev:disabled { background:#9ca3af; cursor:not-allowed; }
 
-    /* ── Data card ── */
-    .data-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px; }
-    .data-head { padding:14px 16px; border-bottom:1px solid #f5f5f5; display:flex; align-items:center; justify-content:space-between; }
-    .data-head h3 { font-size:0.95rem; font-weight:700; }
-    .data-count { font-size:0.78rem; color:#888; background:#f5f5f5; padding:3px 10px; border-radius:20px; }
-    .search-wrap { padding:12px 16px; border-bottom:1px solid #f5f5f5; }
-    .search-wrap input {
-      width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px;
-      padding:10px 14px; font-size:0.88rem; outline:none; color:#1a1a1a;
-    }
-    .search-wrap input:focus { border-color:#E8931A; }
-    .scroll-x { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; min-width:500px; }
-    th { background:#FAFAF8; color:#888; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; padding:10px 14px; text-align:left; font-weight:700; border-bottom:1px solid #f0f0f0; }
-    td { padding:10px 14px; border-bottom:1px solid #f9f9f9; font-size:0.85rem; vertical-align:middle; }
-    tr:last-child td { border-bottom:none; }
-    tr:hover td { background:#FAFAF8; }
+    /* Filter row */
+    .filter-row { display:flex; gap:10px; margin-bottom:14px; }
+    .filter-sel { flex:1; background:#fff; border:1.5px solid #e8e8e8; border-radius:10px; padding:10px 12px; font-size:0.85rem; color:#1a1a1a; outline:none; cursor:pointer; }
+    .filter-sel:focus { border-color:#E8931A; }
 
-    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
-    .badge-pending  { background:#FFF7ED; color:#EA580C; }
-    .badge-valid    { background:#F0FDF4; color:#16a34a; }
-    .badge-rejected { background:#FEF2F2; color:#dc2626; }
-    .badge-admin    { background:#EEF2FF; color:#4f46e5; }
-    .badge-vip      { background:#FFF7ED; color:#E8931A; }
+    /* Salaires config */
+    .salaire-card { background:#fff; border-radius:16px; padding:18px; margin-bottom:14px; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+    .salaire-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .salaire-title { font-size:0.95rem; font-weight:700; }
+    .salaire-sub   { font-size:0.75rem; color:#888; }
+    .vip-star { width:32px; height:32px; background:#F0FDF4; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#22c55e; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    .form-group label { display:block; font-size:0.75rem; color:#888; font-weight:600; margin-bottom:5px; }
+    .form-group input { width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px; padding:11px 14px; font-size:0.9rem; color:#1a1a1a; outline:none; }
+    .form-group input:focus { border-color:#E8931A; }
+    .form-group input[readonly] { color:#888; cursor:not-allowed; }
+    .btn-save { width:100%; background:#E8931A; color:#fff; border:none; border-radius:12px; padding:13px; font-size:0.92rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-save:hover { background:#d4820e; }
 
-    .btn-xs { padding:5px 11px; border-radius:7px; border:none; cursor:pointer; font-size:0.72rem; font-weight:700; margin:2px; white-space:nowrap; }
-    .btn-v  { background:#F0FDF4; color:#16a34a; }
-    .btn-r  { background:#FEF2F2; color:#dc2626; }
-    .btn-e  { background:#EFF6FF; color:#2563eb; }
-    .btn-v:hover { background:#dcfce7; }
-    .btn-r:hover { background:#fee2e2; }
-    .btn-e:hover { background:#dbeafe; }
+    /* Paramètres */
+    .param-card { background:#fff; border-radius:16px; padding:18px; margin-bottom:14px; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+    .param-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+    .param-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+    .param-head-text h3 { font-size:0.95rem; font-weight:700; }
+    .param-head-text p  { font-size:0.75rem; color:#888; margin-top:2px; }
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-radius:12px; margin-bottom:14px; }
+    .toggle-row.green { background:#F0FDF4; }
+    .toggle-row.red   { background:#FEF2F2; }
+    .toggle-label { font-size:0.9rem; font-weight:700; }
+    .toggle-label span { display:block; font-size:0.75rem; font-weight:400; color:#555; margin-top:2px; }
+    .toggle-switch { position:relative; width:48px; height:26px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:26px; transition:0.3s; }
+    .toggle-slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.3s; }
+    input:checked + .toggle-slider { background:#22c55e; }
+    input:checked + .toggle-slider:before { transform:translateX(22px); }
+    .param-input { width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px; padding:11px 14px; font-size:0.9rem; color:#1a1a1a; outline:none; margin-bottom:12px; }
+    .param-input:focus { border-color:#E8931A; }
+    .param-textarea { width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px; padding:11px 14px; font-size:0.9rem; color:#1a1a1a; outline:none; resize:vertical; min-height:100px; font-family:inherit; margin-bottom:12px; }
+    .param-textarea:focus { border-color:#E8931A; }
+    .param-label { font-size:0.78rem; color:#555; font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+    .days-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .day-chip { padding:7px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; border:none; cursor:pointer; background:#e8e8e8; color:#555; }
+    .day-chip.active { background:#3b82f6; color:#fff; }
+    .hours-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    .comm-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:14px; }
 
-    .empty { text-align:center; padding:40px; color:#aaa; font-size:0.9rem; }
-
-    /* ── Modal ── */
-    .modal-overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:600;
-      display:flex; align-items:center; justify-content:center; padding:20px;
-      opacity:0; pointer-events:none; transition:opacity 0.2s;
-    }
+    /* Modal */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:600; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity 0.2s; }
     .modal-overlay.open { opacity:1; pointer-events:all; }
     .modal-box { background:#fff; border-radius:20px; padding:24px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
     .modal-box h3 { font-size:1rem; font-weight:700; margin-bottom:16px; }
@@ -178,17 +211,28 @@
     .modal-btns button { flex:1; padding:12px; border:none; border-radius:12px; cursor:pointer; font-weight:700; font-size:0.9rem; }
     .m-cancel  { background:#F5F5F0; color:#555; }
     .m-confirm { background:#E8931A; color:#fff; }
+    .m-danger  { background:#ef4444; color:#fff; }
 
-    /* ── Toast ── */
-    .toast {
-      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
-      background:#1a1a1a; color:#fff; padding:12px 22px; border-radius:12px;
-      font-size:0.88rem; font-weight:600; z-index:700; transition:transform 0.3s;
-      white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.3);
-    }
+    /* Dropdown menu */
+    .dropdown { position:relative; }
+    .dropdown-menu { position:absolute; right:0; top:42px; background:#fff; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.15); min-width:160px; z-index:50; display:none; overflow:hidden; }
+    .dropdown-menu.open { display:block; }
+    .dropdown-item { padding:11px 16px; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; gap:10px; border:none; width:100%; background:transparent; text-align:left; }
+    .dropdown-item:hover { background:#F5F5F0; }
+    .dropdown-item.danger { color:#ef4444; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:12px 22px; border-radius:12px; font-size:0.88rem; font-weight:600; z-index:700; transition:transform 0.3s; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
     .toast.show { transform:translateX(-50%) translateY(0); }
     .toast.ok  { background:#16a34a; }
     .toast.err { background:#dc2626; }
+
+    .empty { text-align:center; padding:40px; color:#aaa; font-size:0.9rem; }
+
+    .btn-xs { padding:5px 11px; border-radius:7px; border:none; cursor:pointer; font-size:0.72rem; font-weight:700; margin:2px; }
+    .btn-v  { background:#F0FDF4; color:#16a34a; }
+    .btn-r  { background:#FEF2F2; color:#dc2626; }
+    .btn-e  { background:#EFF6FF; color:#2563eb; }
 
     @media(min-width:600px) {
       .main { padding:20px; }
@@ -202,21 +246,18 @@
 <div class="topbar">
   <button class="topbar-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
   <span class="topbar-title"><%= pageTitle %></span>
-  <a href="/adminxyz/logout" class="topbar-btn" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
+  <a href="/adminxyz/logout" class="topbar-btn" title="Déconnexion"><i class="fas fa-bell"></i></a>
 </div>
 
-<!-- Overlay -->
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-<!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <button class="sidebar-close" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
     <div class="sidebar-shield"><i class="fas fa-shield-halved"></i></div>
     <h2>Administration</h2>
-    <p>NVIDIA Technology</p>
+    <p>Altiora Capital Africa</p>
   </div>
-
   <nav class="sidebar-nav">
     <% const nav = [
       { page:'dashboard',    href:'/adminxyz/dashboard',    icon:'fas fa-chart-pie',          bg:'#FFF3E0', color:'#E8931A', label:'Tableau de bord' },
@@ -232,23 +273,19 @@
     ]; %>
     <% nav.forEach(item => { %>
     <a href="<%= item.href %>" class="nav-item <%= currentPage === item.page ? 'active' : '' %>">
-      <span class="nav-icon" style="background:<%= item.bg %>">
-        <i class="<%= item.icon %>" style="color:<%= item.color %>"></i>
-      </span>
+      <span class="nav-icon" style="background:<%= item.bg %>"><i class="<%= item.icon %>" style="color:<%= item.color %>"></i></span>
       <span class="nav-label"><%= item.label %></span>
     </a>
     <% }); %>
   </nav>
-
   <div class="sidebar-footer">
-    <a href="/"><i class="fas fa-house" style="color:#E8931A"></i> Retour à l'accueil</a>
+    <a href="/adminxyz/logout"><i class="fas fa-sign-out-alt" style="color:#ef4444"></i> Déconnexion</a>
   </div>
 </aside>
 
-<!-- ════ MAIN CONTENT ════ -->
 <div class="main">
 
-<%# ── DASHBOARD ──────────────────────────────────────────────────────── %>
+<%# ══════════════════ DASHBOARD ══════════════════ %>
 <% if (currentPage === 'dashboard') { %>
 
   <div class="stats-grid">
@@ -296,49 +333,29 @@
     </div>
   </div>
 
-  <!-- Today vs Yesterday -->
   <div class="chart-card">
     <div class="chart-head">
       <div class="chart-icon"><i class="fas fa-chart-bar"></i></div>
-      <div style="flex:1">
-        <h3>Aujourd'hui vs Hier</h3>
-      </div>
-      <div style="display:flex;gap:10px;font-size:0.75rem;color:#888">
-        <span><span style="display:inline-block;width:10px;height:10px;background:#1a1a1a;border-radius:2px;margin-right:4px"></span>Auj.</span>
-        <span><span style="display:inline-block;width:10px;height:10px;background:#ccc;border-radius:2px;margin-right:4px"></span>Hier</span>
-      </div>
+      <div style="flex:1"><h3>Aujourd'hui vs Hier</h3></div>
     </div>
     <p class="sub">Comparaison des transactions</p>
     <canvas id="tvhChart" height="160"></canvas>
     <div class="tvh-grid">
       <div class="tvh-card" style="border-left:3px solid #22c55e">
-        <div class="tvh-label">Dépôts auj. <span style="color:#888">(<%= chartData.tvh.dep_today_count %>)</span></div>
+        <div class="tvh-label">Dépôts auj.</div>
         <div class="tvh-num"><%= chartData.tvh.dep_today_count %> <small>· <%= (chartData.tvh.dep_today||0).toLocaleString('fr-FR') %> FCFA</small></div>
         <% const depDiff = chartData.tvh.dep_today - chartData.tvh.dep_yesterday; %>
-        <div class="tvh-diff <%= depDiff >= 0 ? 'up' : 'down' %>">
-          <%= depDiff >= 0 ? '▲' : '▼' %> <%= Math.abs(depDiff).toLocaleString('fr-FR') %> vs hier
-        </div>
+        <div class="tvh-diff <%= depDiff >= 0 ? 'up' : 'down' %>"><%= depDiff >= 0 ? '▲' : '▼' %> <%= Math.abs(depDiff).toLocaleString('fr-FR') %> vs hier</div>
       </div>
       <div class="tvh-card" style="border-left:3px solid #ef4444">
-        <div class="tvh-label">Retraits auj. <span style="color:#888">(<%= chartData.tvh.ret_today_count %>)</span></div>
+        <div class="tvh-label">Retraits auj.</div>
         <div class="tvh-num"><%= chartData.tvh.ret_today_count %> <small>· <%= (chartData.tvh.ret_today||0).toLocaleString('fr-FR') %> FCFA</small></div>
         <% const retDiff = chartData.tvh.ret_today - chartData.tvh.ret_yesterday; %>
-        <div class="tvh-diff <%= retDiff >= 0 ? 'up' : 'down' %>">
-          <%= retDiff >= 0 ? '▲' : '▼' %> <%= Math.abs(retDiff).toLocaleString('fr-FR') %> vs hier
-        </div>
-      </div>
-      <div class="tvh-card" style="border-left:3px solid #22c55e">
-        <div class="tvh-label">Dépôts hier</div>
-        <div class="tvh-num"><%= (chartData.tvh.dep_yesterday||0).toLocaleString('fr-FR') %> <small>FCFA</small></div>
-      </div>
-      <div class="tvh-card" style="border-left:3px solid #ef4444">
-        <div class="tvh-label">Retraits hier</div>
-        <div class="tvh-num"><%= (chartData.tvh.ret_yesterday||0).toLocaleString('fr-FR') %> <small>FCFA</small></div>
+        <div class="tvh-diff <%= retDiff >= 0 ? 'up' : 'down' %>"><%= retDiff >= 0 ? '▲' : '▼' %> <%= Math.abs(retDiff).toLocaleString('fr-FR') %> vs hier</div>
       </div>
     </div>
   </div>
 
-  <!-- 6-month activity -->
   <div class="chart-card">
     <div class="chart-head">
       <div class="chart-icon"><i class="fas fa-chart-bar"></i></div>
@@ -354,7 +371,6 @@
     </div>
   </div>
 
-  <!-- Daily revenue -->
   <div class="rev-card">
     <div class="rev-head">
       <div class="rev-icon"><i class="fas fa-coins"></i></div>
@@ -363,320 +379,520 @@
         <div class="rev-sub">Automatique chaque jour à 02h00 UTC</div>
       </div>
     </div>
-    <p>Crédite le revenu journalier sur le solde de chaque investisseur ayant un plan actif. Les plans arrivés à échéance sont automatiquement clôturés.</p>
+    <p>Crédite le revenu journalier sur le solde de chaque investisseur ayant un plan actif.</p>
     <button class="btn-rev" id="btnRevenu" onclick="verserRevenus()">
       <i class="fas fa-paper-plane"></i> Verser les revenus maintenant
     </button>
   </div>
 
-<%# ── PLANS VIP ─────────────────────────────────────────────────────── %>
+<%# ══════════════════ PLANS VIP ══════════════════ %>
 <% } else if (currentPage === 'plans') { %>
 
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Plans VIP</h3>
-      <span class="data-count"><%= plans.length %> plans</span>
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-chart-line"></i></div>
+      <div>
+        <div class="page-title">Plans VIP (<%= plans.length %>)</div>
+      </div>
     </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Nom</th><th>Prix (FCFA)</th><th>Durée</th><th>Rendement/j</th><th>Actifs</th><th>Actions</th></tr></thead>
-        <tbody>
-        <% plans.forEach((p, i) => { %>
-        <tr>
-          <td>#<%= p.id %></td>
-          <td><strong><%- p.nom %></strong></td>
-          <td style="color:#E8931A;font-weight:700"><%= parseFloat(p.prix).toLocaleString('fr-FR') %></td>
-          <td><%= p.duree_jours %>j</td>
-          <td><%= parseFloat(p.rendement_journalier).toFixed(2) %>%</td>
-          <td><span class="badge badge-valid"><%= counts[i] || 0 %></span></td>
-          <td>
-            <button class="btn-xs btn-e" onclick='openPlanModal(<%= p.id %>,<%= p.prix %>,<%= p.duree_jours %>,<%= p.rendement_journalier %>,"<%- (p.description||"").replace(/"/g,"&quot;") %>")'>
-              <i class="fas fa-pen"></i> Modifier
-            </button>
-          </td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-    </div>
+    <button class="btn-add" onclick="openAddPlanModal()"><i class="fas fa-plus"></i> Ajouter</button>
   </div>
 
-<%# ── UTILISATEURS ───────────────────────────────────────────────────── %>
+  <% const planColors = ['#E8931A','#3b82f6','#22c55e','#7c3aed','#ef4444','#0891b2','#16a34a','#d97706','#6366f1','#ec4899','#14b8a6']; %>
+  <% plans.forEach((p, i) => { %>
+  <%
+    const gain = (parseFloat(p.prix) * parseFloat(p.rendement_journalier) / 100);
+    const color = planColors[i % planColors.length];
+  %>
+  <div class="plan-card" style="border-left:4px solid <%= color %>">
+    <div class="plan-body">
+      <div class="plan-name" style="color:<%= color %>"><%- p.nom %></div>
+      <div class="plan-meta">Prix : <strong><%= parseFloat(p.prix).toLocaleString('fr-FR') %> FCFA</strong> &nbsp; Durée : <strong><%= p.duree_jours %>j</strong></div>
+      <div class="plan-rend" style="color:<%= color %>">Rend. : <%= parseFloat(p.rendement_journalier).toFixed(2) %>%/j</div>
+      <div class="plan-gain">+<%= gain.toLocaleString('fr-FR',{maximumFractionDigits:0}) %> FCFA/jour</div>
+    </div>
+    <div class="card-actions">
+      <button class="icon-btn icon-btn-edit" onclick='openPlanModal(<%= p.id %>,<%- JSON.stringify(p.nom) %>,<%= p.prix %>,<%= p.duree_jours %>,<%= p.rendement_journalier %>,"<%- (p.description||"").replace(/"/g,"&quot;") %>")'>
+        <i class="fas fa-pen"></i>
+      </button>
+      <button class="icon-btn icon-btn-del" onclick="deletePlan(<%= p.id %>,<%- JSON.stringify(p.nom) %>)">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  </div>
+  <% }); %>
+  <% if (!plans.length) { %><div class="empty">Aucun plan VIP</div><% } %>
+
+<%# ══════════════════ UTILISATEURS ══════════════════ %>
 <% } else if (currentPage === 'utilisateurs') { %>
 
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Utilisateurs</h3>
-      <span class="data-count"><%= users.length %></span>
-    </div>
-    <div class="search-wrap">
-      <input type="text" placeholder="Rechercher…" oninput="filterRows('uTbody', this.value)">
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Nom</th><th>Téléphone</th><th>Pays</th><th>Solde</th><th>VIP</th><th>Filleuls</th><th>Actions</th></tr></thead>
-        <tbody id="uTbody">
-        <% users.forEach(u => { %>
-        <tr>
-          <td>#<%= u.id %></td>
-          <td>
-            <strong><%- u.nom %></strong>
-            <% if (u.is_admin) { %><br><span class="badge badge-admin">Admin</span><% } %>
-          </td>
-          <td><%- u.telephone %></td>
-          <td><%- u.pays || '—' %></td>
-          <td style="font-weight:700;color:#E8931A"><%= parseFloat(u.solde||0).toLocaleString('fr-FR') %> <small>FCFA</small></td>
-          <td><% if (u.niveau_vip > 0) { %><span class="badge badge-vip">VIP <%= u.niveau_vip %></span><% } else { %>—<% } %></td>
-          <td><%= u.nb_filleuls || 0 %> / <%= u.nb_commandes || 0 %> inv.</td>
-          <td>
-            <button class="btn-xs btn-e" onclick='openBalanceModal(<%= u.id %>,<%- JSON.stringify(u.nom) %>,<%= parseFloat(u.solde||0) %>)'>
-              <i class="fas fa-coins"></i> Solde
-            </button>
-            <button class="btn-xs <%= u.is_admin ? 'btn-r' : 'btn-v' %>" onclick="doAction('toggle_admin',<%= u.id %>)">
-              <% if (u.is_admin) { %><i class="fas fa-user-minus"></i> -Admin<% } else { %><i class="fas fa-user-shield"></i> +Admin<% } %>
-            </button>
-          </td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!users.length) { %><div class="empty">Aucun utilisateur</div><% } %>
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-users"></i></div>
+      <div>
+        <div class="page-title">Utilisateurs (<%= users.length %>)</div>
+      </div>
     </div>
   </div>
 
-<%# ── DÉPÔTS ──────────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'depots') { %>
-
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Dépôts</h3>
-      <span class="data-count"><%= depots.length %></span>
-    </div>
-    <div class="search-wrap">
-      <input type="text" placeholder="Rechercher…" oninput="filterRows('dTbody', this.value)">
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Utilisateur</th><th>Montant</th><th>Méthode</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-        <tbody id="dTbody">
-        <% depots.forEach(d => { %>
-        <tr>
-          <td>#<%= d.id %></td>
-          <td><strong><%- d.nom || '—' %></strong><br><small style="color:#888"><%- d.telephone || '' %></small></td>
-          <td style="font-weight:700;color:#22c55e"><%= parseFloat(d.montant||0).toLocaleString('fr-FR') %> <small>FCFA</small></td>
-          <td><%- d.methode || '—' %></td>
-          <td style="color:#888;font-size:0.8rem"><%= d.date_depot ? new Date(d.date_depot).toLocaleDateString('fr-FR') : '—' %></td>
-          <td>
-            <% if (d.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
-            <% } else if (d.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
-            <% } else { %><span class="badge badge-rejected">Rejeté</span><% } %>
-          </td>
-          <td>
-            <% if (d.statut === 'en_attente') { %>
-            <button class="btn-xs btn-v" onclick="doAction('validate_deposit',<%= d.id %>)"><i class="fas fa-check"></i> Valider</button>
-            <button class="btn-xs btn-r" onclick="doAction('reject_deposit',<%= d.id %>)"><i class="fas fa-times"></i> Rejeter</button>
-            <% } %>
-          </td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!depots.length) { %><div class="empty">Aucun dépôt</div><% } %>
-    </div>
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" id="userSearch" placeholder="Rechercher par nom ou numéro..." oninput="filterCards('userList', this.value)">
   </div>
 
-<%# ── RETRAITS ────────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'retraits') { %>
-
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Retraits</h3>
-      <span class="data-count"><%= retraits.length %></span>
-    </div>
-    <div class="search-wrap">
-      <input type="text" placeholder="Rechercher…" oninput="filterRows('rTbody', this.value)">
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Utilisateur</th><th>Montant</th><th>Destination</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-        <tbody id="rTbody">
-        <% retraits.forEach(r => { %>
-        <tr>
-          <td>#<%= r.id %></td>
-          <td><strong><%- r.nom || '—' %></strong><br><small style="color:#888"><%- r.telephone || '' %></small></td>
-          <td style="font-weight:700;color:#ef4444"><%= parseFloat(r.montant||0).toLocaleString('fr-FR') %> <small>FCFA</small></td>
-          <td style="font-size:0.8rem"><%- r.methode || '—' %><% if (r.numero_compte) { %> — <%- r.numero_compte %><% } %></td>
-          <td style="color:#888;font-size:0.8rem"><%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></td>
-          <td>
-            <% if (r.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
-            <% } else if (r.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
-            <% } else { %><span class="badge badge-rejected">Rejeté</span><% } %>
-          </td>
-          <td>
-            <% if (r.statut === 'en_attente') { %>
-            <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> Valider</button>
-            <button class="btn-xs btn-r" onclick="doAction('reject_retrait',<%= r.id %>)"><i class="fas fa-times"></i> Rejeter</button>
-            <% } %>
-          </td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!retraits.length) { %><div class="empty">Aucun retrait</div><% } %>
-    </div>
-  </div>
-
-<%# ── CADEAUX VIP ─────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'cadeaux') { %>
-
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Cadeaux VIP</h3>
-      <span class="data-count"><%= codes.length %> codes utilisés</span>
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Utilisateur</th><th>Code</th><th>Montant</th><th>Date</th></tr></thead>
-        <tbody>
-        <% codes.forEach(c => { %>
-        <tr>
-          <td>#<%= c.id %></td>
-          <td><strong><%- c.nom || '—' %></strong><br><small style="color:#888"><%- c.telephone || '' %></small></td>
-          <td><code style="background:#F5F5F0;padding:2px 8px;border-radius:6px"><%- c.code %></code></td>
-          <td style="font-weight:700;color:#E8931A"><%= parseFloat(c.montant||0).toLocaleString('fr-FR') %> <small>FCFA</small></td>
-          <td style="color:#888;font-size:0.8rem"><%= c.date_utilisation ? new Date(c.date_utilisation).toLocaleDateString('fr-FR') : '—' %></td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!codes.length) { %><div class="empty">Aucun code cadeau utilisé</div><% } %>
-    </div>
-  </div>
-
-<%# ── SALAIRES VIP ────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'salaires') { %>
-
-  <% const salaireParNiveau = { 0:0, 1:700, 2:1200, 3:4000, 4:5000, 5:7500 }; %>
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Salaires VIP</h3>
-      <span class="data-count"><%= salaires.length %> membres</span>
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Nom</th><th>Téléphone</th><th>Niveau VIP</th><th>Invitations</th><th>Salaire/sem.</th><th>Solde</th></tr></thead>
-        <tbody>
-        <% salaires.forEach(s => { %>
-        <tr>
-          <td>#<%= s.id %></td>
-          <td><strong><%- s.nom || '—' %></strong></td>
-          <td><%- s.telephone || '—' %></td>
-          <td><span class="badge badge-vip">VIP <%= s.niveau %></span></td>
-          <td><%= s.invitations_actuelles %> / <%= s.invitations_requises %></td>
-          <td style="font-weight:700;color:#22c55e"><%= (salaireParNiveau[s.niveau] || 0).toLocaleString('fr-FR') %> FCFA</td>
-          <td style="font-weight:700;color:#E8931A"><%= parseFloat(s.solde||0).toLocaleString('fr-FR') %> FCFA</td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!salaires.length) { %><div class="empty">Aucun membre VIP avec salaire</div><% } %>
-    </div>
-  </div>
-
-<%# ── TRANSACTIONS ────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'transactions') { %>
-
-  <% const typeLabels = { paiement_journalier:'Revenu journalier', parrainage:'Parrainage', bonus:'Bonus', cadeau:'Cadeau' }; %>
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Transactions</h3>
-      <span class="data-count"><%= transactions.length %></span>
-    </div>
-    <div class="search-wrap">
-      <input type="text" placeholder="Rechercher…" oninput="filterRows('tTbody', this.value)">
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Utilisateur</th><th>Montant</th><th>Type</th><th>Date</th></tr></thead>
-        <tbody id="tTbody">
-        <% transactions.forEach(t => { %>
-        <tr>
-          <td>#<%= t.id %></td>
-          <td><strong><%- t.nom || '—' %></strong><br><small style="color:#888"><%- t.telephone || '' %></small></td>
-          <td style="font-weight:700;color:#22c55e">+<%= parseFloat(t.montant||0).toLocaleString('fr-FR') %> <small>FCFA</small></td>
-          <td><span class="badge badge-valid"><%- typeLabels[t.type] || t.type || '—' %></span></td>
-          <td style="color:#888;font-size:0.8rem"><%= t.date_creation ? new Date(t.date_creation).toLocaleDateString('fr-FR') : '—' %></td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!transactions.length) { %><div class="empty">Aucune transaction</div><% } %>
-    </div>
-  </div>
-
-<%# ── AFFICHES ────────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'affiches') { %>
-
-  <div class="data-card">
-    <div class="data-head">
-      <h3>Affiches</h3>
-      <span class="data-count"><%= posts.length %></span>
-    </div>
-    <div class="scroll-x">
-      <table>
-        <thead><tr><th>#</th><th>Auteur</th><th>Message</th><th>Image</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-        <tbody>
-        <% posts.forEach(p => { %>
-        <tr>
-          <td>#<%= p.id %></td>
-          <td><%- p.nom || '—' %></td>
-          <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem"><%- p.message || '—' %></td>
-          <td>
-            <% if (p.image) { %>
-            <a href="/uploads/<%- p.image %>" target="_blank" style="color:#E8931A;font-size:0.8rem"><i class="fas fa-image"></i> Voir</a>
-            <% } else { %>—<% } %>
-          </td>
-          <td style="color:#888;font-size:0.8rem"><%= p.date_creation ? new Date(p.date_creation).toLocaleDateString('fr-FR') : '—' %></td>
-          <td>
-            <% if (p.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
-            <% } else if (p.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
-            <% } else { %><span class="badge badge-rejected">Refusé</span><% } %>
-          </td>
-          <td>
-            <% if (p.statut === 'en_attente') { %>
-            <button class="btn-xs btn-v" onclick="doAction('validate_post',<%= p.id %>)"><i class="fas fa-check"></i></button>
-            <button class="btn-xs btn-r" onclick="doAction('reject_post',<%= p.id %>)"><i class="fas fa-times"></i></button>
-            <% } %>
-          </td>
-        </tr>
-        <% }); %>
-        </tbody>
-      </table>
-      <% if (!posts.length) { %><div class="empty">Aucune affiche</div><% } %>
-    </div>
-  </div>
-
-<%# ── PARAMÈTRES ──────────────────────────────────────────────────────── %>
-<% } else if (currentPage === 'parametres') { %>
-
-  <div class="data-card">
-    <div class="data-head"><h3>Paramètres</h3></div>
-    <div style="padding:20px">
-      <div style="margin-bottom:20px">
-        <div style="font-size:0.9rem;font-weight:600;margin-bottom:8px;color:#555">Sécurité</div>
-        <div style="font-size:0.85rem;color:#555;background:#F5F5F0;padding:14px;border-radius:10px;line-height:1.6">
-          Le code administrateur est défini via la variable d'environnement
-          <code style="background:#e8e8e8;padding:2px 6px;border-radius:4px">ADMIN_CODE</code>.
-          La session expire automatiquement après 30 minutes d'inactivité.
+  <div id="userList">
+  <% users.forEach(u => { %>
+  <div class="card" data-search="<%= (u.nom+' '+u.telephone+' '+(u.pays||'')+' '+(u.code_parrainage||'')).toLowerCase() %>">
+    <div class="card-row">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+        <div class="avatar"><%= (u.nom||'?')[0].toUpperCase() %></div>
+        <div style="min-width:0">
+          <div class="user-name"><%- u.nom %><% if (u.is_admin) { %> <span style="font-size:0.7rem;background:#EEF2FF;color:#4f46e5;padding:2px 7px;border-radius:10px;font-weight:700">Admin</span><% } %></div>
+          <div class="user-sub">+<%- u.telephone %> · <%- u.pays || '—' %></div>
+          <div class="user-balance"><%= parseFloat(u.solde||0).toLocaleString('fr-FR') %> FCFA</div>
+          <div class="ref-row">
+            <span class="ref-code"><%= u.code_parrainage || '—' %></span>
+            <button class="copy-btn" onclick="copyText('<%- u.code_parrainage || "" %>')"><i class="fas fa-copy"></i> Copier</button>
+          </div>
         </div>
       </div>
-      <a href="/adminxyz/logout" style="display:inline-flex;align-items:center;gap:8px;background:#FEF2F2;color:#dc2626;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.9rem">
-        <i class="fas fa-sign-out-alt"></i> Se déconnecter
-      </a>
+      <div class="dropdown" id="dd-<%= u.id %>">
+        <button class="menu-btn" onclick="toggleDropdown('dd-<%= u.id %>')"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="dropdown-menu" id="ddm-<%= u.id %>">
+          <button class="dropdown-item" onclick="closeDropdown('dd-<%= u.id %>');openBalanceModal(<%= u.id %>,<%- JSON.stringify(u.nom) %>,<%= parseFloat(u.solde||0) %>)">
+            <i class="fas fa-coins" style="color:#E8931A"></i> Modifier solde
+          </button>
+          <button class="dropdown-item <%= u.is_admin ? 'danger' : '' %>" onclick="closeDropdown('dd-<%= u.id %>');doAction('toggle_admin',<%= u.id %>)">
+            <i class="fas fa-<%= u.is_admin ? 'user-minus' : 'user-shield' %>"></i> <%= u.is_admin ? 'Retirer Admin' : 'Rendre Admin' %>
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
+  <% }); %>
+  </div>
+  <% if (!users.length) { %><div class="empty">Aucun utilisateur</div><% } %>
+
+<%# ══════════════════ DÉPÔTS ══════════════════ %>
+<% } else if (currentPage === 'depots') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-arrow-down"></i></div>
+      <div><div class="page-title">Dépôts (<%= depots.length %>)</div></div>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Référence ou numéro de téléphone..." oninput="filterCards('depotList', this.value)">
+  </div>
+
+  <div id="depotList">
+  <% depots.forEach(d => { %>
+  <%
+    const refRaw = (d.numero_transaction||'');
+    const refDisplay = refRaw.includes('|') ? refRaw.split('|')[0] : refRaw.substring(0,15);
+  %>
+  <div class="card" data-search="<%= (d.nom+' '+(d.telephone||'')+' '+refRaw+' '+(d.pays||'')).toLowerCase() %>">
+    <div class="card-row" style="align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-weight:700"><%- d.nom || '—' %></div>
+        <div class="dep-meta">+<%- d.telephone || '—' %> · <%- d.pays || '—' %></div>
+        <div class="dep-amount"><%= parseFloat(d.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <div class="dep-meta" style="margin-bottom:6px"><%- d.methode || '—' %> · <%= d.date_depot ? new Date(d.date_depot).toLocaleDateString('fr-FR') : '—' %></div>
+        <% if (refDisplay) { %>
+        <span class="dep-ref" onclick="copyText('<%- refRaw %>')"><%- refDisplay %> <i class="fas fa-copy" style="font-size:0.7rem"></i></span>
+        <% } %>
+        <% if (d.statut === 'en_attente') { %>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn-xs btn-v" onclick="doAction('validate_deposit',<%= d.id %>)"><i class="fas fa-check"></i> Valider</button>
+          <button class="btn-xs btn-r" onclick="doAction('reject_deposit',<%= d.id %>)"><i class="fas fa-times"></i> Rejeter</button>
+        </div>
+        <% } %>
+      </div>
+      <div>
+        <% if (d.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
+        <% } else if (d.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
+        <% } else { %><span class="badge badge-rejected">Rejeté</span><% } %>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+  </div>
+  <% if (!depots.length) { %><div class="empty">Aucun dépôt</div><% } %>
+
+<%# ══════════════════ RETRAITS ══════════════════ %>
+<% } else if (currentPage === 'retraits') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+      <div><div class="page-title">Retraits (<%= retraits.length %>)</div></div>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Référence ou numéro de téléphone..." oninput="filterCards('retraitList', this.value)">
+  </div>
+
+  <div id="retraitList">
+  <% retraits.forEach(r => { %>
+  <div class="card" data-search="<%= (r.nom+' '+(r.telephone||'')+' '+(r.numero_compte||'')).toLowerCase() %>">
+    <div class="card-row" style="align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-weight:700"><%- r.nom || '—' %></div>
+        <div class="dep-meta">+<%- r.telephone || '—' %></div>
+        <div class="ret-amount"><%= parseFloat(r.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <div class="dep-meta" style="margin-bottom:6px"><%- r.methode || '—' %> · <%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
+        <% if (r.numero_compte) { %>
+        <div style="margin-bottom:4px">
+          <span style="font-weight:700;font-size:0.85rem;text-decoration:underline"><%- r.numero_compte %></span>
+          <button class="copy-btn" style="display:inline-flex;margin-left:6px" onclick="copyText('<%- r.numero_compte %>')"><i class="fas fa-copy"></i></button>
+        </div>
+        <% } %>
+        <% if (r.statut === 'en_attente') { %>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> Valider</button>
+          <button class="btn-xs btn-r" onclick="doAction('reject_retrait',<%= r.id %>)"><i class="fas fa-times"></i> Rejeter</button>
+        </div>
+        <% } %>
+      </div>
+      <div>
+        <% if (r.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
+        <% } else if (r.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
+        <% } else { %><span class="badge badge-rejected">Rejeté</span><% } %>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+  </div>
+  <% if (!retraits.length) { %><div class="empty">Aucun retrait</div><% } %>
+
+<%# ══════════════════ CADEAUX VIP ══════════════════ %>
+<% } else if (currentPage === 'cadeaux') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-gift"></i></div>
+      <div><div class="page-title">Cadeaux VIP (<%= codes.length %>)</div></div>
+    </div>
+  </div>
+
+  <% codes.forEach(c => { %>
+  <div class="card">
+    <div class="card-row">
+      <div style="flex:1">
+        <div style="font-weight:700"><%- c.nom || '—' %></div>
+        <div class="dep-meta">+<%- c.telephone || '—' %></div>
+        <div class="dep-amount"><%= parseFloat(c.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <div class="ref-row">
+          <span class="ref-code"><%- c.code %></span>
+          <button class="copy-btn" onclick="copyText('<%- c.code %>')"><i class="fas fa-copy"></i> Copier</button>
+        </div>
+      </div>
+      <div class="dep-meta" style="text-align:right"><%= c.date_utilisation ? new Date(c.date_utilisation).toLocaleDateString('fr-FR') : '—' %></div>
+    </div>
+  </div>
+  <% }); %>
+  <% if (!codes.length) { %><div class="empty">Aucun code cadeau utilisé</div><% } %>
+
+<%# ══════════════════ SALAIRES VIP ══════════════════ %>
+<% } else if (currentPage === 'salaires') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-money-bill-wave"></i></div>
+      <div><div class="page-title">Salaires VIP</div></div>
+    </div>
+  </div>
+
+  <% paliers.forEach(p => { %>
+  <div class="salaire-card">
+    <div class="salaire-head">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="vip-star"><i class="fas fa-star"></i></div>
+        <div>
+          <div class="salaire-title">Niveau VIP <%= p.niveau %></div>
+          <div class="salaire-sub">Configuration du palier</div>
+        </div>
+      </div>
+      <button class="icon-btn icon-btn-del" onclick="deletePalier(<%= p.id %>, <%= p.niveau %>)"><i class="fas fa-trash"></i></button>
+    </div>
+    <form onsubmit="savePalier(event, <%= p.id %>)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Label (nom affiché)</label>
+          <input type="text" name="label" value="<%- p.label %>" placeholder="Ex: Leadeur basic">
+        </div>
+        <div class="form-group">
+          <label>Niveau (numéro)</label>
+          <input type="number" value="<%= p.niveau %>" readonly>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Filleuls requis</label>
+          <input type="number" name="filleuls_requis" value="<%= p.filleuls_requis %>" min="0">
+        </div>
+        <div class="form-group">
+          <label>Montant cadeau (FCFA)</label>
+          <input type="number" name="montant_cadeau" value="<%= parseFloat(p.montant_cadeau).toFixed(2) %>" step="0.01" min="0">
+        </div>
+      </div>
+      <button type="submit" class="btn-save"><i class="fas fa-save"></i> Enregistrer</button>
+    </form>
+  </div>
+  <% }); %>
+
+  <button class="btn-save" style="margin-top:4px" onclick="openAddPalierModal()"><i class="fas fa-plus"></i> Ajouter un palier VIP</button>
+
+<%# ══════════════════ TRANSACTIONS ══════════════════ %>
+<% } else if (currentPage === 'transactions') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-receipt"></i></div>
+      <div><div class="page-title">Transactions (<%= transactions.length %>)</div></div>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Référence, nom ou numéro de téléphone..." oninput="filterCards('txList', this.value)">
+  </div>
+
+  <div class="filter-row">
+    <select class="filter-sel" id="txTypeFilter" onchange="filterTx()">
+      <option value="">Tous les types</option>
+      <option value="paiement_journalier">Revenu investissement</option>
+      <option value="parrainage">Parrainage</option>
+      <option value="bonus">Bonus</option>
+      <option value="cadeau">Cadeau</option>
+    </select>
+    <select class="filter-sel" id="txStatutFilter" onchange="filterTx()">
+      <option value="">Tous les statuts</option>
+      <option value="valide">Validé</option>
+    </select>
+  </div>
+
+  <% const typeLabels = { paiement_journalier:'Revenu investissement', parrainage:'Parrainage', bonus:'Bonus', cadeau:'Cadeau' }; %>
+  <div id="txList">
+  <% transactions.forEach(t => { %>
+  <div class="card" data-type="<%= t.type %>" data-search="<%= ((t.nom||'')+' '+(t.telephone||'')).toLowerCase() %>">
+    <div class="card-row">
+      <div style="flex:1">
+        <div class="tx-type"><%- typeLabels[t.type] || t.type || '—' %></div>
+        <div class="tx-user"><%- t.nom || '—' %> · +<%- t.telephone || '—' %></div>
+        <div class="tx-date"><%= t.date_creation ? new Date(t.date_creation).toLocaleString('fr-FR') : '—' %></div>
+      </div>
+      <div style="text-align:right">
+        <div class="tx-amount">+<%= parseFloat(t.montant||0).toLocaleString('fr-FR') %></div>
+        <span class="badge badge-valid" style="margin-top:4px;display:inline-block">Validé</span>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+  </div>
+  <% if (!transactions.length) { %><div class="empty">Aucune transaction</div><% } %>
+
+<%# ══════════════════ AFFICHES ══════════════════ %>
+<% } else if (currentPage === 'affiches') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-image"></i></div>
+      <div><div class="page-title">Affiches (<%= posts.length %>)</div></div>
+    </div>
+  </div>
+
+  <% posts.forEach(p => { %>
+  <div class="card">
+    <div class="card-row" style="align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-weight:700"><%- p.nom || '—' %></div>
+        <div class="dep-meta" style="margin:4px 0"><%= p.date_creation ? new Date(p.date_creation).toLocaleDateString('fr-FR') : '—' %></div>
+        <% if (p.message) { %>
+        <div style="font-size:0.85rem;color:#555;line-height:1.5;margin-bottom:8px"><%- p.message.substring(0,120) %><%= p.message.length > 120 ? '…' : '' %></div>
+        <% } %>
+        <% if (p.image) { %>
+        <a href="/uploads/<%- p.image %>" target="_blank" style="color:#E8931A;font-size:0.82rem"><i class="fas fa-image"></i> Voir l'image</a>
+        <% } %>
+        <% if (p.statut === 'en_attente') { %>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn-xs btn-v" onclick="doAction('validate_post',<%= p.id %>)"><i class="fas fa-check"></i> Valider</button>
+          <button class="btn-xs btn-r" onclick="doAction('reject_post',<%= p.id %>)"><i class="fas fa-times"></i> Rejeter</button>
+        </div>
+        <% } %>
+      </div>
+      <div>
+        <% if (p.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
+        <% } else if (p.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
+        <% } else { %><span class="badge badge-rejected">Refusé</span><% } %>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+  <% if (!posts.length) { %><div class="empty">Aucune affiche</div><% } %>
+
+<%# ══════════════════ PARAMÈTRES ══════════════════ %>
+<% } else if (currentPage === 'parametres') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-gear"></i></div>
+      <div><div class="page-title">Paramètres</div></div>
+    </div>
+  </div>
+
+  <!-- Retraits toggle -->
+  <% const retraitsActifs = (params.retraits_actifs === '1'); %>
+  <div class="param-card">
+    <div class="toggle-row <%= retraitsActifs ? 'green' : 'red' %>" id="retraitsToggleRow">
+      <div>
+        <div class="toggle-label" style="color:<%= retraitsActifs ? '#16a34a' : '#dc2626' %>">
+          Retraits <%= retraitsActifs ? 'ACTIFS' : 'SUSPENDUS' %>
+          <span>Cliquer pour <%= retraitsActifs ? 'suspendre' : 'activer' %> tous les retraits</span>
+        </div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="retraitsToggle" <%= retraitsActifs ? 'checked' : '' %> onchange="saveParam('retraits_actifs', this.checked ? '1' : '0', refreshRetrait)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Dépôt minimum -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#FFF7ED"><i class="fas fa-arrow-down" style="color:#E8931A"></i></div>
+      <div class="param-head-text">
+        <h3>Dépôt minimum</h3>
+        <p>Montant minimal pour déposer (FCFA)</p>
+      </div>
+    </div>
+    <label class="param-label">Montant minimum (FCFA)</label>
+    <input type="number" class="param-input" id="depotMin" value="<%= params.depot_minimum || 200 %>" min="0">
+    <button class="btn-save" onclick="saveParam('depot_minimum', document.getElementById('depotMin').value)"><i class="fas fa-save"></i> Enregistrer</button>
+  </div>
+
+  <!-- Retrait minimum -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#EEF2FF"><i class="fas fa-arrow-up" style="color:#6366f1"></i></div>
+      <div class="param-head-text">
+        <h3>Retrait minimum</h3>
+        <p>Montant minimal pour retirer (FCFA)</p>
+      </div>
+    </div>
+    <label class="param-label">Montant minimum (FCFA)</label>
+    <input type="number" class="param-input" id="retraitMin" value="<%= params.retrait_minimum || 500 %>" min="0">
+    <button class="btn-save" onclick="saveParam('retrait_minimum', document.getElementById('retraitMin').value)"><i class="fas fa-save"></i> Enregistrer</button>
+  </div>
+
+  <!-- Liens service client -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#F0FDF4"><i class="fab fa-whatsapp" style="color:#22c55e"></i></div>
+      <div class="param-head-text">
+        <h3>Liens service client</h3>
+        <p>Bouton flottant WhatsApp & liens FAQ</p>
+      </div>
+    </div>
+    <label class="param-label"><i class="fab fa-whatsapp" style="color:#22c55e"></i> WhatsApp service client (bouton flottant)</label>
+    <input type="text" class="param-input" id="whatsappLink" value="<%- params.whatsapp_link || '' %>" placeholder="https://wa.me/message/...">
+    <label class="param-label"><i class="fab fa-telegram" style="color:#2563eb"></i> Lien chaîne Telegram (page FAQ)</label>
+    <input type="text" class="param-input" id="telegramLink" value="<%- params.telegram_link || '' %>" placeholder="https://t.me/...">
+    <label class="param-label"><i class="fab fa-whatsapp" style="color:#22c55e"></i> Lien groupe WhatsApp (page FAQ)</label>
+    <input type="text" class="param-input" id="whatsappGroupLink" value="<%- params.whatsapp_group_link || '' %>" placeholder="https://chat.whatsapp.com/...">
+    <button class="btn-save" onclick="saveLinks()"><i class="fas fa-save"></i> Enregistrer les liens</button>
+  </div>
+
+  <!-- Horaires retraits -->
+  <% const allowedDays = (params.retrait_jours || 'Lun,Mar,Mer,Jeu,Ven').split(',').map(d => d.trim()); %>
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#EFF6FF"><i class="fas fa-clock" style="color:#3b82f6"></i></div>
+      <div class="param-head-text">
+        <h3>Horaires & limite de retrait</h3>
+        <p>Jours, heures et nombre max par utilisateur</p>
+      </div>
+    </div>
+    <label class="param-label">Jours autorisés</label>
+    <div class="days-row" id="daysRow">
+      <% ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].forEach(d => { %>
+      <button type="button" class="day-chip <%= allowedDays.includes(d) ? 'active' : '' %>" data-day="<%= d %>" onclick="toggleDay(this)"><%= d %></button>
+      <% }); %>
+    </div>
+    <label class="param-label">Plage horaire (heure GMT)</label>
+    <div class="hours-grid">
+      <div class="form-group">
+        <label>Heure de début</label>
+        <input type="number" class="param-input" id="heureDebut" value="<%= params.retrait_heure_debut || 8 %>" min="0" max="23">
+      </div>
+      <div class="form-group">
+        <label>Heure de fin</label>
+        <input type="number" class="param-input" id="heureFin" value="<%= params.retrait_heure_fin || 17 %>" min="0" max="23">
+      </div>
+    </div>
+    <label class="param-label">Nombre de retraits max par utilisateur / 24h</label>
+    <input type="number" class="param-input" id="maxRetraits" value="<%= params.retrait_max_par_jour || 2 %>" min="1">
+    <button class="btn-save" onclick="saveHoraires()"><i class="fas fa-save"></i> Enregistrer les horaires</button>
+  </div>
+
+  <!-- Commissions parrainage -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#F0FDF4"><i class="fas fa-users" style="color:#22c55e"></i></div>
+      <div class="param-head-text">
+        <h3>Commissions de parrainage</h3>
+        <p>Pourcentage versé au parrain (en %)</p>
+      </div>
+    </div>
+    <div class="comm-grid">
+      <div class="form-group">
+        <label>Niveau 1 (%)</label>
+        <input type="number" class="param-input" id="comm1" value="<%= params.commission_niveau1 || 20 %>" min="0" max="100" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Niveau 2 (%)</label>
+        <input type="number" class="param-input" id="comm2" value="<%= params.commission_niveau2 || 10 %>" min="0" max="100" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Niveau 3 (%)</label>
+        <input type="number" class="param-input" id="comm3" value="<%= params.commission_niveau3 || 5 %>" min="0" max="100" step="0.1">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveCommissions()"><i class="fas fa-save"></i> Enregistrer</button>
+  </div>
+
+  <!-- Message de bienvenue -->
+  <% const popupActive = (params.popup_active === '1'); %>
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#FFF7ED"><i class="fas fa-comment-dots" style="color:#E8931A"></i></div>
+      <div class="param-head-text">
+        <h3>Message de bienvenue (popup)</h3>
+        <p>Affiché aux utilisateurs à chaque connexion sur le tableau de bord</p>
+      </div>
+    </div>
+    <div class="toggle-row <%= popupActive ? 'green' : 'red' %>" style="margin-bottom:14px" id="popupToggleRow">
+      <div class="toggle-label" style="color:<%= popupActive ? '#16a34a' : '#dc2626' %>">
+        Popup <%= popupActive ? 'activé' : 'désactivé' %>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="popupToggle" <%= popupActive ? 'checked' : '' %> onchange="saveParam('popup_active', this.checked ? '1' : '0', refreshPopup)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <label class="param-label">Message de bienvenue</label>
+    <textarea class="param-textarea" id="popupMessage"><%= params.popup_message || '' %></textarea>
+    <button class="btn-save" onclick="saveParam('popup_message', document.getElementById('popupMessage').value)"><i class="fas fa-save"></i> Enregistrer le message</button>
   </div>
 
 <% } %>
+
 </div><!-- /main -->
 
 <!-- Balance Modal -->
@@ -694,11 +910,13 @@
   </div>
 </div>
 
-<!-- Plan Modal -->
+<!-- Plan Modal (edit) -->
 <div class="modal-overlay" id="planModal">
   <div class="modal-box">
     <h3><i class="fas fa-chart-line" style="color:#22c55e"></i> Modifier le plan</h3>
     <input type="hidden" id="planId">
+    <label>Nom du plan</label>
+    <input type="text" id="planNom">
     <label>Prix (FCFA)</label>
     <input type="number" id="planPrix" step="100">
     <label>Durée (jours)</label>
@@ -714,7 +932,46 @@
   </div>
 </div>
 
-<!-- Toast -->
+<!-- Plan Modal (add) -->
+<div class="modal-overlay" id="addPlanModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-plus" style="color:#E8931A"></i> Ajouter un plan</h3>
+    <label>Nom du plan</label>
+    <input type="text" id="newPlanNom" placeholder="Ex: Action VIP 12">
+    <label>Prix (FCFA)</label>
+    <input type="number" id="newPlanPrix" step="100" min="0">
+    <label>Durée (jours)</label>
+    <input type="number" id="newPlanDuree" min="1">
+    <label>Rendement journalier (%)</label>
+    <input type="number" id="newPlanRend" step="0.01" min="0">
+    <label>Description</label>
+    <input type="text" id="newPlanDesc">
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeModal('addPlanModal')">Annuler</button>
+      <button class="m-confirm" onclick="addPlan()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add palier modal -->
+<div class="modal-overlay" id="addPalierModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-star" style="color:#22c55e"></i> Nouveau palier VIP</h3>
+    <label>Niveau (numéro unique)</label>
+    <input type="number" id="newPalierNiveau" min="1">
+    <label>Label</label>
+    <input type="text" id="newPalierLabel" placeholder="Ex: Leadeur gold">
+    <label>Filleuls requis</label>
+    <input type="number" id="newPalierFilleuls" min="0">
+    <label>Montant cadeau (FCFA)</label>
+    <input type="number" id="newPalierMontant" step="0.01" min="0">
+    <div class="modal-btns">
+      <button class="m-cancel" onclick="closeModal('addPalierModal')">Annuler</button>
+      <button class="m-confirm" onclick="addPalier()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -740,15 +997,45 @@ function toast(msg, type = '') {
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// ── Search filter ──────────────────────────────────────────────────────
-function filterRows(tbodyId, q) {
+// ── Dropdowns ──────────────────────────────────────────────────────────
+function toggleDropdown(ddId) {
+  const menu = document.getElementById('ddm-' + ddId.replace('dd-', ''));
+  document.querySelectorAll('.dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+  menu.classList.toggle('open');
+}
+function closeDropdown(ddId) {
+  const menu = document.getElementById('ddm-' + ddId.replace('dd-', ''));
+  if (menu) menu.classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+});
+
+// ── Copy ───────────────────────────────────────────────────────────────
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('✓ Copié !', 'ok')).catch(() => toast('Impossible de copier', 'err'));
+}
+
+// ── Card filter ─────────────────────────────────────────────────────────
+function filterCards(listId, q) {
   q = q.toLowerCase();
-  document.querySelectorAll('#' + tbodyId + ' tr').forEach(tr => {
-    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  document.querySelectorAll('#' + listId + ' .card').forEach(card => {
+    const search = card.dataset.search || card.textContent.toLowerCase();
+    card.style.display = search.includes(q) ? '' : 'none';
   });
 }
 
-// ── AJAX action → reload page ──────────────────────────────────────────
+// ── Transaction filter ──────────────────────────────────────────────────
+function filterTx() {
+  const typeVal = document.getElementById('txTypeFilter').value;
+  const searchVal = document.querySelector('#txList input') ? '' : '';
+  document.querySelectorAll('#txList .card').forEach(card => {
+    const matchType = !typeVal || card.dataset.type === typeVal;
+    card.style.display = matchType ? '' : 'none';
+  });
+}
+
+// ── AJAX action ─────────────────────────────────────────────────────────
 const actionLabels = {
   validate_deposit:'Valider ce dépôt ?', reject_deposit:'Rejeter ce dépôt ?',
   validate_retrait:'Valider ce retrait ?', reject_retrait:'Rejeter ce retrait ?',
@@ -758,39 +1045,33 @@ const actionLabels = {
 async function doAction(action, id) {
   if (!confirm(actionLabels[action] || action + ' ?')) return;
   try {
-    const r = await fetch('/adminxyz/action', {
-      method:'POST', body: new URLSearchParams({ action, id })
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action, id }) });
     const d = await r.json();
     if (d.success) { toast('✓ Action effectuée', 'ok'); setTimeout(() => location.reload(), 900); }
     else toast('✗ ' + (d.message || 'Erreur'), 'err');
   } catch(e) { toast('✗ ' + e.message, 'err'); }
 }
 
-// ── Balance ────────────────────────────────────────────────────────────
+// ── Balance ─────────────────────────────────────────────────────────────
 function openBalanceModal(uid, name, solde) {
   document.getElementById('balanceUserId').value = uid;
-  document.getElementById('balanceName').textContent = name + ' — Solde actuel : ' + parseFloat(solde).toLocaleString('fr-FR') + ' FCFA';
+  document.getElementById('balanceName').textContent = name + ' — Solde : ' + parseFloat(solde).toLocaleString('fr-FR') + ' FCFA';
   document.getElementById('balanceAmt').value = solde;
   openModal('balanceModal');
 }
 async function saveBalance() {
   const user_id = document.getElementById('balanceUserId').value;
   const montant = document.getElementById('balanceAmt').value;
-  try {
-    const r = await fetch('/adminxyz/action', {
-      method:'POST', body: new URLSearchParams({ action:'update_balance', user_id, montant })
-    });
-    const d = await r.json();
-    if (d.success) { closeModal('balanceModal'); toast('✓ Solde mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
-    else toast('✗ ' + (d.message || 'Erreur'), 'err');
-  } catch(e) { toast('✗ ' + e.message, 'err'); }
+  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'update_balance', user_id, montant }) });
+  const d = await r.json();
+  if (d.success) { closeModal('balanceModal'); toast('✓ Solde mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 
-// ── Plan edit ──────────────────────────────────────────────────────────
-function openPlanModal(id, prix, duree, rend, desc) {
+// ── Plan edit ───────────────────────────────────────────────────────────
+function openPlanModal(id, nom, prix, duree, rend, desc) {
   document.getElementById('planId').value    = id;
+  document.getElementById('planNom').value   = nom;
   document.getElementById('planPrix').value  = prix;
   document.getElementById('planDuree').value = duree;
   document.getElementById('planRend').value  = rend;
@@ -801,20 +1082,143 @@ async function savePlan() {
   const body = new URLSearchParams({
     action:'update_plan',
     id: document.getElementById('planId').value,
+    nom: document.getElementById('planNom').value,
     prix: document.getElementById('planPrix').value,
     duree_jours: document.getElementById('planDuree').value,
     rendement_journalier: document.getElementById('planRend').value,
     description: document.getElementById('planDesc').value,
   });
-  try {
-    const r = await fetch('/adminxyz/action', { method:'POST', body });
-    const d = await r.json();
-    if (d.success) { closeModal('planModal'); toast('✓ Plan mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
-    else toast('✗ ' + (d.message || 'Erreur'), 'err');
-  } catch(e) { toast('✗ ' + e.message, 'err'); }
+  const r = await fetch('/adminxyz/action', { method:'POST', body });
+  const d = await r.json();
+  if (d.success) { closeModal('planModal'); toast('✓ Plan mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+function openAddPlanModal() { openModal('addPlanModal'); }
+async function addPlan() {
+  const body = new URLSearchParams({
+    action:'add_plan',
+    nom: document.getElementById('newPlanNom').value,
+    prix: document.getElementById('newPlanPrix').value,
+    duree_jours: document.getElementById('newPlanDuree').value,
+    rendement_journalier: document.getElementById('newPlanRend').value,
+    description: document.getElementById('newPlanDesc').value,
+  });
+  const r = await fetch('/adminxyz/action', { method:'POST', body });
+  const d = await r.json();
+  if (d.success) { closeModal('addPlanModal'); toast('✓ Plan ajouté', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+async function deletePlan(id, nom) {
+  if (!confirm('Supprimer le plan "' + nom + '" ? Cette action est irréversible.')) return;
+  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'delete_plan', id }) });
+  const d = await r.json();
+  if (d.success) { toast('✓ Plan supprimé', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 
-// ── Verser revenus ─────────────────────────────────────────────────────
+// ── Salaires / Paliers ──────────────────────────────────────────────────
+async function savePalier(e, id) {
+  e.preventDefault();
+  const form = e.target;
+  const body = new URLSearchParams({
+    action: 'update_palier', id,
+    label: form.label.value,
+    filleuls_requis: form.filleuls_requis.value,
+    montant_cadeau: form.montant_cadeau.value,
+  });
+  const r = await fetch('/adminxyz/action', { method:'POST', body });
+  const d = await r.json();
+  if (d.success) toast('✓ Palier enregistré', 'ok');
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+async function deletePalier(id, niveau) {
+  if (!confirm('Supprimer le palier VIP ' + niveau + ' ?')) return;
+  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'delete_palier', id }) });
+  const d = await r.json();
+  if (d.success) { toast('✓ Palier supprimé', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+function openAddPalierModal() { openModal('addPalierModal'); }
+async function addPalier() {
+  const body = new URLSearchParams({
+    action: 'add_palier',
+    niveau: document.getElementById('newPalierNiveau').value,
+    label: document.getElementById('newPalierLabel').value,
+    filleuls_requis: document.getElementById('newPalierFilleuls').value,
+    montant_cadeau: document.getElementById('newPalierMontant').value,
+  });
+  const r = await fetch('/adminxyz/action', { method:'POST', body });
+  const d = await r.json();
+  if (d.success) { closeModal('addPalierModal'); toast('✓ Palier ajouté', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+
+// ── Paramètres ──────────────────────────────────────────────────────────
+async function saveParam(cle, valeur, callback) {
+  const r = await fetch('/adminxyz/parametres/save', { method:'POST', body: new URLSearchParams({ cle, valeur }) });
+  const d = await r.json();
+  if (d.success) { toast('✓ Paramètre enregistré', 'ok'); if (callback) callback(valeur); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+
+function refreshRetrait(valeur) {
+  const row = document.getElementById('retraitsToggleRow');
+  const isOn = valeur === '1';
+  row.className = 'toggle-row ' + (isOn ? 'green' : 'red');
+  row.querySelector('.toggle-label').style.color = isOn ? '#16a34a' : '#dc2626';
+  row.querySelector('.toggle-label').innerHTML = 'Retraits ' + (isOn ? 'ACTIFS' : 'SUSPENDUS') + '<span>Cliquer pour ' + (isOn ? 'suspendre' : 'activer') + ' tous les retraits</span>';
+}
+
+function refreshPopup(valeur) {
+  const row = document.getElementById('popupToggleRow');
+  const isOn = valeur === '1';
+  row.className = 'toggle-row ' + (isOn ? 'green' : 'red');
+  row.querySelector('.toggle-label').textContent = 'Popup ' + (isOn ? 'activé' : 'désactivé');
+}
+
+async function saveLinks() {
+  const params = [
+    ['whatsapp_link', document.getElementById('whatsappLink').value],
+    ['telegram_link', document.getElementById('telegramLink').value],
+    ['whatsapp_group_link', document.getElementById('whatsappGroupLink').value],
+  ];
+  for (const [cle, valeur] of params) {
+    await fetch('/adminxyz/parametres/save', { method:'POST', body: new URLSearchParams({ cle, valeur }) });
+  }
+  toast('✓ Liens enregistrés', 'ok');
+}
+
+async function saveHoraires() {
+  const activeDays = [...document.querySelectorAll('.day-chip.active')].map(b => b.dataset.day).join(',');
+  const params = [
+    ['retrait_jours', activeDays],
+    ['retrait_heure_debut', document.getElementById('heureDebut').value],
+    ['retrait_heure_fin', document.getElementById('heureFin').value],
+    ['retrait_max_par_jour', document.getElementById('maxRetraits').value],
+  ];
+  for (const [cle, valeur] of params) {
+    await fetch('/adminxyz/parametres/save', { method:'POST', body: new URLSearchParams({ cle, valeur }) });
+  }
+  toast('✓ Horaires enregistrés', 'ok');
+}
+
+async function saveCommissions() {
+  const params = [
+    ['commission_niveau1', document.getElementById('comm1').value],
+    ['commission_niveau2', document.getElementById('comm2').value],
+    ['commission_niveau3', document.getElementById('comm3').value],
+  ];
+  for (const [cle, valeur] of params) {
+    await fetch('/adminxyz/parametres/save', { method:'POST', body: new URLSearchParams({ cle, valeur }) });
+  }
+  toast('✓ Commissions enregistrées', 'ok');
+}
+
+function toggleDay(btn) {
+  btn.classList.toggle('active');
+}
+
+// ── Verser revenus ──────────────────────────────────────────────────────
 <% if (currentPage === 'dashboard') { %>
 async function verserRevenus() {
   const btn = document.getElementById('btnRevenu');
@@ -830,34 +1234,23 @@ async function verserRevenus() {
   btn.innerHTML = '<i class="fas fa-paper-plane"></i> Verser les revenus maintenant';
 }
 
-// ── Charts ─────────────────────────────────────────────────────────────
 const CD = <%- JSON.stringify(chartData) %>;
-
-// Today vs Yesterday
 new Chart(document.getElementById('tvhChart').getContext('2d'), {
   type:'bar',
-  data:{
-    labels:['Dépôts','Retraits'],
-    datasets:[
-      { label:'Auj.',  data:[CD.tvh.dep_today,  CD.tvh.ret_today],     backgroundColor:['rgba(34,197,94,0.85)','rgba(239,68,68,0.85)'],  borderRadius:6, barPercentage:0.4 },
-      { label:'Hier',  data:[CD.tvh.dep_yesterday,CD.tvh.ret_yesterday],backgroundColor:['rgba(34,197,94,0.25)','rgba(239,68,68,0.25)'],  borderRadius:6, barPercentage:0.4 }
-    ]
-  },
+  data:{ labels:['Dépôts','Retraits'], datasets:[
+    { label:'Auj.', data:[CD.tvh.dep_today, CD.tvh.ret_today], backgroundColor:['rgba(34,197,94,0.85)','rgba(239,68,68,0.85)'], borderRadius:6, barPercentage:0.4 },
+    { label:'Hier', data:[CD.tvh.dep_yesterday,CD.tvh.ret_yesterday], backgroundColor:['rgba(34,197,94,0.25)','rgba(239,68,68,0.25)'], borderRadius:6, barPercentage:0.4 }
+  ]},
   options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false},ticks:{color:'#888',font:{size:11}}},y:{grid:{color:'#f0f0f0'},ticks:{color:'#aaa',font:{size:10}}}} }
 });
-
-// 6-month activity
 new Chart(document.getElementById('actChart').getContext('2d'), {
   type:'bar',
-  data:{
-    labels: CD.months,
-    datasets:[
-      { label:'Dép. validés', data:CD.monthly.map(m=>m.dep_valides), backgroundColor:'rgba(34,197,94,0.8)',  borderRadius:4, barPercentage:0.6 },
-      { label:'Dép. rejetés', data:CD.monthly.map(m=>m.dep_rejetes), backgroundColor:'rgba(239,68,68,0.8)',  borderRadius:4, barPercentage:0.6 },
-      { label:'Ret. validés', data:CD.monthly.map(m=>m.ret_valides), backgroundColor:'rgba(59,130,246,0.8)', borderRadius:4, barPercentage:0.6 },
-      { label:'Ret. rejetés', data:CD.monthly.map(m=>m.ret_rejetes), backgroundColor:'rgba(245,158,11,0.8)', borderRadius:4, barPercentage:0.6 }
-    ]
-  },
+  data:{ labels: CD.months, datasets:[
+    { label:'Dép. validés', data:CD.monthly.map(m=>m.dep_valides), backgroundColor:'rgba(34,197,94,0.8)', borderRadius:4, barPercentage:0.6 },
+    { label:'Dép. rejetés', data:CD.monthly.map(m=>m.dep_rejetes), backgroundColor:'rgba(239,68,68,0.8)', borderRadius:4, barPercentage:0.6 },
+    { label:'Ret. validés', data:CD.monthly.map(m=>m.ret_valides), backgroundColor:'rgba(59,130,246,0.8)', borderRadius:4, barPercentage:0.6 },
+    { label:'Ret. rejetés', data:CD.monthly.map(m=>m.ret_rejetes), backgroundColor:'rgba(245,158,11,0.8)', borderRadius:4, barPercentage:0.6 }
+  ]},
   options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false},ticks:{color:'#888',font:{size:11}}},y:{beginAtZero:true,grid:{color:'#f0f0f0'},ticks:{color:'#aaa',font:{size:10}}}} }
 });
 <% } %>

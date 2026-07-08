@@ -16,6 +16,13 @@ function requireAdminAuth(req, res, next) {
   next();
 }
 
+async function getParams() {
+  const [rows] = await db.query('SELECT cle, valeur FROM app_parametres');
+  const p = {};
+  rows.forEach(r => { p[r.cle] = r.valeur; });
+  return p;
+}
+
 // ── Login ──────────────────────────────────────────────────────────────────────
 router.get('/adminxyz', (req, res) => {
   if (req.session.security_authenticated) return res.redirect('/adminxyz/dashboard');
@@ -41,15 +48,14 @@ router.post('/adminxyz', (req, res) => {
 // ── Dashboard ──────────────────────────────────────────────────────────────────
 router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
   try {
-    const [[stats_users]]          = await db.query('SELECT COUNT(*) as total FROM utilisateurs');
-    const [[stats_depots]]         = await db.query("SELECT COALESCE(SUM(montant),0) as somme FROM depots WHERE statut='valide'");
-    const [[stats_retraits]]       = await db.query("SELECT COALESCE(SUM(montant),0) as somme FROM retraits WHERE statut='valide'");
-    const [[stats_pending_depots]] = await db.query("SELECT COUNT(*) as total FROM depots WHERE statut='en_attente'");
+    const [[stats_users]]            = await db.query('SELECT COUNT(*) as total FROM utilisateurs');
+    const [[stats_depots]]           = await db.query("SELECT COALESCE(SUM(montant),0) as somme FROM depots WHERE statut='valide'");
+    const [[stats_retraits]]         = await db.query("SELECT COALESCE(SUM(montant),0) as somme FROM retraits WHERE statut='valide'");
+    const [[stats_pending_depots]]   = await db.query("SELECT COUNT(*) as total FROM depots WHERE statut='en_attente'");
     const [[stats_pending_retraits]] = await db.query("SELECT COUNT(*) as total FROM retraits WHERE statut='en_attente'");
-    const [[stats_plans_actifs]]   = await db.query('SELECT COUNT(*) as total FROM planinvestissement');
-    const [[stats_avec_invest]]    = await db.query("SELECT COUNT(DISTINCT user_id) as total FROM commandes WHERE statut='actif'");
+    const [[stats_plans_actifs]]     = await db.query('SELECT COUNT(*) as total FROM planinvestissement');
+    const [[stats_avec_invest]]      = await db.query("SELECT COUNT(DISTINCT user_id) as total FROM commandes WHERE statut='actif'");
 
-    // Chart: today vs yesterday
     const today     = new Date(); today.setHours(0,0,0,0);
     const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
     const todayStr     = today.toISOString().split('T')[0];
@@ -60,7 +66,6 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
     const [[ret_today]]     = await db.query("SELECT COALESCE(SUM(montant),0) as total, COUNT(*) as cnt FROM retraits WHERE statut='valide' AND date_demande::date=?::date", [todayStr]);
     const [[ret_yesterday]] = await db.query("SELECT COALESCE(SUM(montant),0) as total, COUNT(*) as cnt FROM retraits WHERE statut='valide' AND date_demande::date=?::date", [yesterdayStr]);
 
-    // Chart: 6 months activity
     const months = [];
     const monthLabels = [];
     for (let i = 5; i >= 0; i--) {
@@ -161,18 +166,8 @@ router.get('/adminxyz/cadeaux', requireAdminAuth, async (req, res) => {
 // ── Salaires VIP ───────────────────────────────────────────────────────────────
 router.get('/adminxyz/salaires', requireAdminAuth, async (req, res) => {
   try {
-    const [salaires] = await db.query(`
-      SELECT u.id, u.nom, u.telephone,
-             COALESCE(v.niveau,0) as niveau,
-             COALESCE(v.invitations_actuelles,0) as invitations_actuelles,
-             COALESCE(v.invitations_requises,3) as invitations_requises,
-             COALESCE(s.solde,0) as solde
-      FROM utilisateurs u
-      LEFT JOIN vip v ON u.id=v.user_id
-      LEFT JOIN soldes s ON u.id=s.user_id
-      WHERE COALESCE(v.niveau,0) > 0
-      ORDER BY v.niveau DESC, u.nom ASC LIMIT 300`);
-    res.render('admin', { currentPage: 'salaires', pageTitle: 'Salaires VIP', salaires });
+    const [paliers] = await db.query('SELECT * FROM vip_paliers ORDER BY niveau ASC');
+    res.render('admin', { currentPage: 'salaires', pageTitle: 'Salaires VIP', paliers });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
@@ -199,8 +194,23 @@ router.get('/adminxyz/affiches', requireAdminAuth, async (req, res) => {
 });
 
 // ── Paramètres ─────────────────────────────────────────────────────────────────
-router.get('/adminxyz/parametres', requireAdminAuth, (req, res) => {
-  res.render('admin', { currentPage: 'parametres', pageTitle: 'Paramètres' });
+router.get('/adminxyz/parametres', requireAdminAuth, async (req, res) => {
+  try {
+    const params = await getParams();
+    res.render('admin', { currentPage: 'parametres', pageTitle: 'Paramètres', params });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
+  const { cle, valeur } = req.body;
+  if (!cle) return res.json({ success: false, message: 'Clé manquante' });
+  try {
+    await db.query('INSERT INTO app_parametres (cle, valeur) VALUES (?,?) ON CONFLICT (cle) DO UPDATE SET valeur=?', [cle, valeur, valeur]);
+    res.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.json({ success: false, message: e.message });
+  }
 });
 
 // ── AJAX: Verser revenus ───────────────────────────────────────────────────────
@@ -238,9 +248,11 @@ router.post('/adminxyz/verser-revenus', requireAdminAuth, async (req, res) => {
 
 // ── AJAX: Actions ──────────────────────────────────────────────────────────────
 router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
-  const { action, id, montant, user_id, prix, duree_jours, rendement_journalier, description } = req.body;
+  const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description,
+          label, filleuls_requis, montant_cadeau, niveau } = req.body;
   try {
     switch (action) {
+
       case 'validate_deposit': {
         const [[dep]] = await db.query('SELECT * FROM depots WHERE id=?', [id]);
         if (!dep || dep.statut === 'valide') return res.json({ success: false, message: 'Dépôt déjà traité' });
@@ -255,6 +267,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
         return res.json({ success: true });
       }
+
       case 'reject_deposit':
         await db.query("UPDATE depots SET statut='rejete' WHERE id=?", [id]);
         return res.json({ success: true });
@@ -265,6 +278,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query("UPDATE retraits SET statut='valide', date_traitement=NOW() WHERE id=?", [id]);
         return res.json({ success: true });
       }
+
       case 'reject_retrait': {
         const [[ret]] = await db.query('SELECT * FROM retraits WHERE id=?', [id]);
         if (!ret) return res.json({ success: false });
@@ -273,6 +287,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query("UPDATE retraits SET statut='rejete', date_traitement=NOW() WHERE id=?", [id]);
         return res.json({ success: true });
       }
+
       case 'update_balance':
         await db.query('UPDATE soldes SET solde=? WHERE user_id=?', [montant, user_id]);
         return res.json({ success: true });
@@ -280,6 +295,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
       case 'validate_post':
         await db.query("UPDATE posts SET statut='valide' WHERE id=?", [id]);
         return res.json({ success: true });
+
       case 'reject_post':
         await db.query("UPDATE posts SET statut='refuse' WHERE id=?", [id]);
         return res.json({ success: true });
@@ -290,10 +306,45 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query('UPDATE utilisateurs SET is_admin=? WHERE id=?', [!u.is_admin, id]);
         return res.json({ success: true, is_admin: !u.is_admin });
       }
+
       case 'update_plan':
         await db.query(
-          'UPDATE planinvestissement SET prix=?, duree_jours=?, rendement_journalier=?, description=? WHERE id=?',
-          [prix, duree_jours, rendement_journalier, description, id]);
+          'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, description=? WHERE id=?',
+          [nom, prix, duree_jours, rendement_journalier, description, id]);
+        return res.json({ success: true });
+
+      case 'add_plan': {
+        if (!nom || !prix || !duree_jours || !rendement_journalier)
+          return res.json({ success: false, message: 'Tous les champs sont requis' });
+        await db.query(
+          'INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, description) VALUES (?,?,?,?,?)',
+          [nom, prix, duree_jours, rendement_journalier, description || '']);
+        return res.json({ success: true });
+      }
+
+      case 'delete_plan': {
+        const [[activeCount]] = await db.query("SELECT COUNT(*) as cnt FROM commandes WHERE plan_id=? AND statut='actif'", [id]);
+        if (parseInt(activeCount.cnt) > 0) return res.json({ success: false, message: 'Ce plan a des investissements actifs' });
+        await db.query('DELETE FROM planinvestissement WHERE id=?', [id]);
+        return res.json({ success: true });
+      }
+
+      case 'update_palier':
+        await db.query(
+          'UPDATE vip_paliers SET label=?, filleuls_requis=?, montant_cadeau=? WHERE id=?',
+          [label, filleuls_requis, montant_cadeau, id]);
+        return res.json({ success: true });
+
+      case 'add_palier': {
+        if (!niveau) return res.json({ success: false, message: 'Niveau requis' });
+        await db.query(
+          'INSERT INTO vip_paliers (niveau, label, filleuls_requis, montant_cadeau) VALUES (?,?,?,?)',
+          [niveau, label || '', filleuls_requis || 0, montant_cadeau || 0]);
+        return res.json({ success: true });
+      }
+
+      case 'delete_palier':
+        await db.query('DELETE FROM vip_paliers WHERE id=?', [id]);
         return res.json({ success: true });
 
       default:
