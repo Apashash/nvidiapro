@@ -165,6 +165,22 @@
         .status-active { background:rgba(196,125,30,0.15); color:#C47D1E; }
         .status-inactive { background:#F0E0C8; color:#A87D50; }
         .empty-msg { text-align:center; color:#A87D50; font-size:13px; padding:20px; }
+
+        /* Pagination */
+        .pagination {
+            display:flex; align-items:center; justify-content:center;
+            gap:10px; margin-top:12px; padding-top:10px;
+            border-top:1px solid #F0E0C8;
+        }
+        .pag-btn {
+            background:linear-gradient(135deg,#D4921F,#B07018);
+            color:#fff; border:none; border-radius:10px;
+            padding:7px 16px; font-size:13px; font-weight:600;
+            font-family:'Poppins',sans-serif; cursor:pointer;
+            transition:opacity 0.2s;
+        }
+        .pag-btn:disabled { opacity:0.35; cursor:default; }
+        .pag-info { font-size:13px; color:#7D5A38; font-weight:500; }
     </style>
 </head>
 <body>
@@ -262,22 +278,12 @@
             </div>
             <div class="acc-body">
                 <div class="acc-body-inner">
-                    <% if (filleuls_details1 && filleuls_details1.length > 0) { %>
-                        <% filleuls_details1.forEach(function(f) { %>
-                        <div class="filleul-item">
-                            <div class="fil-avatar"><%= (f.nom || '?').charAt(0).toUpperCase() %></div>
-                            <div class="fil-info">
-                                <div class="fil-name"><%= f.nom %></div>
-                                <div class="fil-phone"><%= f.telephone %></div>
-                            </div>
-                            <span class="fil-status <%= f.has_active ? 'status-active' : 'status-inactive' %>">
-                                <%= f.has_active ? 'Actif' : 'Inactif' %>
-                            </span>
-                        </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="empty-msg"><i class="fas fa-user-plus" style="font-size:24px;margin-bottom:8px;display:block;"></i>Aucun filleul au niveau 1.<br>Partagez votre lien !</div>
-                    <% } %>
+                    <div id="list1"></div>
+                    <div class="pagination" id="pag1" style="display:none;">
+                        <button class="pag-btn" id="prev1" onclick="changePage(1,-1)"><i class="fas fa-chevron-left"></i> Préc.</button>
+                        <span class="pag-info" id="info1"></span>
+                        <button class="pag-btn" id="next1" onclick="changePage(1,1)">Suiv. <i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,22 +300,12 @@
             </div>
             <div class="acc-body">
                 <div class="acc-body-inner">
-                    <% if (filleuls_details2 && filleuls_details2.length > 0) { %>
-                        <% filleuls_details2.forEach(function(f) { %>
-                        <div class="filleul-item">
-                            <div class="fil-avatar"><%= (f.nom || '?').charAt(0).toUpperCase() %></div>
-                            <div class="fil-info">
-                                <div class="fil-name"><%= f.nom %></div>
-                                <div class="fil-phone"><%= f.telephone %></div>
-                            </div>
-                            <span class="fil-status <%= f.has_active ? 'status-active' : 'status-inactive' %>">
-                                <%= f.has_active ? 'Actif' : 'Inactif' %>
-                            </span>
-                        </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="empty-msg"><i class="fas fa-user-friends" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.4;"></i>Aucun filleul au niveau 2</div>
-                    <% } %>
+                    <div id="list2"></div>
+                    <div class="pagination" id="pag2" style="display:none;">
+                        <button class="pag-btn" id="prev2" onclick="changePage(2,-1)"><i class="fas fa-chevron-left"></i> Préc.</button>
+                        <span class="pag-info" id="info2"></span>
+                        <button class="pag-btn" id="next2" onclick="changePage(2,1)">Suiv. <i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -326,22 +322,12 @@
             </div>
             <div class="acc-body">
                 <div class="acc-body-inner">
-                    <% if (filleuls_details3 && filleuls_details3.length > 0) { %>
-                        <% filleuls_details3.forEach(function(f) { %>
-                        <div class="filleul-item">
-                            <div class="fil-avatar"><%= (f.nom || '?').charAt(0).toUpperCase() %></div>
-                            <div class="fil-info">
-                                <div class="fil-name"><%= f.nom %></div>
-                                <div class="fil-phone"><%= f.telephone %></div>
-                            </div>
-                            <span class="fil-status <%= f.has_active ? 'status-active' : 'status-inactive' %>">
-                                <%= f.has_active ? 'Actif' : 'Inactif' %>
-                            </span>
-                        </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="empty-msg"><i class="fas fa-sitemap" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.4;"></i>Aucun filleul au niveau 3</div>
-                    <% } %>
+                    <div id="list3"></div>
+                    <div class="pagination" id="pag3" style="display:none;">
+                        <button class="pag-btn" id="prev3" onclick="changePage(3,-1)"><i class="fas fa-chevron-left"></i> Préc.</button>
+                        <span class="pag-info" id="info3"></span>
+                        <button class="pag-btn" id="next3" onclick="changePage(3,1)">Suiv. <i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -350,59 +336,144 @@
 </div><!-- /container -->
 
 <script>
+// ── Data from server ──────────────────────────────────────────────
+const DATA = {
+  1: <%- JSON.stringify(filleuls_details1 || []) %>,
+  2: <%- JSON.stringify(filleuls_details2 || []) %>,
+  3: <%- JSON.stringify(filleuls_details3 || []) %>
+};
+const EMPTY_ICONS = {
+  1: 'fa-user-plus',
+  2: 'fa-user-friends',
+  3: 'fa-sitemap'
+};
+const EMPTY_MSGS = {
+  1: 'Aucun filleul au niveau 1.<br>Partagez votre lien !',
+  2: 'Aucun filleul au niveau 2',
+  3: 'Aucun filleul au niveau 3'
+};
+
+const PAGE_SIZE = 20;
+const pages = { 1: 0, 2: 0, 3: 0 };
+
+// ── Render a page for a level ─────────────────────────────────────
+function renderPage(level) {
+  const data = DATA[level];
+  const listEl  = document.getElementById('list' + level);
+  const pagEl   = document.getElementById('pag'  + level);
+  const infoEl  = document.getElementById('info' + level);
+  const prevBtn  = document.getElementById('prev' + level);
+  const nextBtn  = document.getElementById('next' + level);
+  const page    = pages[level];
+  const total   = data.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  if (total === 0) {
+    listEl.innerHTML = `<div class="empty-msg">
+      <i class="fas ${EMPTY_ICONS[level]}" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.4;"></i>
+      ${EMPTY_MSGS[level]}</div>`;
+    pagEl.style.display = 'none';
+    return;
+  }
+
+  const start = page * PAGE_SIZE;
+  const slice = data.slice(start, start + PAGE_SIZE);
+
+  listEl.innerHTML = slice.map(f => {
+    const initial = (f.nom || '?').charAt(0).toUpperCase();
+    const active  = f.has_active ? true : false;
+    return `<div class="filleul-item">
+      <div class="fil-avatar">${initial}</div>
+      <div class="fil-info">
+        <div class="fil-name">${escHtml(f.nom || '')}</div>
+        <div class="fil-phone">${escHtml(f.telephone || '')}</div>
+      </div>
+      <span class="fil-status ${active ? 'status-active' : 'status-inactive'}">
+        ${active ? 'Actif' : 'Inactif'}
+      </span>
+    </div>`;
+  }).join('');
+
+  // Pagination bar
+  if (totalPages > 1) {
+    pagEl.style.display = 'flex';
+    infoEl.textContent  = `Page ${page + 1} / ${totalPages}`;
+    prevBtn.disabled    = (page === 0);
+    nextBtn.disabled    = (page >= totalPages - 1);
+  } else {
+    pagEl.style.display = 'none';
+  }
+
+  // Recalculate accordion height after content change
+  const acc  = document.getElementById('acc' + level);
+  const body = acc.querySelector('.acc-body');
+  if (acc.classList.contains('open') && body.style.height !== 'auto') {
+    body.style.height = body.scrollHeight + 'px';
+  } else if (acc.classList.contains('open')) {
+    // already auto — force reflow to new content height
+    body.style.height = 'auto';
+  }
+}
+
+function changePage(level, delta) {
+  const total      = DATA[level].length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  pages[level]     = Math.max(0, Math.min(totalPages - 1, pages[level] + delta));
+  renderPage(level);
+}
+
+// ── Accordion toggle ──────────────────────────────────────────────
 function toggleAcc(id) {
-    const el = document.getElementById(id);
-    const body = el.querySelector('.acc-body');
-    if (el.classList.contains('open')) {
-        body.style.height = body.scrollHeight + 'px';
-        requestAnimationFrame(() => { body.style.height = '0'; });
-        el.classList.remove('open');
-    } else {
-        el.classList.add('open');
-        body.style.height = body.scrollHeight + 'px';
-        body.addEventListener('transitionend', function handler() {
-            body.style.height = 'auto';
-            body.removeEventListener('transitionend', handler);
-        });
-    }
+  const el   = document.getElementById(id);
+  const body = el.querySelector('.acc-body');
+  if (el.classList.contains('open')) {
+    body.style.height = body.scrollHeight + 'px';
+    requestAnimationFrame(() => { body.style.height = '0'; });
+    el.classList.remove('open');
+  } else {
+    el.classList.add('open');
+    body.style.height = body.scrollHeight + 'px';
+    body.addEventListener('transitionend', function handler() {
+      body.style.height = 'auto';
+      body.removeEventListener('transitionend', handler);
+    });
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function copyLink() {
-    const input = document.getElementById('referralInput');
-    navigator.clipboard.writeText(input.value)
-        .then(() => { showToast('Lien copié !'); })
-        .catch(() => { input.select(); document.execCommand('copy'); showToast('Lien copié !'); });
+  const input = document.getElementById('referralInput');
+  navigator.clipboard.writeText(input.value)
+    .then(() => showToast('Lien copié !'))
+    .catch(() => { input.select(); document.execCommand('copy'); showToast('Lien copié !'); });
 }
-
-function getLink() {
-    return document.getElementById('referralInput').value;
-}
-function shareWA() {
-    window.open('https://wa.me/?text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa ! ' + getLink()), '_blank');
-}
-function shareFB() {
-    window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(getLink()), '_blank');
-}
-function shareTG() {
-    window.open('https://t.me/share/url?url=' + encodeURIComponent(getLink()) + '&text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa !'), '_blank');
-}
-function shareTW() {
-    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa ! ' + getLink()), '_blank');
-}
+function getLink() { return document.getElementById('referralInput').value; }
+function shareWA() { window.open('https://wa.me/?text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa ! ' + getLink()), '_blank'); }
+function shareFB() { window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(getLink()), '_blank'); }
+function shareTG() { window.open('https://t.me/share/url?url=' + encodeURIComponent(getLink()) + '&text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa !'), '_blank'); }
+function shareTW() { window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa ! ' + getLink()), '_blank'); }
 
 function showToast(msg) {
-    const t = document.createElement('div');
-    t.textContent = msg;
-    Object.assign(t.style, {
-        position:'fixed', bottom:'100px', left:'50%', transform:'translateX(-50%)',
-        background:'#3D2B1F', color:'#fff', padding:'10px 22px', borderRadius:'30px',
-        fontSize:'14px', fontWeight:'600', zIndex:'9999', opacity:'0',
-        transition:'opacity 0.3s'
-    });
-    document.body.appendChild(t);
-    requestAnimationFrame(() => { t.style.opacity = '1'; });
-    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position:'fixed', bottom:'100px', left:'50%', transform:'translateX(-50%)',
+    background:'#3D2B1F', color:'#fff', padding:'10px 22px', borderRadius:'30px',
+    fontSize:'14px', fontWeight:'600', zIndex:'9999', opacity:'0', transition:'opacity 0.3s'
+  });
+  document.body.appendChild(t);
+  requestAnimationFrame(() => { t.style.opacity = '1'; });
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
 }
+
+// ── Init ──────────────────────────────────────────────────────────
+renderPage(1);
+renderPage(2);
+renderPage(3);
 </script>
 </body>
 </html>
