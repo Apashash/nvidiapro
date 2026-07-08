@@ -4,20 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Altiora Capital Africa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
-        body { background:#0a0a0a; color:#e0e0e0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
-        .login-card { background:rgba(25,25,25,0.98); border:1px solid rgba(118,185,0,0.3); border-radius:16px; padding:36px 28px; width:100%; max-width:380px; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins','Segoe UI',sans-serif; }
+        body { background:#F5EFE6; color:#3D2B1F; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+        .login-card { background:#fff; border:1px solid #E8D5B0; border-radius:20px; padding:36px 28px; width:100%; max-width:380px; box-shadow:0 8px 28px rgba(196,125,30,0.15); }
         .logo { text-align:center; margin-bottom:28px; }
-        .logo h1 { color:#76b900; font-size:1.5rem; font-weight:800; }
-        .logo p { color:#a0a0a0; font-size:0.85rem; margin-top:4px; }
-        .error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:0.85rem; }
+        .logo h1 { color:#C47D1E; font-size:1.5rem; font-weight:800; }
+        .logo p { color:#A87D50; font-size:0.85rem; margin-top:4px; }
+        .error { background:#FFF0EE; border:1px solid #F5A9A0; color:#C0392B; padding:10px 14px; border-radius:10px; margin-bottom:16px; font-size:0.85rem; }
         .form-group { margin-bottom:16px; }
-        .form-group label { display:block; color:#a0a0a0; font-size:0.8rem; margin-bottom:6px; }
-        .form-group input { width:100%; background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 14px; color:#e0e0e0; font-size:0.9rem; }
-        .form-group input:focus { outline:none; border-color:#76b900; }
-        .btn { width:100%; background:#76b900; color:#000; border:none; border-radius:10px; padding:14px; font-weight:700; font-size:1rem; cursor:pointer; }
-        .btn:hover { background:#90d300; }
+        .form-group label { display:block; color:#A87D50; font-size:0.8rem; margin-bottom:6px; font-weight:600; }
+        .form-group input {
+            width:100%; background:#FBF5EC; border:1.5px solid #E8D5B0; border-radius:10px;
+            padding:12px 14px; color:#3D2B1F; font-size:0.9rem; font-family:'Poppins',sans-serif;
+            outline:none; transition:border-color 0.2s;
+        }
+        .form-group input:focus { border-color:#C47D1E; }
+        .btn {
+            width:100%; background:linear-gradient(135deg,#D4921F,#B07018); color:#fff;
+            border:none; border-radius:12px; padding:14px; font-weight:700; font-size:1rem;
+            cursor:pointer; font-family:'Poppins',sans-serif; box-shadow:0 4px 14px rgba(196,125,30,0.35);
+            transition:transform 0.2s;
+        }
+        .btn:hover { transform:translateY(-2px); }
     </style>
 </head>
 <body>
