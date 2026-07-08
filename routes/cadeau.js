@@ -15,9 +15,9 @@ router.get('/cadeau', requireAuth, async (req, res) => {
 
     // Filleuls actifs (ayant investi) et inscrits
     const [[{ filleuls_actifs }]] = await db.query(
-      `SELECT COUNT(DISTINCT i.user_id) AS filleuls_actifs
+      `SELECT COUNT(DISTINCT c.user_id) AS filleuls_actifs
        FROM utilisateurs u2
-       LEFT JOIN investissements i ON i.user_id = u2.id AND i.statut = 'actif'
+       LEFT JOIN commandes c ON c.user_id = u2.id AND c.statut = 'actif'
        WHERE u2.parrain_id = ?`, [user_id]);
     const [[{ filleuls_inscrits }]] = await db.query(
       `SELECT COUNT(*) AS filleuls_inscrits FROM utilisateurs WHERE parrain_id = ?`, [user_id]);
