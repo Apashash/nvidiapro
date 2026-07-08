@@ -5,7 +5,17 @@ const db = require('../config/db');
 const SECURITY_CODE = process.env.ADMIN_CODE || 'Apashash28';
 const SESSION_TIMEOUT = 30 * 60 * 1000;
 
+async function requireAppAdmin(req, res, next) {
+  if (!req.session.user_id) return res.redirect('/');
+  try {
+    const [[user]] = await db.query('SELECT is_admin FROM utilisateurs WHERE id=?', [req.session.user_id]);
+    if (!user || !user.is_admin) return res.redirect('/');
+    next();
+  } catch (e) { return res.redirect('/'); }
+}
+
 function requireAdminAuth(req, res, next) {
+  if (!req.session.user_id) return res.redirect('/');
   if (!req.session.security_authenticated) return res.redirect('/adminxyz');
   const now = Date.now();
   if (req.session.security_last_access && (now - req.session.security_last_access) > SESSION_TIMEOUT) {
@@ -24,21 +34,22 @@ async function getParams() {
 }
 
 // ── Login ──────────────────────────────────────────────────────────────────────
-router.get('/adminxyz', (req, res) => {
+router.get('/adminxyz', requireAppAdmin, (req, res) => {
   if (req.session.security_authenticated) return res.redirect('/adminxyz/dashboard');
   const error = req.session.admin_error || null;
   delete req.session.admin_error;
   res.render('admin_login', { error });
 });
 
-router.post('/adminxyz', (req, res) => {
+router.post('/adminxyz', requireAppAdmin, (req, res) => {
   if (req.body.security_code === SECURITY_CODE) {
-    req.session.regenerate((err) => {
-      if (err) { req.session.admin_error = 'Erreur session'; return res.redirect('/adminxyz'); }
-      req.session.security_authenticated = true;
-      req.session.security_last_access = Date.now();
-      res.redirect('/adminxyz/dashboard');
-    });
+    const uid = req.session.user_id;
+    const unom = req.session.user_nom;
+    req.session.security_authenticated = true;
+    req.session.security_last_access = Date.now();
+    req.session.user_id = uid;
+    req.session.user_nom = unom;
+    res.redirect('/adminxyz/dashboard');
   } else {
     req.session.admin_error = 'Code de sécurité incorrect';
     res.redirect('/adminxyz');

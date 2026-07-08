@@ -25,9 +25,16 @@
             width:100%; background:linear-gradient(135deg,#D4921F,#B07018); color:#fff;
             border:none; border-radius:12px; padding:14px; font-weight:700; font-size:1rem;
             cursor:pointer; font-family:'Poppins',sans-serif; box-shadow:0 4px 14px rgba(196,125,30,0.35);
-            transition:transform 0.2s;
+            transition:transform 0.2s; margin-bottom:12px;
         }
         .btn:hover { transform:translateY(-2px); }
+        .btn-back {
+            width:100%; background:transparent; color:#A87D50; border:1.5px solid #E8D5B0;
+            border-radius:12px; padding:13px; font-weight:600; font-size:0.9rem;
+            cursor:pointer; font-family:'Poppins',sans-serif; text-decoration:none;
+            display:block; text-align:center; transition:background 0.2s;
+        }
+        .btn-back:hover { background:#FBF5EC; }
     </style>
 </head>
 <body>
@@ -40,10 +47,11 @@
     <form action="/adminxyz" method="POST">
         <div class="form-group">
             <label>Code de sécurité</label>
-            <input type="password" name="security_code" placeholder="Entrez le code" required autofocus>
+            <input type="password" name="security_code" placeholder="Entrez le code" required autofocus autocomplete="new-password">
         </div>
         <button type="submit" class="btn">Accéder au panneau admin</button>
     </form>
+    <a href="/" class="btn-back">← Retour au tableau de bord</a>
 </div>
 </body>
 </html>
