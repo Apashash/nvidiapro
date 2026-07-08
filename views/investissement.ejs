@@ -85,6 +85,28 @@
         .empty-title { font-size:18px; font-weight:600; color:#7D5A38; margin-bottom:8px; }
         .empty-msg { font-size:14px; color:#A87D50; }
 
+        /* Order cards (Mes Commandes) */
+        .order-card {
+            background:#fff; border-radius:20px; padding:18px;
+            box-shadow:0 4px 16px rgba(196,125,30,0.12);
+        }
+        .order-head { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+        .order-img { width:52px; height:52px; border-radius:12px; overflow:hidden; flex-shrink:0; }
+        .order-img img { width:100%; height:100%; object-fit:cover; }
+        .order-name { font-size:16px; font-weight:700; color:#C47D1E; }
+        .order-amount { font-size:13px; color:#7D5A38; margin-top:2px; }
+        .order-amount strong { color:#3D2B1F; }
+        .progress-row { margin-bottom:10px; }
+        .progress-labels { display:flex; justify-content:space-between; font-size:12px; color:#A87D50; margin-bottom:6px; }
+        .progress-track { background:#F0E0C8; border-radius:20px; height:10px; overflow:hidden; }
+        .progress-fill { height:100%; border-radius:20px; background:linear-gradient(135deg,#D4921F,#B07018); transition:width 0.4s ease; }
+        .countdown-box {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            background:#FBF5EC; border:1px solid #E8D5B0; border-radius:12px;
+            padding:10px; font-size:15px; font-weight:800; color:#C47D1E;
+        }
+        .countdown-box.ready { background:#F0FFF4; border-color:#86EFAC; color:#166534; }
+
         /* Popup */
         .popup {
             display:none; position:fixed; inset:0;
@@ -218,10 +240,38 @@
         </div>
 
         <div class="contenu-tab <%= menu_actif === 'commande' ? '' : 'hidden' %>" id="commande-content">
-            <div class="empty-state">
-                <div class="empty-icon"><i class="fas fa-exchange-alt"></i></div>
-                <div class="empty-title">Redirection en cours</div>
-                <div class="empty-msg">Veuillez patienter...</div>
+            <div class="plans-list">
+                <% if (commandes && commandes.length > 0) { %>
+                    <% commandes.forEach(function(cmd) { %>
+                    <div class="order-card">
+                        <div class="order-head">
+                            <div class="order-img"><img src="<%= cmd.plan_image %>" alt="<%= cmd.plan_nom %>"></div>
+                            <div>
+                                <div class="order-name"><%= cmd.plan_nom %></div>
+                                <div class="order-amount">Montant investi : <strong><%= parseFloat(cmd.montant).toLocaleString() %> FCFA</strong></div>
+                            </div>
+                        </div>
+                        <div class="progress-row">
+                            <div class="progress-labels">
+                                <span>Cycle de versement (24h)</span>
+                                <span class="progress-pct" data-start="<%= cmd.cycle_start_ms %>" data-end="<%= cmd.cycle_end_ms %>">0%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width:0%" data-start="<%= cmd.cycle_start_ms %>" data-end="<%= cmd.cycle_end_ms %>"></div>
+                            </div>
+                        </div>
+                        <div class="countdown-box" data-end="<%= cmd.cycle_end_ms %>">
+                            <i class="fas fa-clock"></i> <span class="countdown-text">--:--:--</span>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="empty-title">Aucune Commande Active</div>
+                        <div class="empty-msg">Investissez dans un plan pour le voir apparaître ici.</div>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
@@ -279,13 +329,52 @@ const soldeClient = <%= solde %>;
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const target = this.getAttribute('data-menu');
-        if (target === 'commande') { window.location.href = '/'; return; }
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.contenu-tab').forEach(c => c.classList.add('hidden'));
         this.classList.add('active');
         document.getElementById(target + '-content').classList.remove('hidden');
+        const url = new URL(window.location);
+        url.searchParams.set('menu', target);
+        window.history.replaceState({}, '', url);
     });
 });
+
+function pad(n) { return n.toString().padStart(2, '0'); }
+
+function updateOrderTimers() {
+    const now = Date.now();
+    document.querySelectorAll('.progress-fill').forEach(el => {
+        const start = parseInt(el.dataset.start, 10);
+        const end = parseInt(el.dataset.end, 10);
+        const pct = Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100));
+        el.style.width = pct + '%';
+    });
+    document.querySelectorAll('.progress-pct').forEach(el => {
+        const start = parseInt(el.dataset.start, 10);
+        const end = parseInt(el.dataset.end, 10);
+        const pct = Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100));
+        el.textContent = Math.round(pct) + '%';
+    });
+    document.querySelectorAll('.countdown-box').forEach(box => {
+        const end = parseInt(box.dataset.end, 10);
+        const remaining = end - now;
+        const textEl = box.querySelector('.countdown-text');
+        if (remaining <= 0) {
+            box.classList.add('ready');
+            textEl.textContent = 'Versement disponible !';
+        } else {
+            box.classList.remove('ready');
+            const h = Math.floor(remaining / 3600000);
+            const m = Math.floor((remaining % 3600000) / 60000);
+            const s = Math.floor((remaining % 60000) / 1000);
+            textEl.textContent = pad(h) + ':' + pad(m) + ':' + pad(s) + ' avant versement';
+        }
+    });
+}
+if (document.querySelector('.countdown-box')) {
+    updateOrderTimers();
+    setInterval(updateOrderTimers, 1000);
+}
 
 document.querySelectorAll('.btn-invest').forEach(btn => {
     btn.addEventListener('click', function() {

@@ -23,7 +23,30 @@ router.get('/investissement', requireAuth, async (req, res) => {
       }
     }
 
-    res.render('investissement', { solde, menu_actif, plans: plans_corriges });
+    const [commandesRows] = await db.query(`
+      SELECT c.*, p.nom as plan_nom, p.image_url as plan_image
+      FROM commandes c
+      JOIN planinvestissement p ON p.id = c.plan_id
+      WHERE c.user_id = ? AND c.date_fin >= CURRENT_DATE AND c.statut = 'actif'
+      ORDER BY c.date_creation DESC
+    `, [user_id]);
+
+    const commandes = [];
+    for (const cmd of commandesRows) {
+      const [[lp]] = await db.query(
+        "SELECT MAX(date_paiement) as last_payment FROM historique_revenus WHERE user_id = ? AND commande_id = ? AND type = 'paiement_journalier'",
+        [user_id, cmd.id]
+      );
+      const cycleStart = lp.last_payment ? new Date(lp.last_payment) : new Date(cmd.date_creation);
+      const cycleEnd = new Date(cycleStart.getTime() + 24 * 3600000);
+      commandes.push({
+        ...cmd,
+        cycle_start_ms: cycleStart.getTime(),
+        cycle_end_ms: cycleEnd.getTime(),
+      });
+    }
+
+    res.render('investissement', { solde, menu_actif, plans: plans_corriges, commandes });
   } catch (e) {
     console.error(e);
     res.redirect('/');
