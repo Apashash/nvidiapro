@@ -8,8 +8,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        html, body { height:100%; overflow-x:hidden; font-family:'Poppins',sans-serif; }
-        body { background:#F5EFE6; min-height:100vh; display:flex; flex-direction:column; }
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+        html, body { min-height:100vh; overflow-x:hidden; font-family:'Poppins',sans-serif; }
+        body {
+            background:#F5EFE6;
+            display:flex;
+            flex-direction:column;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .hero {
             height: 230px;
             background: linear-gradient(to bottom, rgba(10,5,0,0.30), rgba(10,5,0,0.55)),
@@ -27,7 +37,7 @@
         .hero p { font-size:12px; color:rgba(255,255,255,0.9); margin-top:3px; }
         .form-card {
             background:#fff; border-radius:28px 28px 0 0; margin-top:-28px;
-            flex:1; padding:28px 24px 40px;
+            flex-shrink:0; padding:28px 24px calc(40px + env(safe-area-inset-bottom, 0px));
             box-shadow: 0 -8px 32px rgba(196,125,30,0.10);
         }
         .bonus-notice {
