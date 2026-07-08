@@ -57,15 +57,9 @@ router.post('/connexion', async (req, res) => {
   }
 });
 
-// GET /inscription
+// GET /inscription → redirige vers le vrai formulaire (garde le code parrain)
 router.get('/inscription', (req, res) => {
-  const code_parrain = req.query.p || req.session.parrain_code || '';
   if (req.query.p) req.session.parrain_code = req.query.p;
-  res.render('inscription', { code_parrain });
-});
-
-// POST /inscription (step 1: just shows the form, redirect to inscription1)
-router.post('/inscription', (req, res) => {
   res.redirect('/inscription1');
 });
 
