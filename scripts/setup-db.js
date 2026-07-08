@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
   parrain_id INTEGER REFERENCES utilisateurs(id),
   code_parrainage VARCHAR(50) UNIQUE,
   date_inscription TIMESTAMP DEFAULT NOW(),
-  last_spin_time TIMESTAMP
+  last_spin_time TIMESTAMP,
+  is_admin BOOLEAN DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS soldes (

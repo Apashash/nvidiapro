@@ -35,6 +35,21 @@ router.post('/adminxyz', (req, res) => {
   }
 });
 
+// Direct admin-panel access for accounts flagged as admin (bypasses the security-code prompt)
+router.get('/admin-access', async (req, res) => {
+  if (!req.session || !req.session.user_id) return res.redirect('/connexion');
+  try {
+    const [[user]] = await db.query('SELECT is_admin FROM utilisateurs WHERE id = ?', [req.session.user_id]);
+    if (!user || !user.is_admin) return res.redirect('/compte');
+    req.session.security_authenticated = true;
+    req.session.security_last_access = Date.now();
+    res.redirect('/adminxyz/dashboard');
+  } catch (e) {
+    console.error(e);
+    res.redirect('/compte');
+  }
+});
+
 // Admin dashboard
 router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
   try {
@@ -101,6 +116,12 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
       case 'reject_post':
         await db.query("UPDATE posts SET statut = 'refuse' WHERE id = ?", [id]);
         return res.json({ success: true });
+      case 'toggle_admin': {
+        const [[u]] = await db.query('SELECT is_admin FROM utilisateurs WHERE id = ?', [id]);
+        if (!u) return res.json({ success: false, message: 'Utilisateur non trouvé' });
+        await db.query('UPDATE utilisateurs SET is_admin = ? WHERE id = ?', [!u.is_admin, id]);
+        return res.json({ success: true, is_admin: !u.is_admin });
+      }
       default:
         return res.json({ success: false, message: 'Action inconnue' });
     }
