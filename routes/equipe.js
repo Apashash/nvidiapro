@@ -58,9 +58,14 @@ router.get('/equipe', requireAuth, async (req, res) => {
 
     const [[vip]] = await db.query('SELECT * FROM vip WHERE user_id = ?', [user_id]);
 
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-      : `${req.protocol}://${req.get('host')}`;
+    // Prefer the published production domain (REPLIT_DOMAINS) so referral
+    // links work for external visitors. REPLIT_DEV_DOMAIN is a temporary
+    // workspace preview URL not meant to be shared with end users.
+    const baseUrl = process.env.REPLIT_DOMAINS
+      ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+      : process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : `${req.protocol}://${req.get('host')}`;
 
     res.render('equipe', {
       user,
