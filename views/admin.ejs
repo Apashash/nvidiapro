@@ -709,34 +709,103 @@
     </div>
   </div>
 
-  <% posts.forEach(p => { %>
-  <div class="card">
-    <div class="card-row" style="align-items:flex-start">
-      <div style="flex:1">
-        <div style="font-weight:700"><%- p.nom || '—' %></div>
-        <div class="dep-meta" style="margin:4px 0"><%= p.date_creation ? new Date(p.date_creation).toLocaleDateString('fr-FR') : '—' %></div>
-        <% if (p.message) { %>
-        <div style="font-size:0.85rem;color:#555;line-height:1.5;margin-bottom:8px"><%- p.message.substring(0,120) %><%= p.message.length > 120 ? '…' : '' %></div>
-        <% } %>
-        <% if (p.image) { %>
-        <a href="/uploads/<%- p.image %>" target="_blank" style="color:#E8931A;font-size:0.82rem"><i class="fas fa-image"></i> Voir l'image</a>
-        <% } %>
-        <% if (p.statut === 'en_attente') { %>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn-xs btn-v" onclick="doAction('validate_post',<%= p.id %>)"><i class="fas fa-check"></i> Valider</button>
-          <button class="btn-xs btn-r" onclick="doAction('reject_post',<%= p.id %>)"><i class="fas fa-times"></i> Rejeter</button>
-        </div>
-        <% } %>
-      </div>
-      <div>
-        <% if (p.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
-        <% } else if (p.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
-        <% } else { %><span class="badge badge-rejected">Refusé</span><% } %>
-      </div>
-    </div>
+  <!-- Safe JSON data — not executable, no XSS risk -->
+  <script type="application/json" id="affiche-data"><%- JSON.stringify(posts.map(function(p){ return {
+    id: p.id,
+    nom: p.nom || '—',
+    message: p.message || '',
+    image: p.image || '',
+    statut: p.statut,
+    date: p.date_creation ? new Date(p.date_creation).toLocaleDateString('fr-FR') : '—'
+  }; })) %></script>
+
+  <!-- JS-rendered list with pagination -->
+  <div id="affiche-list"></div>
+  <div id="affiche-pag" style="display:none;justify-content:center;align-items:center;gap:12px;padding:16px 0;">
+    <button class="btn-xs btn-v" id="affPrev" onclick="affChangePage(-1)" style="padding:7px 16px"><i class="fas fa-chevron-left"></i> Préc.</button>
+    <span id="affInfo" style="font-size:13px;color:#555;font-weight:600"></span>
+    <button class="btn-xs btn-v" id="affNext" onclick="affChangePage(1)" style="padding:7px 16px">Suiv. <i class="fas fa-chevron-right"></i></button>
   </div>
-  <% }); %>
-  <% if (!posts.length) { %><div class="empty">Aucune affiche</div><% } %>
+
+  <script>
+  (function(){
+    const RAW = JSON.parse(document.getElementById('affiche-data').textContent);
+
+    const PAGE_SIZE = 20;
+    let page = 0;
+
+    function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function badgeHtml(statut) {
+      if (statut==='en_attente') return '<span class="badge badge-pending">En attente</span>';
+      if (statut==='valide')     return '<span class="badge badge-valid">Validé</span>';
+      return '<span class="badge badge-rejected">Refusé</span>';
+    }
+
+    function render() {
+      const list  = document.getElementById('affiche-list');
+      const pagEl = document.getElementById('affiche-pag');
+      const total = RAW.length;
+
+      if (total === 0) {
+        list.innerHTML = '<div class="empty">Aucune affiche</div>';
+        pagEl.style.display = 'none';
+        return;
+      }
+
+      const totalPages = Math.ceil(total / PAGE_SIZE);
+      const slice = RAW.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+      list.innerHTML = slice.map(p => {
+        const msg   = p.message ? esc(p.message.substring(0,120)) + (p.message.length>120?'…':'') : '';
+        const imgLnk = p.image
+          ? `<a href="/uploads/${esc(p.image)}" target="_blank" style="color:#E8931A;font-size:0.82rem"><i class="fas fa-image"></i> Voir l'image</a>`
+          : '';
+        const actBtns = p.statut === 'en_attente'
+          ? `<div style="margin-top:10px;display:flex;gap:8px">
+               <button class="btn-xs btn-v" onclick="doAction('validate_post',${p.id})"><i class="fas fa-check"></i> Valider</button>
+               <button class="btn-xs btn-r" onclick="doAction('reject_post',${p.id})"><i class="fas fa-times"></i> Rejeter</button>
+             </div>`
+          : '';
+        return `<div class="card" id="post-card-${p.id}">
+          <div class="card-row" style="align-items:flex-start">
+            <div style="flex:1">
+              <div style="font-weight:700">${esc(p.nom)}</div>
+              <div class="dep-meta" style="margin:4px 0">${esc(p.date)}</div>
+              ${msg ? `<div style="font-size:0.85rem;color:#555;line-height:1.5;margin-bottom:8px">${msg}</div>` : ''}
+              ${imgLnk}
+              ${actBtns}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              ${badgeHtml(p.statut)}
+              <button class="btn-xs btn-r" onclick="doAction('delete_post',${p.id})" title="Supprimer" style="padding:5px 10px">
+                <i class="fas fa-trash"></i> Supprimer
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+      if (totalPages > 1) {
+        pagEl.style.display = 'flex';
+        document.getElementById('affInfo').textContent = `Page ${page+1} / ${totalPages}`;
+        document.getElementById('affPrev').disabled = (page === 0);
+        document.getElementById('affNext').disabled = (page >= totalPages - 1);
+      } else {
+        pagEl.style.display = 'none';
+      }
+    }
+
+    window.affChangePage = function(delta) {
+      const total = RAW.length;
+      const totalPages = Math.ceil(total / PAGE_SIZE);
+      page = Math.max(0, Math.min(totalPages - 1, page + delta));
+      render();
+    };
+
+    render();
+  })();
+  </script>
 
 <%# ══════════════════ PARAMÈTRES ══════════════════ %>
 <% } else if (currentPage === 'parametres') { %>
@@ -1041,7 +1110,7 @@ function filterTx() {
 const actionLabels = {
   validate_deposit:'Valider ce dépôt ?', reject_deposit:'Rejeter ce dépôt ?',
   validate_retrait:'Valider ce retrait ?', reject_retrait:'Rejeter ce retrait ?',
-  validate_post:'Valider cette affiche ?', reject_post:'Rejeter cette affiche ?',
+  validate_post:'Valider cette affiche ?', reject_post:'Rejeter cette affiche ?', delete_post:'Supprimer définitivement cette affiche ?',
   toggle_admin:'Changer le statut administrateur ?'
 };
 async function doAction(action, id) {

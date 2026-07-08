@@ -311,6 +311,10 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query("UPDATE posts SET statut='refuse' WHERE id=?", [id]);
         return res.json({ success: true });
 
+      case 'delete_post':
+        await db.query('DELETE FROM posts WHERE id=?', [id]);
+        return res.json({ success: true });
+
       case 'toggle_admin': {
         const [[u]] = await db.query('SELECT is_admin FROM utilisateurs WHERE id=?', [id]);
         if (!u) return res.json({ success: false, message: 'Utilisateur non trouvé' });
