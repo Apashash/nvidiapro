@@ -47,12 +47,16 @@ CREATE TABLE IF NOT EXISTS vip (
   invitations_actuelles INTEGER DEFAULT 0
 );
 
+-- rendement_journalier is the daily yield rate as a percentage (e.g. 1.72).
+-- The app computes gain_journalier = prix * rendement_journalier / 100 at runtime.
 CREATE TABLE IF NOT EXISTS planinvestissement (
   id SERIAL PRIMARY KEY,
   nom VARCHAR(255) UNIQUE NOT NULL,
   prix NUMERIC(15,2),
   duree_jours INTEGER,
-  gain_journalier NUMERIC(15,2)
+  rendement_journalier NUMERIC(8,4),
+  image_url VARCHAR(500),
+  description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS commandes (
@@ -105,6 +109,8 @@ CREATE TABLE IF NOT EXISTS transaction_passwords (
   password VARCHAR(10)
 );
 
+-- commande_id links a revenue entry to a specific investment order.
+-- date_paiement records when the daily yield was credited.
 CREATE TABLE IF NOT EXISTS historique_revenus (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES utilisateurs(id),
@@ -154,21 +160,23 @@ CREATE TABLE IF NOT EXISTS pieces (
 );
 `;
 
-// ON CONFLICT (nom) relies on the UNIQUE constraint added to planinvestissement.nom above.
+// rendement_journalier values computed from original absolute gains:
+//   gain_journalier = prix * rendement_journalier / 100
+// e.g. VIP 1: 1000 * 1.6 / 100 = 16 FCFA/day
 const SEED_PLANS = `
-INSERT INTO planinvestissement (nom, prix, duree_jours, gain_journalier)
+INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, image_url, description)
 VALUES
-  ('Action VIP 1',  1000,    125, 16),
-  ('Action VIP 2',  3000,    125, 50),
-  ('Action VIP 3',  5000,    125, 84),
-  ('Action VIP 4',  10000,   125, 170),
-  ('Action VIP 5',  20000,   125, 340),
-  ('Action VIP 6',  50000,   125, 860),
-  ('Action VIP 7',  100000,  125, 1720),
-  ('Action VIP 8',  200000,  125, 3440),
-  ('Action VIP 9',  500000,  125, 8600),
-  ('Action VIP 10', 1000000, 125, 17200),
-  ('Action VIP 11', 2000000, 125, 34400)
+  ('Action VIP 1',        1000,    125, 1.60,  NULL, 'Plan d''entrée — 1 000 FCFA'),
+  ('Action VIP 2',        3000,    125, 1.667, NULL, 'Plan standard — 3 000 FCFA'),
+  ('Action VIP 3',        5000,    125, 1.68,  NULL, 'Plan avancé — 5 000 FCFA'),
+  ('Action VIP 4',        10000,   125, 1.70,  NULL, 'Plan pro — 10 000 FCFA'),
+  ('Action VIP 5',        20000,   125, 1.70,  NULL, 'Plan premium — 20 000 FCFA'),
+  ('Action VIP 6',        50000,   125, 1.72,  NULL, 'Plan élite — 50 000 FCFA'),
+  ('Action VIP 7',        100000,  125, 1.72,  NULL, 'Plan or — 100 000 FCFA'),
+  ('Action VIP 8',        200000,  125, 1.72,  NULL, 'Plan platine — 200 000 FCFA'),
+  ('Action VIP 9',        500000,  125, 1.72,  NULL, 'Plan diamant — 500 000 FCFA'),
+  ('Action VIP 10',       1000000, 125, 1.72,  NULL, 'Plan royal — 1 000 000 FCFA'),
+  ('Action VIP 11',       2000000, 125, 1.72,  NULL, 'Plan légende — 2 000 000 FCFA')
 ON CONFLICT (nom) DO NOTHING;
 `;
 
