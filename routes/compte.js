@@ -80,6 +80,27 @@ router.get('/compte', requireAuth, async (req, res) => {
   }
 });
 
+router.get('/historique', requireAuth, async (req, res) => {
+  const user_id = req.session.user_id;
+  try {
+    const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
+
+    const [transactions] = await db.query(`
+      (SELECT 'depot' as type, montant, date_depot as date, statut FROM depots WHERE user_id = ?)
+      UNION ALL
+      (SELECT 'retrait' as type, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
+      UNION ALL
+      (SELECT 'revenu' as type, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
+      ORDER BY date DESC
+    `, [user_id, user_id, user_id]);
+
+    res.render('historique', { user, transactions });
+  } catch (e) {
+    console.error(e);
+    res.redirect('/compte');
+  }
+});
+
 // Collect daily salary (salaire journalier)
 router.post('/compte/collecter', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;

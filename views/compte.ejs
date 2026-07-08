@@ -108,41 +108,6 @@
         .menu-txt { flex:1; font-size:14px; font-weight:500; }
         .menu-arr { color:#C8A870; font-size:12px; }
 
-        /* Modal */
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:flex-end; justify-content:center; }
-        .modal.active { display:flex; }
-        .modal-box {
-            background:#fff; border-radius:24px 24px 0 0; padding:24px 20px 36px;
-            width:100%; max-width:430px; animation:slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
-        .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .modal-title { color:#C47D1E; font-weight:700; font-size:16px; }
-        .modal-close-btn { background:none; border:none; color:#A87D50; font-size:20px; cursor:pointer; }
-        .fg { margin-bottom:14px; }
-        .fg label { display:block; color:#A87D50; font-size:12px; margin-bottom:6px; font-weight:500; }
-        .fg input {
-            width:100%; background:#FBF5EC; border:1.5px solid #E8D5B0;
-            border-radius:10px; padding:12px 14px; color:#3D2B1F; font-size:14px;
-            font-family:'Poppins',sans-serif; outline:none; transition:border-color 0.2s;
-        }
-        .fg input:focus { border-color:#C47D1E; }
-        .modal-btn {
-            width:100%; background:linear-gradient(135deg,#D4921F,#B07018);
-            color:#fff; border:none; border-radius:12px; padding:14px;
-            font-weight:700; font-size:15px; cursor:pointer; margin-top:6px;
-            font-family:'Poppins',sans-serif;
-        }
-        .modal-msg { font-size:13px; margin-top:10px; text-align:center; }
-
-        /* TX list */
-        .tx-list { list-style:none; max-height:300px; overflow-y:auto; }
-        .tx-item { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid #F0E0C8; font-size:14px; }
-        .tx-item:last-child { border-bottom:none; }
-        .tx-type { color:#7D5A38; }
-        .tx-date { font-size:11px; color:#A87D50; margin-top:2px; }
-        .tx-pos { color:#16A34A; font-weight:700; }
-        .tx-neg { color:#DC2626; font-weight:700; }
 
         .logout-confirm-overlay {
             display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
@@ -248,11 +213,11 @@
                 <span class="menu-txt">Retrait</span>
                 <i class="fas fa-chevron-right menu-arr"></i>
             </a>
-            <div class="menu-item" onclick="openTxModal()">
+            <a href="/historique" class="menu-item">
                 <span class="menu-ico"><i class="fas fa-exchange-alt"></i></span>
                 <span class="menu-txt">Historique des Transactions</span>
                 <i class="fas fa-chevron-right menu-arr"></i>
-            </div>
+            </a>
             <a href="/tuto" class="menu-item">
                 <span class="menu-ico"><i class="fas fa-book"></i></span>
                 <span class="menu-txt">Tutoriels</span>
@@ -269,33 +234,6 @@
                 <i class="fas fa-chevron-right menu-arr"></i>
             </a>
         </div>
-    </div>
-</div>
-
-<!-- Transactions Modal -->
-<div class="modal" id="txModal">
-    <div class="modal-box">
-        <div class="modal-head">
-            <div class="modal-title"><i class="fas fa-exchange-alt"></i> Historique</div>
-            <button class="modal-close-btn" onclick="closeTxModal()"><i class="fas fa-times"></i></button>
-        </div>
-        <% if (transactions && transactions.length > 0) { %>
-        <ul class="tx-list">
-            <% transactions.forEach(tx => { %>
-            <li class="tx-item">
-                <div>
-                    <div class="tx-type"><%= tx.type || 'transaction' %></div>
-                    <div class="tx-date"><%= tx.date ? new Date(tx.date).toLocaleDateString('fr-FR') : '' %></div>
-                </div>
-                <span class="<%= (tx.montant > 0) ? 'tx-pos' : 'tx-neg' %>">
-                    <%= (tx.montant > 0 ? '+' : '') %><%= parseFloat(tx.montant).toLocaleString('fr-FR') %> FCFA
-                </span>
-            </li>
-            <% }); %>
-        </ul>
-        <% } else { %>
-        <p style="color:#A87D50;text-align:center;padding:24px;font-size:14px;">Aucune transaction trouvée.</p>
-        <% } %>
     </div>
 </div>
 
@@ -322,10 +260,6 @@ function copyId(btn) {
         try { document.execCommand('copy'); } catch(e) {}
     });
 }
-function openTxModal() { document.getElementById('txModal').classList.add('active'); }
-function closeTxModal() { document.getElementById('txModal').classList.remove('active'); }
-document.getElementById('txModal').addEventListener('click', e => { if (e.target === document.getElementById('txModal')) closeTxModal(); });
-
 async function collectGain() {
     const btn = document.getElementById('collectBtn');
     if (btn.classList.contains('disabled')) return;
