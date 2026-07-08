@@ -448,7 +448,7 @@
         <div class="avatar"><%= (u.nom||'?')[0].toUpperCase() %></div>
         <div style="min-width:0">
           <div class="user-name"><%- u.nom %><% if (u.is_admin) { %> <span style="font-size:0.7rem;background:#EEF2FF;color:#4f46e5;padding:2px 7px;border-radius:10px;font-weight:700">Admin</span><% } %></div>
-          <div class="user-sub">+<%- u.telephone %> · <%- u.pays || '—' %></div>
+          <div class="user-sub"><%- u.telephone %> · <%- u.pays || '—' %></div>
           <div class="user-balance"><%= parseFloat(u.solde||0).toLocaleString('fr-FR') %> FCFA</div>
           <div class="ref-row">
             <span class="ref-code"><%= u.code_parrainage || '—' %></span>
@@ -456,17 +456,9 @@
           </div>
         </div>
       </div>
-      <div class="dropdown" id="dd-<%= u.id %>">
-        <button class="menu-btn" onclick="toggleDropdown('dd-<%= u.id %>')"><i class="fas fa-ellipsis-v"></i></button>
-        <div class="dropdown-menu" id="ddm-<%= u.id %>">
-          <button class="dropdown-item" onclick="closeDropdown('dd-<%= u.id %>');openBalanceModal(<%= u.id %>,<%- JSON.stringify(u.nom) %>,<%= parseFloat(u.solde||0) %>)">
-            <i class="fas fa-coins" style="color:#E8931A"></i> Modifier solde
-          </button>
-          <button class="dropdown-item <%= u.is_admin ? 'danger' : '' %>" onclick="closeDropdown('dd-<%= u.id %>');doAction('toggle_admin',<%= u.id %>)">
-            <i class="fas fa-<%= u.is_admin ? 'user-minus' : 'user-shield' %>"></i> <%= u.is_admin ? 'Retirer Admin' : 'Rendre Admin' %>
-          </button>
-        </div>
-      </div>
+      <a href="/adminxyz/utilisateurs/<%= u.id %>" class="menu-btn" style="text-decoration:none;flex-shrink:0">
+        <i class="fas fa-ellipsis-v"></i>
+      </a>
     </div>
   </div>
   <% }); %>
@@ -498,7 +490,7 @@
     <div class="card-row" style="align-items:flex-start">
       <div style="flex:1">
         <div style="font-weight:700"><%- d.nom || '—' %></div>
-        <div class="dep-meta">+<%- d.telephone || '—' %> · <%- d.pays || '—' %></div>
+        <div class="dep-meta"><%- d.telephone || '—' %> · <%- d.pays || '—' %></div>
         <div class="dep-amount"><%= parseFloat(d.montant||0).toLocaleString('fr-FR') %> FCFA</div>
         <div class="dep-meta" style="margin-bottom:6px"><%- d.methode || '—' %> · <%= d.date_depot ? new Date(d.date_depot).toLocaleDateString('fr-FR') : '—' %></div>
         <% if (refDisplay) { %>
@@ -543,7 +535,7 @@
     <div class="card-row" style="align-items:flex-start">
       <div style="flex:1">
         <div style="font-weight:700"><%- r.nom || '—' %></div>
-        <div class="dep-meta">+<%- r.telephone || '—' %></div>
+        <div class="dep-meta"><%- r.telephone || '—' %></div>
         <div class="ret-amount"><%= parseFloat(r.montant||0).toLocaleString('fr-FR') %> FCFA</div>
         <div class="dep-meta" style="margin-bottom:6px"><%- r.methode || '—' %> · <%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
         <% if (r.numero_compte) { %>
@@ -585,7 +577,7 @@
     <div class="card-row">
       <div style="flex:1">
         <div style="font-weight:700"><%- c.nom || '—' %></div>
-        <div class="dep-meta">+<%- c.telephone || '—' %></div>
+        <div class="dep-meta"><%- c.telephone || '—' %></div>
         <div class="dep-amount"><%= parseFloat(c.montant||0).toLocaleString('fr-FR') %> FCFA</div>
         <div class="ref-row">
           <span class="ref-code"><%- c.code %></span>
@@ -684,7 +676,7 @@
     <div class="card-row">
       <div style="flex:1">
         <div class="tx-type"><%- typeLabels[t.type] || t.type || '—' %></div>
-        <div class="tx-user"><%- t.nom || '—' %> · +<%- t.telephone || '—' %></div>
+        <div class="tx-user"><%- t.nom || '—' %> · <%- t.telephone || '—' %></div>
         <div class="tx-date"><%= t.date_creation ? new Date(t.date_creation).toLocaleString('fr-FR') : '—' %></div>
       </div>
       <div style="text-align:right">

@@ -347,6 +347,50 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query('DELETE FROM vip_paliers WHERE id=?', [id]);
         return res.json({ success: true });
 
+      case 'toggle_ban': {
+        const [[ub]] = await db.query('SELECT is_banned FROM utilisateurs WHERE id=?', [id]);
+        if (!ub) return res.json({ success: false, message: 'Utilisateur non trouvé' });
+        await db.query('UPDATE utilisateurs SET is_banned=? WHERE id=?', [!ub.is_banned, id]);
+        return res.json({ success: true, is_banned: !ub.is_banned });
+      }
+
+      case 'toggle_retrait_block': {
+        const [[ur]] = await db.query('SELECT retrait_bloque FROM utilisateurs WHERE id=?', [id]);
+        if (!ur) return res.json({ success: false, message: 'Utilisateur non trouvé' });
+        await db.query('UPDATE utilisateurs SET retrait_bloque=? WHERE id=?', [!ur.retrait_bloque, id]);
+        return res.json({ success: true, retrait_bloque: !ur.retrait_bloque });
+      }
+
+      case 'delete_user': {
+        const [[ud]] = await db.query('SELECT id FROM utilisateurs WHERE id=?', [id]);
+        if (!ud) return res.json({ success: false, message: 'Utilisateur non trouvé' });
+        await db.query('DELETE FROM historique_revenus WHERE user_id=?', [id]);
+        await db.query('DELETE FROM commandes WHERE user_id=?', [id]);
+        await db.query('DELETE FROM depots WHERE user_id=?', [id]);
+        await db.query('DELETE FROM retraits WHERE user_id=?', [id]);
+        await db.query('DELETE FROM soldes WHERE user_id=?', [id]);
+        await db.query('DELETE FROM filleuls WHERE user_id=? OR parrain_id=?', [id, id]);
+        await db.query('DELETE FROM connexions_journalieres WHERE user_id=?', [id]);
+        await db.query('DELETE FROM codes_utilises WHERE user_id=?', [id]);
+        await db.query('DELETE FROM vip WHERE user_id=?', [id]);
+        await db.query('DELETE FROM pieces WHERE user_id=?', [id]);
+        await db.query('DELETE FROM utilisateurs WHERE id=?', [id]);
+        return res.json({ success: true });
+      }
+
+      case 'update_user_infos': {
+        const { nom, pays } = req.body;
+        await db.query('UPDATE utilisateurs SET nom=?, pays=? WHERE id=?', [nom, pays, id]);
+        return res.json({ success: true });
+      }
+
+      case 'update_password': {
+        const { mot_de_passe } = req.body;
+        if (!mot_de_passe || mot_de_passe.length < 4) return res.json({ success: false, message: 'Mot de passe trop court' });
+        await db.query('UPDATE utilisateurs SET mot_de_passe=? WHERE id=?', [mot_de_passe, id]);
+        return res.json({ success: true });
+      }
+
       default:
         return res.json({ success: false, message: 'Action inconnue' });
     }
@@ -354,6 +398,55 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
     console.error(e);
     res.json({ success: false, message: e.message });
   }
+});
+
+// ── User detail pages ──────────────────────────────────────────────────────────
+async function getUserById(id) {
+  const [[user]] = await db.query(`
+    SELECT u.*, s.solde, v.niveau_vip,
+      (SELECT COUNT(*) FROM filleuls f WHERE f.parrain_id=u.id) as nb_filleuls,
+      (SELECT COUNT(*) FROM commandes c WHERE c.user_id=u.id AND c.statut='actif') as nb_commandes,
+      (SELECT u2.nom FROM utilisateurs u2 WHERE u2.id=u.parrain_id) as parrain_nom
+    FROM utilisateurs u
+    LEFT JOIN soldes s ON s.user_id=u.id
+    LEFT JOIN vip v ON v.user_id=u.id
+    WHERE u.id=?`, [id]);
+  return user;
+}
+
+router.get('/adminxyz/utilisateurs/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (!user) return res.redirect('/adminxyz/dashboard?t=utilisateurs');
+    res.render('admin_user', { user, section: 'menu', pageTitle: user.nom, backUrl: '/adminxyz/dashboard?t=utilisateurs', transactions: [], depots: [], retraits: [] });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.get('/adminxyz/utilisateurs/:id/solde', requireAdminAuth, async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (!user) return res.redirect('/adminxyz/dashboard?t=utilisateurs');
+    res.render('admin_user', { user, section: 'solde', pageTitle: 'Modifier le solde', backUrl: `/adminxyz/utilisateurs/${user.id}`, transactions: [], depots: [], retraits: [] });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.get('/adminxyz/utilisateurs/:id/infos', requireAdminAuth, async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (!user) return res.redirect('/adminxyz/dashboard?t=utilisateurs');
+    res.render('admin_user', { user, section: 'infos', pageTitle: 'Informations & Sécurité', backUrl: `/adminxyz/utilisateurs/${user.id}`, transactions: [], depots: [], retraits: [] });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.get('/adminxyz/utilisateurs/:id/transactions', requireAdminAuth, async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (!user) return res.redirect('/adminxyz/dashboard?t=utilisateurs');
+    const [transactions] = await db.query('SELECT * FROM historique_revenus WHERE user_id=? ORDER BY date_creation DESC LIMIT 100', [req.params.id]);
+    const [depots]       = await db.query('SELECT * FROM depots WHERE user_id=? ORDER BY date_depot DESC LIMIT 50', [req.params.id]);
+    const [retraits]     = await db.query('SELECT * FROM retraits WHERE user_id=? ORDER BY date_demande DESC LIMIT 50', [req.params.id]);
+    res.render('admin_user', { user, section: 'transactions', pageTitle: 'Historique des transactions', backUrl: `/adminxyz/utilisateurs/${user.id}`, transactions, depots, retraits });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
 // ── Logout ─────────────────────────────────────────────────────────────────────

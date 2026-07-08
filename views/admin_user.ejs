@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= user.nom %> — Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; }
+    body { background:#F5F5F0; color:#1a1a1a; min-height:100vh; }
+
+    .topbar {
+      background:#E8931A; padding:0 16px; height:56px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .topbar-btn {
+      width:40px; height:40px; background:rgba(255,255,255,0.2); border:none;
+      border-radius:10px; color:#fff; font-size:1.1rem; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; text-decoration:none;
+    }
+    .topbar-title { color:#fff; font-size:1.05rem; font-weight:700; }
+
+    .main { padding:16px; max-width:600px; margin:0 auto; }
+
+    /* User header card */
+    .user-header {
+      background:#fff; border-radius:20px; padding:20px;
+      display:flex; align-items:center; gap:16px;
+      box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px;
+    }
+    .avatar {
+      width:56px; height:56px; border-radius:16px; background:#E8931A;
+      color:#fff; font-size:1.4rem; font-weight:800;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .user-name { font-size:1.1rem; font-weight:800; }
+    .user-tel  { font-size:0.85rem; color:#888; margin-top:2px; }
+    .user-bal  { font-size:1rem; font-weight:800; color:#E8931A; margin-top:4px; }
+    .badge-tag { font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:10px; display:inline-block; margin-left:6px; }
+    .badge-admin  { background:#EEF2FF; color:#4f46e5; }
+    .badge-banned { background:#FEF2F2; color:#dc2626; }
+    .badge-blocked{ background:#FFF7ED; color:#EA580C; }
+
+    /* Action list */
+    .action-list { background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.07); }
+    .action-item {
+      display:flex; align-items:center; gap:14px; padding:16px 20px;
+      border-bottom:1px solid #F5F5F0; text-decoration:none; cursor:pointer;
+      border:none; width:100%; background:transparent; text-align:left;
+    }
+    .action-item:last-child { border-bottom:none; }
+    .action-item:hover { background:#FAFAF8; }
+    .action-icon {
+      width:40px; height:40px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1rem; flex-shrink:0;
+    }
+    .action-label { font-size:0.95rem; font-weight:600; flex:1; }
+    .action-chevron { color:#ccc; font-size:0.85rem; }
+    .action-item.danger .action-label { color:#ef4444; }
+
+    /* Sub-pages */
+    .page-card { background:#fff; border-radius:20px; padding:20px; box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:14px; }
+    .page-card h3 { font-size:1rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    label { display:block; font-size:0.78rem; color:#888; font-weight:600; margin:12px 0 5px; }
+    input, select, textarea {
+      width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8;
+      border-radius:10px; padding:11px 14px; font-size:0.9rem; color:#1a1a1a;
+      outline:none; font-family:inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color:#E8931A; }
+    input[readonly] { color:#888; cursor:not-allowed; }
+
+    .btn-primary {
+      width:100%; background:#E8931A; color:#fff; border:none; border-radius:12px;
+      padding:14px; font-size:0.95rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px;
+    }
+    .btn-primary:hover { background:#d4820e; }
+    .btn-danger {
+      width:100%; background:#FEF2F2; color:#ef4444; border:1.5px solid #fecaca;
+      border-radius:12px; padding:14px; font-size:0.95rem; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px;
+    }
+    .btn-danger:hover { background:#fee2e2; }
+    .btn-warning {
+      width:100%; background:#FFF7ED; color:#EA580C; border:1.5px solid #fed7aa;
+      border-radius:12px; padding:14px; font-size:0.95rem; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px;
+    }
+    .btn-warning:hover { background:#ffedd5; }
+    .btn-success {
+      width:100%; background:#F0FDF4; color:#16a34a; border:1.5px solid #bbf7d0;
+      border-radius:12px; padding:14px; font-size:0.95rem; font-weight:700;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px;
+    }
+    .btn-success:hover { background:#dcfce7; }
+
+    /* Transaction list */
+    .tx-card { background:#F5F5F0; border-radius:12px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
+    .tx-type { font-size:0.85rem; font-weight:700; }
+    .tx-date { font-size:0.75rem; color:#aaa; margin-top:2px; }
+    .tx-amount { font-size:0.95rem; font-weight:800; color:#22c55e; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .badge-valid { background:#F0FDF4; color:#16a34a; }
+
+    /* Info rows */
+    .info-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #F5F5F0; }
+    .info-row:last-child { border-bottom:none; }
+    .info-key { font-size:0.82rem; color:#888; }
+    .info-val { font-size:0.88rem; font-weight:600; }
+
+    /* Toggle */
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-radius:12px; margin-bottom:10px; }
+    .toggle-row.active { background:#F0FDF4; }
+    .toggle-row.inactive { background:#FEF2F2; }
+    .toggle-switch { position:relative; width:48px; height:26px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:26px; transition:0.3s; }
+    .toggle-slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.3s; }
+    input:checked + .toggle-slider { background:#22c55e; }
+    input:checked + .toggle-slider:before { transform:translateX(22px); }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:12px 22px; border-radius:12px; font-size:0.88rem; font-weight:600; z-index:700; transition:transform 0.3s; white-space:nowrap; }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.ok  { background:#16a34a; }
+    .toast.err { background:#dc2626; }
+
+    .empty { text-align:center; padding:30px; color:#aaa; font-size:0.9rem; }
+    .section-title { font-size:0.78rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 8px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="<%= backUrl %>" class="topbar-btn"><i class="fas fa-arrow-left"></i></a>
+  <span class="topbar-title"><%= pageTitle %></span>
+  <a href="/adminxyz/logout" class="topbar-btn"><i class="fas fa-bell"></i></a>
+</div>
+
+<div class="main">
+
+  <!-- User header -->
+  <div class="user-header">
+    <div class="avatar"><%= (user.nom||'?')[0].toUpperCase() %></div>
+    <div>
+      <div class="user-name">
+        <%- user.nom %>
+        <% if (user.is_admin) { %><span class="badge-tag badge-admin">Admin</span><% } %>
+        <% if (user.is_banned) { %><span class="badge-tag badge-banned">Banni</span><% } %>
+        <% if (user.retrait_bloque) { %><span class="badge-tag badge-blocked">Retrait bloqué</span><% } %>
+      </div>
+      <div class="user-tel"><%- user.telephone %></div>
+      <div class="user-bal"><%= parseFloat(user.solde||0).toLocaleString('fr-FR') %> FCFA</div>
+    </div>
+  </div>
+
+<% if (section === 'menu') { %>
+
+  <!-- Action menu -->
+  <div class="action-list">
+    <a href="/adminxyz/utilisateurs/<%= user.id %>/solde" class="action-item">
+      <div class="action-icon" style="background:#FFF7ED"><i class="fas fa-coins" style="color:#E8931A"></i></div>
+      <span class="action-label">Modifier le solde</span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </a>
+    <a href="/adminxyz/utilisateurs/<%= user.id %>/infos" class="action-item">
+      <div class="action-icon" style="background:#EFF6FF"><i class="fas fa-user-edit" style="color:#3b82f6"></i></div>
+      <span class="action-label">Informations & Sécurité</span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </a>
+    <a href="/adminxyz/utilisateurs/<%= user.id %>/transactions" class="action-item">
+      <div class="action-icon" style="background:#F0FDF4"><i class="fas fa-list-alt" style="color:#22c55e"></i></div>
+      <span class="action-label">Historique des transactions</span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </a>
+    <button class="action-item" onclick="doToggleAdmin()">
+      <div class="action-icon" style="background:#EEF2FF"><i class="fas fa-user-shield" style="color:#6366f1"></i></div>
+      <span class="action-label"><%= user.is_admin ? 'Retirer administrateur' : 'Nommer administrateur' %></span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </button>
+    <button class="action-item" onclick="doBan()">
+      <div class="action-icon" style="background:#FEF2F2"><i class="fas fa-ban" style="color:#ef4444"></i></div>
+      <span class="action-label"><%= user.is_banned ? 'Débannir l\'utilisateur' : 'Bannir l\'utilisateur' %></span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </button>
+    <button class="action-item" onclick="doBlockRetrait()">
+      <div class="action-icon" style="background:#FFF7ED"><i class="fas fa-lock" style="color:#EA580C"></i></div>
+      <span class="action-label"><%= user.retrait_bloque ? 'Débloquer le retrait' : 'Bloquer le retrait' %></span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </button>
+    <button class="action-item danger" onclick="doDelete()">
+      <div class="action-icon" style="background:#FEF2F2"><i class="fas fa-trash" style="color:#ef4444"></i></div>
+      <span class="action-label">Supprimer l'utilisateur</span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </button>
+  </div>
+
+<% } else if (section === 'solde') { %>
+
+  <div class="page-card">
+    <h3><i class="fas fa-coins" style="color:#E8931A"></i> Modifier le solde</h3>
+    <label>Solde actuel</label>
+    <input type="text" value="<%= parseFloat(user.solde||0).toLocaleString('fr-FR') %> FCFA" readonly>
+    <label>Nouveau solde (FCFA)</label>
+    <input type="number" id="newSolde" value="<%= parseFloat(user.solde||0) %>" step="100" min="0">
+    <button class="btn-primary" onclick="saveSolde()"><i class="fas fa-save"></i> Enregistrer le solde</button>
+  </div>
+
+  <div class="page-card">
+    <h3><i class="fas fa-plus-circle" style="color:#22c55e"></i> Ajouter / Déduire</h3>
+    <label>Montant à ajouter (négatif pour déduire)</label>
+    <input type="number" id="addMontant" placeholder="Ex: 5000 ou -2000" step="100">
+    <button class="btn-success" onclick="addSolde()"><i class="fas fa-calculator"></i> Appliquer</button>
+  </div>
+
+<% } else if (section === 'infos') { %>
+
+  <div class="page-card">
+    <h3><i class="fas fa-user" style="color:#3b82f6"></i> Informations du compte</h3>
+    <div class="info-row"><span class="info-key">ID</span><span class="info-val">#<%= user.id %></span></div>
+    <div class="info-row"><span class="info-key">Téléphone</span><span class="info-val"><%- user.telephone %></span></div>
+    <div class="info-row"><span class="info-key">Pays</span><span class="info-val"><%- user.pays || '—' %></span></div>
+    <div class="info-row"><span class="info-key">Code parrainage</span><span class="info-val"><%= user.code_parrainage || '—' %></span></div>
+    <div class="info-row"><span class="info-key">Parrain</span><span class="info-val"><%= user.parrain_nom || 'Aucun' %></span></div>
+    <div class="info-row"><span class="info-key">Filleuls directs</span><span class="info-val"><%= user.nb_filleuls || 0 %></span></div>
+    <div class="info-row"><span class="info-key">Plans actifs</span><span class="info-val"><%= user.nb_commandes || 0 %></span></div>
+    <div class="info-row"><span class="info-key">VIP niveau</span><span class="info-val">Niveau <%= user.niveau_vip || 0 %></span></div>
+    <div class="info-row"><span class="info-key">Inscrit le</span><span class="info-val"><%= user.date_inscription ? new Date(user.date_inscription).toLocaleDateString('fr-FR') : '—' %></span></div>
+    <div class="info-row"><span class="info-key">Banni</span><span class="info-val" style="color:<%= user.is_banned ? '#ef4444' : '#22c55e' %>"><%= user.is_banned ? 'Oui' : 'Non' %></span></div>
+    <div class="info-row"><span class="info-key">Retrait bloqué</span><span class="info-val" style="color:<%= user.retrait_bloque ? '#EA580C' : '#22c55e' %>"><%= user.retrait_bloque ? 'Oui' : 'Non' %></span></div>
+  </div>
+
+  <div class="page-card">
+    <h3><i class="fas fa-pen" style="color:#E8931A"></i> Modifier les informations</h3>
+    <label>Nom complet</label>
+    <input type="text" id="editNom" value="<%- user.nom %>">
+    <label>Pays</label>
+    <input type="text" id="editPays" value="<%- user.pays || '' %>">
+    <button class="btn-primary" onclick="saveInfos()"><i class="fas fa-save"></i> Enregistrer</button>
+  </div>
+
+  <div class="page-card">
+    <h3><i class="fas fa-key" style="color:#6366f1"></i> Changer le mot de passe</h3>
+    <label>Nouveau mot de passe</label>
+    <input type="password" id="newPassword" placeholder="Nouveau mot de passe">
+    <button class="btn-primary" onclick="savePassword()"><i class="fas fa-lock"></i> Changer le mot de passe</button>
+  </div>
+
+<% } else if (section === 'transactions') { %>
+
+  <div class="page-card">
+    <h3><i class="fas fa-list-alt" style="color:#22c55e"></i> Historique des transactions (<%= transactions.length %>)</h3>
+    <% const txLabels = { paiement_journalier:'Revenu investissement', parrainage:'Parrainage', bonus:'Bonus', cadeau:'Cadeau', paiement_journalie:'Revenu invest.' }; %>
+    <% if (!transactions.length) { %>
+    <div class="empty">Aucune transaction</div>
+    <% } %>
+    <% transactions.forEach(t => { %>
+    <div class="tx-card">
+      <div>
+        <div class="tx-type"><%- txLabels[t.type] || t.type %></div>
+        <div class="tx-date"><%= t.date_creation ? new Date(t.date_creation).toLocaleString('fr-FR') : '—' %></div>
+      </div>
+      <div style="text-align:right">
+        <div class="tx-amount">+<%= parseFloat(t.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <span class="badge badge-valid">Validé</span>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+
+  <% if (depots.length || retraits.length) { %>
+  <div class="page-card">
+    <h3><i class="fas fa-exchange-alt" style="color:#3b82f6"></i> Dépôts & Retraits</h3>
+    <% depots.forEach(d => { %>
+    <div class="tx-card">
+      <div>
+        <div class="tx-type">Dépôt — <%- d.methode || '' %></div>
+        <div class="tx-date"><%= d.date_depot ? new Date(d.date_depot).toLocaleDateString('fr-FR') : '—' %></div>
+      </div>
+      <div style="text-align:right">
+        <div class="tx-amount" style="color:#E8931A">+<%= parseFloat(d.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <span class="badge" style="background:<%= d.statut==='valide'?'#F0FDF4':d.statut==='rejete'?'#FEF2F2':'#FFF7ED' %>;color:<%= d.statut==='valide'?'#16a34a':d.statut==='rejete'?'#dc2626':'#EA580C' %>"><%= d.statut %></span>
+      </div>
+    </div>
+    <% }); %>
+    <% retraits.forEach(r => { %>
+    <div class="tx-card">
+      <div>
+        <div class="tx-type">Retrait — <%- r.methode || '' %></div>
+        <div class="tx-date"><%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
+      </div>
+      <div style="text-align:right">
+        <div class="tx-amount" style="color:#3b82f6">-<%= parseFloat(r.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <span class="badge" style="background:<%= r.statut==='valide'?'#F0FDF4':r.statut==='rejete'?'#FEF2F2':'#FFF7ED' %>;color:<%= r.statut==='valide'?'#16a34a':r.statut==='rejete'?'#dc2626':'#EA580C' %>"><%= r.statut %></span>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+
+<% } %>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const UID = <%= user.id %>;
+const BASE = '/adminxyz/utilisateurs/' + UID;
+
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' '+type : '');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+async function post(url, body) {
+  const r = await fetch(url, { method:'POST', body: new URLSearchParams(body) });
+  return r.json();
+}
+
+// ── Solde ──────────────────────────────────────────────────────
+async function saveSolde() {
+  const montant = document.getElementById('newSolde').value;
+  const d = await post('/adminxyz/action', { action:'update_balance', user_id: UID, montant });
+  if (d.success) { toast('✓ Solde mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+async function addSolde() {
+  const add = parseFloat(document.getElementById('addMontant').value || 0);
+  const cur = parseFloat(<%= parseFloat(user.solde||0) %>);
+  if (isNaN(add)) return toast('Montant invalide', 'err');
+  const nouveau = Math.max(0, cur + add);
+  const d = await post('/adminxyz/action', { action:'update_balance', user_id: UID, montant: nouveau });
+  if (d.success) { toast('✓ Solde mis à jour : ' + nouveau.toLocaleString('fr-FR') + ' FCFA', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+
+// ── Infos ──────────────────────────────────────────────────────
+async function saveInfos() {
+  const d = await post('/adminxyz/action', {
+    action: 'update_user_infos', id: UID,
+    nom: document.getElementById('editNom').value,
+    pays: document.getElementById('editPays').value,
+  });
+  if (d.success) { toast('✓ Informations mises à jour', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+async function savePassword() {
+  const pwd = document.getElementById('newPassword').value;
+  if (!pwd || pwd.length < 4) return toast('Mot de passe trop court', 'err');
+  const d = await post('/adminxyz/action', { action:'update_password', id: UID, mot_de_passe: pwd });
+  if (d.success) { toast('✓ Mot de passe modifié', 'ok'); document.getElementById('newPassword').value = ''; }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+
+// ── Menu actions ───────────────────────────────────────────────
+async function doToggleAdmin() {
+  const isAdmin = <%= user.is_admin ? 'true' : 'false' %>;
+  if (!confirm(isAdmin ? 'Retirer les droits admin ?' : 'Nommer cet utilisateur administrateur ?')) return;
+  const d = await post('/adminxyz/action', { action:'toggle_admin', id: UID });
+  if (d.success) { toast('✓ Statut admin modifié', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+async function doBan() {
+  const isBanned = <%= user.is_banned ? 'true' : 'false' %>;
+  if (!confirm(isBanned ? 'Débannir cet utilisateur ?' : 'Bannir cet utilisateur ?')) return;
+  const d = await post('/adminxyz/action', { action:'toggle_ban', id: UID });
+  if (d.success) { toast('✓ ' + (isBanned ? 'Débanni' : 'Banni'), 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+async function doBlockRetrait() {
+  const isBlocked = <%= user.retrait_bloque ? 'true' : 'false' %>;
+  if (!confirm(isBlocked ? 'Débloquer les retraits ?' : 'Bloquer les retraits de cet utilisateur ?')) return;
+  const d = await post('/adminxyz/action', { action:'toggle_retrait_block', id: UID });
+  if (d.success) { toast('✓ ' + (isBlocked ? 'Retrait débloqué' : 'Retrait bloqué'), 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+async function doDelete() {
+  const confirm1 = confirm('⚠️ Supprimer définitivement cet utilisateur et toutes ses données ?');
+  if (!confirm1) return;
+  const confirm2 = confirm('Cette action est IRRÉVERSIBLE. Confirmer ?');
+  if (!confirm2) return;
+  const d = await post('/adminxyz/action', { action:'delete_user', id: UID });
+  if (d.success) { toast('✓ Utilisateur supprimé', 'ok'); setTimeout(() => { window.location.href = '/adminxyz/utilisateurs'; }, 1000); }
+  else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+</script>
+</body>
+</html>
