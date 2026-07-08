@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 /**
  * Database setup script — creates all tables and seeds investment plans.
- * Run once after cloning: node scripts/setup-db.js
+ * Run once after cloning: npm run setup-db
+ * Safe to re-run: all statements are idempotent.
  */
 
-require('dotenv').config();
 const { Pool } = require('pg');
+
+if (!process.env.DATABASE_URL) {
+  console.error('Error: DATABASE_URL environment variable is not set.');
+  process.exit(1);
+}
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -44,7 +49,7 @@ CREATE TABLE IF NOT EXISTS vip (
 
 CREATE TABLE IF NOT EXISTS planinvestissement (
   id SERIAL PRIMARY KEY,
-  nom VARCHAR(255),
+  nom VARCHAR(255) UNIQUE NOT NULL,
   prix NUMERIC(15,2),
   duree_jours INTEGER,
   gain_journalier NUMERIC(15,2)
@@ -58,6 +63,7 @@ CREATE TABLE IF NOT EXISTS commandes (
   gain_journalier NUMERIC(15,2),
   date_debut TIMESTAMP DEFAULT NOW(),
   date_fin TIMESTAMP,
+  date_creation TIMESTAMP DEFAULT NOW(),
   statut VARCHAR(50) DEFAULT 'actif'
 );
 
@@ -102,8 +108,10 @@ CREATE TABLE IF NOT EXISTS transaction_passwords (
 CREATE TABLE IF NOT EXISTS historique_revenus (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES utilisateurs(id),
+  commande_id INTEGER REFERENCES commandes(id),
   montant NUMERIC(15,2),
   type VARCHAR(100),
+  date_paiement TIMESTAMP DEFAULT NOW(),
   date_creation TIMESTAMP DEFAULT NOW()
 );
 
@@ -146,6 +154,7 @@ CREATE TABLE IF NOT EXISTS pieces (
 );
 `;
 
+// ON CONFLICT (nom) relies on the UNIQUE constraint added to planinvestissement.nom above.
 const SEED_PLANS = `
 INSERT INTO planinvestissement (nom, prix, duree_jours, gain_journalier)
 VALUES
@@ -160,7 +169,7 @@ VALUES
   ('Action VIP 9',  500000,  125, 8600),
   ('Action VIP 10', 1000000, 125, 17200),
   ('Action VIP 11', 2000000, 125, 34400)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (nom) DO NOTHING;
 `;
 
 async function setup() {
@@ -168,13 +177,13 @@ async function setup() {
   try {
     console.log('Creating tables…');
     await client.query(SCHEMA);
-    console.log('✓ Schema ready');
+    console.log('✓ Schema ready (15 tables)');
 
     console.log('Seeding investment plans…');
     const res = await client.query(SEED_PLANS);
     console.log(`✓ Plans seeded (${res.rowCount} inserted)`);
 
-    console.log('\nDatabase setup complete.');
+    console.log('\nDatabase setup complete. Run `node server.js` to start the app.');
   } catch (err) {
     console.error('Setup failed:', err.message);
     process.exit(1);
