@@ -42,19 +42,25 @@ router.get('/equipe', requireAuth, async (req, res) => {
       getInvestissementActif(f3),
     ]);
 
-    // Get filleul details for level 1
-    let filleuls_details = [];
-    if (f1.length) {
-      const placeholders = f1.map(() => '?').join(',');
-      const [details] = await db.query(
-        `SELECT u.id, u.nom, u.telephone, u.pays, u.date_inscription, s.solde,
+    // Helper to fetch details for any level
+    async function fetchDetails(ids) {
+      if (!ids.length) return [];
+      const placeholders = ids.map(() => '?').join(',');
+      const [rows] = await db.query(
+        `SELECT u.id, u.nom, u.telephone, u.pays, u.date_inscription,
          (SELECT COUNT(*) FROM commandes c WHERE c.user_id = u.id AND c.statut = 'actif' AND c.date_fin >= CURRENT_DATE) as has_active
-         FROM utilisateurs u LEFT JOIN soldes s ON u.id = s.user_id
+         FROM utilisateurs u
          WHERE u.id IN (${placeholders}) ORDER BY u.date_inscription DESC`,
-        f1
+        ids
       );
-      filleuls_details = details;
+      return rows;
     }
+
+    const [filleuls_details1, filleuls_details2, filleuls_details3] = await Promise.all([
+      fetchDetails(f1),
+      fetchDetails(f2),
+      fetchDetails(f3),
+    ]);
 
     const [[vip]] = await db.query('SELECT * FROM vip WHERE user_id = ?', [user_id]);
 
@@ -71,7 +77,7 @@ router.get('/equipe', requireAuth, async (req, res) => {
       user,
       filleuls_niveau1: f1, filleuls_niveau2: f2, filleuls_niveau3: f3,
       invest_niveau1: inv1, invest_niveau2: inv2, invest_niveau3: inv3,
-      filleuls_details,
+      filleuls_details1, filleuls_details2, filleuls_details3,
       vip: vip || { niveau: 0, invitations_actuelles: 0, invitations_requises: 3 },
       baseUrl,
     });

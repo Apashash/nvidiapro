@@ -41,14 +41,58 @@
             font-family:'Poppins',sans-serif;
         }
 
-        /* Stats grid */
-        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
-        .stat-card {
-            background:#fff; border-radius:14px; padding:14px; text-align:center;
-            box-shadow:0 2px 10px rgba(196,125,30,0.08); border:1px solid #F0E0C8;
+        /* Share buttons */
+        .share-row {
+            display:flex; justify-content:center; gap:14px; margin-top:12px;
         }
-        .stat-num { font-size:24px; font-weight:800; color:#C47D1E; }
-        .stat-lbl { font-size:11px; color:#A87D50; margin-top:3px; font-weight:500; }
+        .share-btn {
+            display:flex; flex-direction:column; align-items:center; gap:4px;
+            background:none; border:none; cursor:pointer; font-size:11px;
+            color:#7D5A38; font-family:'Poppins',sans-serif;
+        }
+        .share-icon {
+            width:42px; height:42px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-size:18px; color:#fff;
+        }
+        .share-wa { background:#25D366; }
+        .share-fb { background:#1877F2; }
+        .share-tg { background:#2AABEE; }
+        .share-tw { background:#1DA1F2; }
+
+        /* Stats row */
+        .stats-row {
+            background:#fff; border-radius:16px; padding:16px;
+            margin-bottom:14px; box-shadow:0 2px 10px rgba(196,125,30,0.08);
+            border:1px solid #F0E0C8;
+            display:grid; grid-template-columns:1fr 1px 1fr;
+            gap:0;
+        }
+        .stat-item { text-align:center; padding:4px 0; }
+        .stat-divider { background:#F0E0C8; }
+        .stat-num { font-size:28px; font-weight:800; color:#C47D1E; line-height:1.1; }
+        .stat-lbl { font-size:11px; color:#A87D50; margin-top:2px; }
+
+        /* Commission table */
+        .comm-table {
+            background:#fff; border-radius:16px; overflow:hidden;
+            margin-bottom:14px; box-shadow:0 2px 10px rgba(196,125,30,0.08);
+            border:1px solid #F0E0C8;
+        }
+        .comm-header {
+            background:linear-gradient(135deg,#D4921F,#B07018);
+            display:grid; grid-template-columns:60px 1fr 1fr 1fr;
+            padding:10px 14px;
+        }
+        .comm-header span { color:#fff; font-weight:700; font-size:13px; text-align:center; }
+        .comm-header span:first-child { text-align:left; }
+        .comm-row {
+            display:grid; grid-template-columns:60px 1fr 1fr 1fr;
+            padding:10px 14px; border-top:1px solid #F0E0C8;
+        }
+        .comm-row span { font-size:13px; text-align:center; color:#7D5A38; }
+        .comm-row span:first-child { text-align:left; color:#3D2B1F; font-weight:500; }
+        .comm-row .pct { color:#C47D1E; font-weight:700; }
 
         /* VIP card */
         .vip-card {
@@ -62,37 +106,65 @@
         .vip-desc { font-size:13px; color:#7D5A38; }
         .vip-desc strong { color:#C47D1E; }
 
-        /* Level section */
-        .level-section { margin-bottom:14px; }
-        .level-head {
-            border-radius:14px 14px 0 0; padding:13px 16px;
-            display:flex; justify-content:space-between; align-items:center;
+        /* Accordion levels */
+        .accordion { margin-bottom:10px; border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(196,125,30,0.08); }
+        .acc-head {
+            background:#fff; border:1px solid #F0E0C8;
+            display:flex; align-items:center; gap:12px;
+            padding:14px 16px; cursor:pointer; user-select:none;
+            transition:background 0.2s;
         }
-        .level-head.lv1 { background:linear-gradient(135deg,#D4921F,#B07018); }
-        .level-head.lv2 { background:linear-gradient(135deg,#3a86ff,#2266cc); }
-        .level-head.lv3 { background:linear-gradient(135deg,#9b59b6,#6c3483); }
-        .level-head h3 { color:#fff; font-weight:700; font-size:14px; }
-        .level-badge { background:rgba(0,0,0,0.25); color:#fff; border-radius:20px; padding:4px 12px; font-size:13px; font-weight:600; }
-        .level-body {
-            background:#fff; border:1px solid #F0E0C8; border-top:none;
-            border-radius:0 0 14px 14px; padding:16px;
+        .acc-head:active { background:#FBF5EC; }
+        .acc-icon-wrap {
+            width:42px; height:42px; border-radius:12px;
+            background:linear-gradient(135deg,#D4921F,#B07018);
+            display:flex; align-items:center; justify-content:center;
+            flex-shrink:0;
         }
-        .level-stat { font-size:13px; color:#7D5A38; margin-bottom:6px; }
-        .level-stat span { color:#C47D1E; font-weight:700; }
+        .acc-icon-wrap i { color:#fff; font-size:18px; }
+        .acc-info { flex:1; }
+        .acc-title { font-size:15px; font-weight:700; color:#3D2B1F; }
+        .acc-sub { font-size:12px; color:#A87D50; margin-top:2px; }
+        .acc-chevron {
+            width:32px; height:32px; border-radius:50%;
+            background:#FBF5EC; border:1px solid #E8D5B0;
+            display:flex; align-items:center; justify-content:center;
+            flex-shrink:0; transition:transform 0.3s ease;
+        }
+        .acc-chevron i { color:#C47D1E; font-size:14px; }
+        .accordion.open .acc-chevron { transform:rotate(180deg); }
 
-        /* Filleul items */
-        .filleul-list { margin-top:12px; }
+        /* Accordion body */
+        .acc-body {
+            overflow:hidden;
+            transition:height 0.35s ease;
+            background:#fff; border:1px solid #F0E0C8; border-top:none;
+            border-radius:0 0 16px 16px;
+            height:0;
+        }
+        .acc-body-inner { padding:14px 16px; }
+
+        /* Filleul list */
         .filleul-item {
-            background:#FBF5EC; border-radius:10px; padding:10px 13px;
+            background:#FBF5EC; border-radius:12px; padding:11px 13px;
             margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;
             border:1px solid #F0E0C8;
         }
-        .fil-name { font-weight:600; font-size:14px; color:#3D2B1F; }
-        .fil-phone { font-size:12px; color:#A87D50; margin-top:2px; }
-        .fil-status { font-size:12px; padding:4px 11px; border-radius:20px; font-weight:600; }
+        .filleul-item:last-child { margin-bottom:0; }
+        .fil-avatar {
+            width:36px; height:36px; border-radius:50%;
+            background:linear-gradient(135deg,#D4921F,#B07018);
+            display:flex; align-items:center; justify-content:center;
+            color:#fff; font-weight:700; font-size:14px;
+            flex-shrink:0; margin-right:10px;
+        }
+        .fil-info { flex:1; }
+        .fil-name { font-weight:600; font-size:13px; color:#3D2B1F; }
+        .fil-phone { font-size:11px; color:#A87D50; margin-top:1px; }
+        .fil-status { font-size:11px; padding:4px 10px; border-radius:20px; font-weight:600; flex-shrink:0; }
         .status-active { background:rgba(196,125,30,0.15); color:#C47D1E; }
         .status-inactive { background:#F0E0C8; color:#A87D50; }
-        .empty-msg { text-align:center; color:#A87D50; font-size:13px; padding:18px; }
+        .empty-msg { text-align:center; color:#A87D50; font-size:13px; padding:20px; }
     </style>
 </head>
 <body>
@@ -105,6 +177,7 @@
     </div>
 
     <div class="content">
+
         <!-- Referral link -->
         <div class="ref-box">
             <div class="ref-label">Votre lien de parrainage</div>
@@ -112,6 +185,54 @@
                 <input type="text" class="ref-input" id="referralInput"
                        value="<%= baseUrl %>/inscription1?p=<%= user.code_parrainage %>" readonly>
                 <button class="copy-btn" onclick="copyLink()"><i class="fas fa-copy"></i> Copier</button>
+            </div>
+            <!-- Share buttons -->
+            <div class="share-row">
+                <button class="share-btn" onclick="shareWA()">
+                    <div class="share-icon share-wa"><i class="fab fa-whatsapp"></i></div>
+                    <span>WhatsApp</span>
+                </button>
+                <button class="share-btn" onclick="shareFB()">
+                    <div class="share-icon share-fb"><i class="fab fa-facebook-f"></i></div>
+                    <span>Facebook</span>
+                </button>
+                <button class="share-btn" onclick="shareTG()">
+                    <div class="share-icon share-tg"><i class="fab fa-telegram-plane"></i></div>
+                    <span>Telegram</span>
+                </button>
+                <button class="share-btn" onclick="shareTW()">
+                    <div class="share-icon share-tw"><i class="fab fa-twitter"></i></div>
+                    <span>Twitter</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-num"><%= filleuls_niveau1.length + filleuls_niveau2.length + filleuls_niveau3.length %></div>
+                <div class="stat-lbl">Nombre de personnes</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-num"><%= Math.round((invest_niveau1 * 0.20) + (invest_niveau2 * 0.10) + (invest_niveau3 * 0.05)).toLocaleString('fr-FR') %></div>
+                <div class="stat-lbl">Total commission</div>
+            </div>
+        </div>
+
+        <!-- Commission table -->
+        <div class="comm-table">
+            <div class="comm-header">
+                <span>Nv</span>
+                <span>Niveau 1</span>
+                <span>Niveau 2</span>
+                <span>Niveau 3</span>
+            </div>
+            <div class="comm-row">
+                <span>1,2,3</span>
+                <span class="pct">20%</span>
+                <span class="pct">10%</span>
+                <span class="pct">5%</span>
             </div>
         </div>
 
@@ -129,36 +250,23 @@
         </div>
         <% } %>
 
-        <!-- Stats -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-num"><%= filleuls_niveau1.length %></div>
-                <div class="stat-lbl">Niveau 1</div>
+        <!-- Accordion Niveau 1 -->
+        <div class="accordion" id="acc1">
+            <div class="acc-head" onclick="toggleAcc('acc1')">
+                <div class="acc-icon-wrap"><i class="fas fa-users"></i></div>
+                <div class="acc-info">
+                    <div class="acc-title">Équipe niveau 1</div>
+                    <div class="acc-sub"><%= filleuls_niveau1.length %> membre(s) • 20%</div>
+                </div>
+                <div class="acc-chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
-            <div class="stat-card">
-                <div class="stat-num"><%= filleuls_niveau2.length %></div>
-                <div class="stat-lbl">Niveau 2</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-num"><%= filleuls_niveau3.length %></div>
-                <div class="stat-lbl">Niveau 3</div>
-            </div>
-        </div>
-
-        <!-- Niveau 1 -->
-        <div class="level-section">
-            <div class="level-head lv1">
-                <h3><i class="fas fa-users"></i> Filleuls Niveau 1</h3>
-                <span class="level-badge"><%= filleuls_niveau1.length %></span>
-            </div>
-            <div class="level-body">
-                <div class="level-stat">Investissement actif: <span><%= invest_niveau1.toLocaleString('fr-FR') %> FCFA</span></div>
-                <div class="level-stat">Commission (20%): <span><%= (invest_niveau1 * 0.20).toLocaleString('fr-FR') %> FCFA</span></div>
-                <div class="filleul-list">
-                    <% if (filleuls_details && filleuls_details.length > 0) { %>
-                        <% filleuls_details.forEach(f => { %>
+            <div class="acc-body">
+                <div class="acc-body-inner">
+                    <% if (filleuls_details1 && filleuls_details1.length > 0) { %>
+                        <% filleuls_details1.forEach(function(f) { %>
                         <div class="filleul-item">
-                            <div>
+                            <div class="fil-avatar"><%= (f.nom || '?').charAt(0).toUpperCase() %></div>
+                            <div class="fil-info">
                                 <div class="fil-name"><%= f.nom %></div>
                                 <div class="fil-phone"><%= f.telephone %></div>
                             </div>
@@ -167,57 +275,133 @@
                             </span>
                         </div>
                         <% }); %>
-                    <% } else if (filleuls_niveau1.length === 0) { %>
-                        <div class="empty-msg">Aucun filleul au niveau 1. Partagez votre lien !</div>
                     <% } else { %>
-                        <div class="empty-msg"><%= filleuls_niveau1.length %> filleul(s) au niveau 1</div>
+                        <div class="empty-msg"><i class="fas fa-user-plus" style="font-size:24px;margin-bottom:8px;display:block;"></i>Aucun filleul au niveau 1.<br>Partagez votre lien !</div>
                     <% } %>
                 </div>
             </div>
         </div>
 
-        <!-- Niveau 2 -->
-        <div class="level-section">
-            <div class="level-head lv2">
-                <h3><i class="fas fa-user-friends"></i> Filleuls Niveau 2</h3>
-                <span class="level-badge"><%= filleuls_niveau2.length %></span>
+        <!-- Accordion Niveau 2 -->
+        <div class="accordion" id="acc2">
+            <div class="acc-head" onclick="toggleAcc('acc2')">
+                <div class="acc-icon-wrap"><i class="fas fa-user-friends"></i></div>
+                <div class="acc-info">
+                    <div class="acc-title">Équipe niveau 2</div>
+                    <div class="acc-sub"><%= filleuls_niveau2.length %> membre(s) • 10%</div>
+                </div>
+                <div class="acc-chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
-            <div class="level-body">
-                <div class="level-stat">Investissement actif: <span><%= invest_niveau2.toLocaleString('fr-FR') %> FCFA</span></div>
-                <div class="level-stat">Commission (10%): <span><%= (invest_niveau2 * 0.10).toLocaleString('fr-FR') %> FCFA</span></div>
-                <% if (filleuls_niveau2.length === 0) { %>
-                    <div class="empty-msg">Aucun filleul au niveau 2</div>
-                <% } else { %>
-                    <div class="empty-msg"><%= filleuls_niveau2.length %> filleul(s) au niveau 2</div>
-                <% } %>
+            <div class="acc-body">
+                <div class="acc-body-inner">
+                    <% if (filleuls_details2 && filleuls_details2.length > 0) { %>
+                        <% filleuls_details2.forEach(function(f) { %>
+                        <div class="filleul-item">
+                            <div class="fil-avatar"><%= (f.nom || '?').charAt(0).toUpperCase() %></div>
+                            <div class="fil-info">
+                                <div class="fil-name"><%= f.nom %></div>
+                                <div class="fil-phone"><%= f.telephone %></div>
+                            </div>
+                            <span class="fil-status <%= f.has_active ? 'status-active' : 'status-inactive' %>">
+                                <%= f.has_active ? 'Actif' : 'Inactif' %>
+                            </span>
+                        </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-msg"><i class="fas fa-user-friends" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.4;"></i>Aucun filleul au niveau 2</div>
+                    <% } %>
+                </div>
             </div>
         </div>
 
-        <!-- Niveau 3 -->
-        <div class="level-section">
-            <div class="level-head lv3">
-                <h3><i class="fas fa-sitemap"></i> Filleuls Niveau 3</h3>
-                <span class="level-badge"><%= filleuls_niveau3.length %></span>
+        <!-- Accordion Niveau 3 -->
+        <div class="accordion" id="acc3">
+            <div class="acc-head" onclick="toggleAcc('acc3')">
+                <div class="acc-icon-wrap"><i class="fas fa-sitemap"></i></div>
+                <div class="acc-info">
+                    <div class="acc-title">Équipe niveau 3</div>
+                    <div class="acc-sub"><%= filleuls_niveau3.length %> membre(s) • 5%</div>
+                </div>
+                <div class="acc-chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
-            <div class="level-body">
-                <div class="level-stat">Investissement actif: <span><%= invest_niveau3.toLocaleString('fr-FR') %> FCFA</span></div>
-                <div class="level-stat">Commission (5%): <span><%= (invest_niveau3 * 0.05).toLocaleString('fr-FR') %> FCFA</span></div>
-                <% if (filleuls_niveau3.length === 0) { %>
-                    <div class="empty-msg">Aucun filleul au niveau 3</div>
-                <% } else { %>
-                    <div class="empty-msg"><%= filleuls_niveau3.length %> filleul(s) au niveau 3</div>
-                <% } %>
+            <div class="acc-body">
+                <div class="acc-body-inner">
+                    <% if (filleuls_details3 && filleuls_details3.length > 0) { %>
+                        <% filleuls_details3.forEach(function(f) { %>
+                        <div class="filleul-item">
+                            <div class="fil-avatar"><%= (f.nom || '?').charAt(0).toUpperCase() %></div>
+                            <div class="fil-info">
+                                <div class="fil-name"><%= f.nom %></div>
+                                <div class="fil-phone"><%= f.telephone %></div>
+                            </div>
+                            <span class="fil-status <%= f.has_active ? 'status-active' : 'status-inactive' %>">
+                                <%= f.has_active ? 'Actif' : 'Inactif' %>
+                            </span>
+                        </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-msg"><i class="fas fa-sitemap" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.4;"></i>Aucun filleul au niveau 3</div>
+                    <% } %>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
+    </div><!-- /content -->
+</div><!-- /container -->
 
 <script>
+function toggleAcc(id) {
+    const el = document.getElementById(id);
+    const body = el.querySelector('.acc-body');
+    if (el.classList.contains('open')) {
+        body.style.height = body.scrollHeight + 'px';
+        requestAnimationFrame(() => { body.style.height = '0'; });
+        el.classList.remove('open');
+    } else {
+        el.classList.add('open');
+        body.style.height = body.scrollHeight + 'px';
+        body.addEventListener('transitionend', function handler() {
+            body.style.height = 'auto';
+            body.removeEventListener('transitionend', handler);
+        });
+    }
+}
+
 function copyLink() {
     const input = document.getElementById('referralInput');
     navigator.clipboard.writeText(input.value)
-        .then(() => { alert('Lien copié !'); })
-        .catch(() => { input.select(); document.execCommand('copy'); alert('Lien copié !'); });
+        .then(() => { showToast('Lien copié !'); })
+        .catch(() => { input.select(); document.execCommand('copy'); showToast('Lien copié !'); });
+}
+
+function getLink() {
+    return document.getElementById('referralInput').value;
+}
+function shareWA() {
+    window.open('https://wa.me/?text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa ! ' + getLink()), '_blank');
+}
+function shareFB() {
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(getLink()), '_blank');
+}
+function shareTG() {
+    window.open('https://t.me/share/url?url=' + encodeURIComponent(getLink()) + '&text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa !'), '_blank');
+}
+function shareTW() {
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent('Rejoins-moi sur Altiora Capital Africa ! ' + getLink()), '_blank');
+}
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    Object.assign(t.style, {
+        position:'fixed', bottom:'100px', left:'50%', transform:'translateX(-50%)',
+        background:'#3D2B1F', color:'#fff', padding:'10px 22px', borderRadius:'30px',
+        fontSize:'14px', fontWeight:'600', zIndex:'9999', opacity:'0',
+        transition:'opacity 0.3s'
+    });
+    document.body.appendChild(t);
+    requestAnimationFrame(() => { t.style.opacity = '1'; });
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
 }
 </script>
 </body>
