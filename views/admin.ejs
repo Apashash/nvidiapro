@@ -1,250 +1,1060 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Altiora Capital Africa</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
-        body { background:#0a0a0a; color:#e0e0e0; min-height:100vh; }
-        .topbar { background:rgba(20,20,20,0.98); border-bottom:1px solid rgba(118,185,0,0.3); padding:14px 20px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; }
-        .topbar h1 { color:#76b900; font-size:1.2rem; font-weight:800; }
-        .topbar a { color:#a0a0a0; text-decoration:none; font-size:0.85rem; }
-        .topbar a:hover { color:#76b900; }
-        .container { max-width:1200px; margin:0 auto; padding:20px; }
-        .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:24px; }
-        .stat-card { background:rgba(25,25,25,0.98); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:18px; text-align:center; }
-        .stat-card .num { color:#76b900; font-size:2rem; font-weight:800; }
-        .stat-card .label { color:#a0a0a0; font-size:0.75rem; text-transform:uppercase; margin-top:4px; }
-        .tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-        .tab-btn { background:rgba(25,25,25,0.98); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 16px; color:#a0a0a0; cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
-        .tab-btn.active, .tab-btn:hover { background:#76b900; color:#000; border-color:#76b900; font-weight:700; }
-        .tab-content { display:none; }
-        .tab-content.active { display:block; }
-        .table-card { background:rgba(20,20,20,0.98); border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden; }
-        .table-card table { width:100%; border-collapse:collapse; }
-        .table-card th { background:rgba(118,185,0,0.15); color:#76b900; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; padding:12px 14px; text-align:left; }
-        .table-card td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; vertical-align:middle; }
-        .table-card tr:last-child td { border-bottom:none; }
-        .table-card tr:hover td { background:rgba(255,255,255,0.03); }
-        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
-        .badge-pending { background:rgba(245,158,11,0.2); color:#f59e0b; }
-        .badge-valid { background:rgba(16,185,129,0.2); color:#10b981; }
-        .badge-rejected { background:rgba(239,68,68,0.2); color:#ef4444; }
-        .btn-sm { padding:5px 12px; border-radius:6px; border:none; cursor:pointer; font-size:0.75rem; font-weight:600; margin:2px; }
-        .btn-validate { background:#10b981; color:#fff; }
-        .btn-reject { background:#ef4444; color:#fff; }
-        .btn-edit { background:#3a86ff; color:#fff; }
-        .search-bar { display:flex; gap:10px; margin-bottom:14px; }
-        .search-bar input { flex:1; background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:9px 14px; color:#e0e0e0; font-size:0.85rem; }
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200; align-items:center; justify-content:center; }
-        .modal.active { display:flex; }
-        .modal-box { background:#1a1a1a; border:1px solid rgba(118,185,0,0.4); border-radius:14px; padding:24px; width:90%; max-width:400px; }
-        .modal-box h3 { color:#76b900; margin-bottom:16px; }
-        .modal-box input { width:100%; background:#0f0f0f; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 14px; color:#e0e0e0; margin-bottom:12px; }
-        .modal-box .btns { display:flex; gap:10px; }
-        .modal-box .btns button { flex:1; padding:10px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
-        .msg { padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:0.85rem; }
-        .msg-success { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:#10b981; }
-        .msg-error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:#ef4444; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; }
+    body { background:#F5F5F0; color:#1a1a1a; min-height:100vh; overflow-x:hidden; }
+
+    /* ── Top bar ───────────────────────────────────────────────── */
+    .topbar {
+      background:#E8931A;
+      padding:0 16px;
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:sticky; top:0; z-index:300;
+    }
+    .topbar-btn {
+      width:40px; height:40px; background:rgba(255,255,255,0.2); border:none; border-radius:10px;
+      color:#fff; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    }
+    .topbar-title { color:#fff; font-size:1.05rem; font-weight:700; letter-spacing:0.2px; }
+
+    /* ── Sidebar overlay ───────────────────────────────────────── */
+    .sidebar-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:400;
+      opacity:0; pointer-events:none; transition:opacity 0.25s;
+    }
+    .sidebar-overlay.open { opacity:1; pointer-events:all; }
+
+    .sidebar {
+      position:fixed; top:0; left:0; width:290px; height:100%; background:#fff;
+      z-index:500; transform:translateX(-100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .sidebar.open { transform:translateX(0); }
+
+    .sidebar-header {
+      background:#E8931A; padding:22px 20px 18px; flex-shrink:0;
+    }
+    .sidebar-close {
+      position:absolute; top:14px; right:14px; width:32px; height:32px;
+      background:rgba(255,255,255,0.25); border:none; border-radius:50%;
+      color:#fff; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    }
+    .sidebar-icon-wrap {
+      width:50px; height:50px; background:rgba(255,255,255,0.25); border-radius:14px;
+      display:flex; align-items:center; justify-content:center; margin-bottom:12px;
+    }
+    .sidebar-icon-wrap i { color:#fff; font-size:1.4rem; }
+    .sidebar-header h2 { color:#fff; font-size:1.15rem; font-weight:800; }
+    .sidebar-header p { color:rgba(255,255,255,0.8); font-size:0.78rem; margin-top:2px; }
+
+    .sidebar-nav { flex:1; overflow-y:auto; padding:8px 0; }
+    .nav-item {
+      display:flex; align-items:center; gap:14px; padding:13px 20px; cursor:pointer;
+      transition:background 0.15s; border-left:3px solid transparent; text-decoration:none;
+    }
+    .nav-item:hover { background:#FFF8F0; }
+    .nav-item.active { background:#FFF3E0; border-left-color:#E8931A; }
+    .nav-item.active .nav-label { color:#E8931A; font-weight:700; }
+    .nav-icon {
+      width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+      font-size:0.95rem; flex-shrink:0;
+    }
+    .nav-label { font-size:0.95rem; color:#2a2a2a; font-weight:500; }
+
+    .sidebar-footer { padding:14px 16px; border-top:1px solid #f0f0f0; }
+    .sidebar-footer a {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      background:#fff; border:1.5px solid #e0e0e0; border-radius:12px; padding:12px;
+      color:#555; text-decoration:none; font-size:0.9rem; font-weight:600; transition:background 0.15s;
+    }
+    .sidebar-footer a:hover { background:#f5f5f5; }
+
+    /* ── Main content ──────────────────────────────────────────── */
+    .main { padding:16px; max-width:680px; margin:0 auto; }
+
+    .section { display:none; }
+    .section.active { display:block; }
+
+    /* ── Section header ────────────────────────────────────────── */
+    .section-title { font-size:1rem; font-weight:700; color:#1a1a1a; margin-bottom:14px; }
+
+    /* ── Stat grid ─────────────────────────────────────────────── */
+    .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+    .stat-card {
+      background:#fff; border-radius:16px; padding:18px 16px;
+      box-shadow:0 1px 6px rgba(0,0,0,0.07);
+    }
+    .stat-card .icon-wrap {
+      width:42px; height:42px; border-radius:12px; display:flex; align-items:center;
+      justify-content:center; margin-bottom:10px; font-size:1.15rem;
+    }
+    .stat-card .stat-num { font-size:1.65rem; font-weight:800; color:#1a1a1a; line-height:1; }
+    .stat-card .stat-sub { font-size:0.7rem; color:#888; font-weight:600; margin-top:2px; }
+    .stat-card .stat-label { font-size:0.82rem; color:#555; margin-top:4px; }
+
+    /* ── Chart card ────────────────────────────────────────────── */
+    .chart-card {
+      background:#fff; border-radius:16px; padding:18px 16px;
+      box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px;
+    }
+    .chart-card-header { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+    .chart-card-header .ch-icon {
+      width:36px; height:36px; background:#FFF3E0; border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .chart-card-header .ch-icon i { color:#E8931A; font-size:1rem; }
+    .chart-card h3 { font-size:1rem; font-weight:700; color:#1a1a1a; }
+    .chart-card p  { font-size:0.78rem; color:#888; margin-bottom:14px; }
+    .chart-legend { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .legend-item { display:flex; align-items:center; gap:5px; font-size:0.75rem; color:#555; }
+    .legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+
+    /* Today vs Yesterday mini cards */
+    .tvh-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+    .tvh-card { background:#fff; border-radius:12px; padding:12px 14px; border:1px solid #f0f0f0; }
+    .tvh-card .tvh-label { font-size:0.72rem; color:#888; margin-bottom:4px; }
+    .tvh-card .tvh-num { font-size:1.15rem; font-weight:800; color:#1a1a1a; }
+    .tvh-card .tvh-num span { font-size:0.72rem; font-weight:600; color:#888; }
+    .tvh-card .tvh-diff { font-size:0.72rem; margin-top:2px; }
+    .tvh-diff.down { color:#ef4444; }
+    .tvh-diff.up { color:#22c55e; }
+
+    /* ── Revenue card ──────────────────────────────────────────── */
+    .revenue-card {
+      background:#fff; border-radius:16px; padding:18px 16px;
+      box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px;
+    }
+    .revenue-card .rev-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .rev-icon { width:40px; height:40px; background:#E8F5E9; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+    .rev-icon i { color:#22c55e; font-size:1.1rem; }
+    .revenue-card h3 { font-size:1rem; font-weight:700; }
+    .revenue-card .rev-sub { font-size:0.78rem; color:#888; }
+    .revenue-card p { font-size:0.85rem; color:#555; line-height:1.5; margin-bottom:14px; }
+    .btn-revenue {
+      width:100%; background:#22c55e; color:#fff; border:none; border-radius:12px;
+      padding:14px; font-size:0.95rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.2s;
+    }
+    .btn-revenue:hover { background:#16a34a; }
+    .btn-revenue:disabled { background:#9ca3af; cursor:not-allowed; }
+
+    /* ── Data tables ───────────────────────────────────────────── */
+    .data-card {
+      background:#fff; border-radius:16px; overflow:hidden;
+      box-shadow:0 1px 6px rgba(0,0,0,0.07); margin-bottom:16px;
+    }
+    .data-card-header {
+      padding:14px 16px; border-bottom:1px solid #f5f5f5;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .data-card-header h3 { font-size:0.95rem; font-weight:700; }
+    .data-count { font-size:0.78rem; color:#888; background:#f5f5f5; padding:3px 10px; border-radius:20px; }
+    .search-wrap { padding:12px 16px; border-bottom:1px solid #f5f5f5; }
+    .search-wrap input {
+      width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px;
+      padding:10px 14px; font-size:0.88rem; outline:none; color:#1a1a1a;
+      transition:border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color:#E8931A; }
+
+    .scroll-x { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:500px; }
+    th { background:#FAFAF8; color:#888; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; padding:10px 14px; text-align:left; font-weight:700; border-bottom:1px solid #f0f0f0; }
+    td { padding:10px 14px; border-bottom:1px solid #f9f9f9; font-size:0.85rem; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#FAFAF8; }
+
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .badge-pending  { background:#FFF7ED; color:#EA580C; }
+    .badge-valid    { background:#F0FDF4; color:#16a34a; }
+    .badge-rejected { background:#FEF2F2; color:#dc2626; }
+    .badge-admin    { background:#EEF2FF; color:#4f46e5; }
+    .badge-vip      { background:#FFF7ED; color:#E8931A; }
+
+    .btn-xs { padding:5px 11px; border-radius:7px; border:none; cursor:pointer; font-size:0.72rem; font-weight:700; margin:2px; white-space:nowrap; }
+    .btn-v  { background:#F0FDF4; color:#16a34a; }
+    .btn-r  { background:#FEF2F2; color:#dc2626; }
+    .btn-e  { background:#EFF6FF; color:#2563eb; }
+    .btn-v:hover { background:#dcfce7; }
+    .btn-r:hover { background:#fee2e2; }
+    .btn-e:hover { background:#dbeafe; }
+
+    .empty-state { text-align:center; padding:40px 20px; color:#aaa; font-size:0.9rem; }
+
+    /* ── Modal ─────────────────────────────────────────────────── */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:600;
+      display:flex; align-items:center; justify-content:center; padding:20px;
+      opacity:0; pointer-events:none; transition:opacity 0.2s;
+    }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal-box {
+      background:#fff; border-radius:20px; padding:24px; width:100%; max-width:380px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-box h3 { font-size:1rem; font-weight:700; margin-bottom:16px; color:#1a1a1a; }
+    .modal-box label { display:block; font-size:0.8rem; color:#888; font-weight:600; margin-bottom:5px; margin-top:12px; }
+    .modal-box input {
+      width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px;
+      padding:11px 14px; color:#1a1a1a; font-size:0.9rem; outline:none;
+    }
+    .modal-box input:focus { border-color:#E8931A; }
+    .modal-btns { display:flex; gap:10px; margin-top:18px; }
+    .modal-btns button { flex:1; padding:12px; border:none; border-radius:12px; cursor:pointer; font-weight:700; font-size:0.9rem; }
+    .modal-cancel { background:#F5F5F0; color:#555; }
+    .modal-confirm { background:#E8931A; color:#fff; }
+
+    /* ── Toast ─────────────────────────────────────────────────── */
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+      background:#1a1a1a; color:#fff; padding:12px 22px; border-radius:12px;
+      font-size:0.88rem; font-weight:600; z-index:700; transition:transform 0.3s;
+      white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.3);
+    }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.success { background:#16a34a; }
+    .toast.error   { background:#dc2626; }
+
+    /* ── Loading spinner ───────────────────────────────────────── */
+    .spinner-wrap { text-align:center; padding:40px; color:#aaa; }
+    .spinner { display:inline-block; width:28px; height:28px; border:3px solid #f0f0f0; border-top-color:#E8931A; border-radius:50%; animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── Plan edit form ────────────────────────────────────────── */
+    .plan-row-edit input { width:70px; background:#F5F5F0; border:1.5px solid #e0e0e0; border-radius:6px; padding:4px 7px; font-size:0.8rem; }
+
+    /* Responsive */
+    @media(min-width:600px) {
+      .main { padding:20px; }
+      .stats-grid { grid-template-columns:repeat(4,1fr); }
+    }
+  </style>
 </head>
 <body>
+
+<!-- Top bar -->
 <div class="topbar">
-    <h1>⚡ Altiora Admin Panel</h1>
-    <div style="display:flex;gap:16px;align-items:center;">
-        <span style="color:#a0a0a0;font-size:0.8rem;" id="adminMsg"></span>
-        <a href="/adminxyz/logout"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
-    </div>
+  <button class="topbar-btn" id="menuBtn" aria-label="Menu"><i class="fas fa-bars"></i></button>
+  <span class="topbar-title" id="topbarTitle">Tableau de bord</span>
+  <button class="topbar-btn" aria-label="Notifications"><i class="fas fa-bell"></i></button>
 </div>
 
-<div class="container">
-    <!-- Stats -->
-    <div class="stats-row">
-        <div class="stat-card"><div class="num"><%= stats_users.total || 0 %></div><div class="label">Utilisateurs</div></div>
-        <div class="stat-card"><div class="num"><%= stats_pending_depots.total || 0 %></div><div class="label">Dépôts en attente</div></div>
-        <div class="stat-card"><div class="num"><%= stats_pending_retraits.total || 0 %></div><div class="label">Retraits en attente</div></div>
-        <div class="stat-card"><div class="num"><%= (parseFloat(stats_depots.somme) || 0).toLocaleString('fr-FR') %></div><div class="label">Total dépôts (FCFA)</div></div>
-        <div class="stat-card"><div class="num"><%= (parseFloat(stats_retraits.somme) || 0).toLocaleString('fr-FR') %></div><div class="label">Total retraits (FCFA)</div></div>
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header" style="position:relative">
+    <button class="sidebar-close" id="closeBtn" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
+    <div class="sidebar-icon-wrap"><i class="fas fa-shield-halved"></i></div>
+    <h2>Administration</h2>
+    <p>NVIDIA Technology</p>
+  </div>
+
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a class="nav-item active" data-section="dashboard" onclick="navigate(this,'Tableau de bord')">
+      <span class="nav-icon" style="background:#FFF3E0"><i class="fas fa-chart-pie" style="color:#E8931A"></i></span>
+      <span class="nav-label">Tableau de bord</span>
+    </a>
+    <a class="nav-item" data-section="plans" onclick="navigate(this,'Plans VIP')">
+      <span class="nav-icon" style="background:#F0FDF4"><i class="fas fa-chart-line" style="color:#22c55e"></i></span>
+      <span class="nav-label">Plans VIP</span>
+    </a>
+    <a class="nav-item" data-section="utilisateurs" onclick="navigate(this,'Utilisateurs')">
+      <span class="nav-icon" style="background:#EFF6FF"><i class="fas fa-users" style="color:#3b82f6"></i></span>
+      <span class="nav-label">Utilisateurs</span>
+    </a>
+    <a class="nav-item" data-section="depots" onclick="navigate(this,'Dépôts')">
+      <span class="nav-icon" style="background:#F0FDF4"><i class="fas fa-arrow-down" style="color:#22c55e"></i></span>
+      <span class="nav-label">Dépôts</span>
+    </a>
+    <a class="nav-item" data-section="retraits" onclick="navigate(this,'Retraits')">
+      <span class="nav-icon" style="background:#EEF2FF"><i class="fas fa-hand-holding-dollar" style="color:#6366f1"></i></span>
+      <span class="nav-label">Retraits</span>
+    </a>
+    <a class="nav-item" data-section="cadeaux" onclick="navigate(this,'Cadeaux VIP')">
+      <span class="nav-icon" style="background:#FFF7ED"><i class="fas fa-gift" style="color:#E8931A"></i></span>
+      <span class="nav-label">Cadeaux VIP</span>
+    </a>
+    <a class="nav-item" data-section="salaires" onclick="navigate(this,'Salaires VIP')">
+      <span class="nav-icon" style="background:#F0FDF4"><i class="fas fa-money-bill-wave" style="color:#22c55e"></i></span>
+      <span class="nav-label">Salaires VIP</span>
+    </a>
+    <a class="nav-item" data-section="transactions" onclick="navigate(this,'Transactions')">
+      <span class="nav-icon" style="background:#F5F3FF"><i class="fas fa-receipt" style="color:#7c3aed"></i></span>
+      <span class="nav-label">Transactions</span>
+    </a>
+    <a class="nav-item" data-section="affiches" onclick="navigate(this,'Affiches')">
+      <span class="nav-icon" style="background:#FFF7ED"><i class="fas fa-image" style="color:#E8931A"></i></span>
+      <span class="nav-label">Affiches</span>
+    </a>
+    <a class="nav-item" data-section="parametres" onclick="navigate(this,'Paramètres')">
+      <span class="nav-icon" style="background:#F5F5F0"><i class="fas fa-gear" style="color:#6b7280"></i></span>
+      <span class="nav-label">Paramètres</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/"><i class="fas fa-house" style="color:#E8931A"></i> Retour à l'accueil</a>
+  </div>
+</aside>
+
+<!-- ════════════════ MAIN CONTENT ════════════════ -->
+<div class="main">
+
+  <!-- ── DASHBOARD ── -->
+  <div class="section active" id="section-dashboard">
+    <!-- Stats grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#EFF6FF"><i class="fas fa-users" style="color:#3b82f6"></i></div>
+        <div class="stat-num"><%= stats_users.total || 0 %></div>
+        <div class="stat-label">Utilisateurs</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#F0FDF4"><i class="fas fa-chart-line" style="color:#22c55e"></i></div>
+        <div class="stat-num"><%= stats_plans_actifs.total || 0 %></div>
+        <div class="stat-label">Plans actifs</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#FFF7ED"><i class="fas fa-arrow-down" style="color:#E8931A"></i></div>
+        <div class="stat-num"><%= (parseFloat(stats_depots.somme) || 0).toLocaleString('fr-FR') %></div>
+        <div class="stat-sub">FCFA</div>
+        <div class="stat-label">Dépôts validés</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#EEF2FF"><i class="fas fa-hand-holding-dollar" style="color:#6366f1"></i></div>
+        <div class="stat-num"><%= (parseFloat(stats_retraits.somme) || 0).toLocaleString('fr-FR') %></div>
+        <div class="stat-sub">FCFA</div>
+        <div class="stat-label">Retraits validés</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#FFF7ED"><i class="fas fa-hourglass-half" style="color:#E8931A"></i></div>
+        <div class="stat-num"><%= stats_pending_depots.total || 0 %></div>
+        <div class="stat-label">Dépôts en attente</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#FEF2F2"><i class="fas fa-clock" style="color:#ef4444"></i></div>
+        <div class="stat-num"><%= stats_pending_retraits.total || 0 %></div>
+        <div class="stat-label">Retraits en attente</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#F0FDF4"><i class="fas fa-briefcase" style="color:#22c55e"></i></div>
+        <div class="stat-num"><%= stats_avec_invest.total || 0 %></div>
+        <div class="stat-label">Avec investissement</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon-wrap" style="background:#EEF2FF"><i class="fas fa-user-check" style="color:#6366f1"></i></div>
+        <div class="stat-num"><%= stats_users.total || 0 %></div>
+        <div class="stat-label">Total inscrits</div>
+      </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('depots')">Dépôts</button>
-        <button class="tab-btn" onclick="showTab('retraits')">Retraits</button>
-        <button class="tab-btn" onclick="showTab('users')">Utilisateurs</button>
-        <button class="tab-btn" onclick="showTab('posts')">Posts</button>
-    </div>
-
-    <!-- Dépôts Tab -->
-    <div class="tab-content active" id="tab-depots">
-        <div class="table-card">
-            <table>
-                <thead><tr><th>ID</th><th>Utilisateur</th><th>Montant</th><th>Méthode</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-                <tbody>
-                <% depots.forEach(d => { %>
-                <tr>
-                    <td>#<%= d.id %></td>
-                    <td><strong><%= d.nom %></strong><br><small style="color:#a0a0a0"><%= d.telephone %></small></td>
-                    <td style="color:#76b900;font-weight:700"><%= parseFloat(d.montant).toLocaleString('fr-FR') %> FCFA</td>
-                    <td style="font-size:0.8rem"><%= d.methode %></td>
-                    <td style="font-size:0.75rem;color:#a0a0a0"><%= new Date(d.date_depot).toLocaleDateString('fr-FR') %></td>
-                    <td><span class="badge badge-<%= d.statut === 'valide' ? 'valid' : d.statut === 'rejete' ? 'rejected' : 'pending' %>"><%= d.statut %></span></td>
-                    <td>
-                        <% if (d.statut === 'en_attente') { %>
-                        <button class="btn-sm btn-validate" onclick="adminAction('validate_deposit',<%= d.id %>)">✓ Valider</button>
-                        <button class="btn-sm btn-reject" onclick="adminAction('reject_deposit',<%= d.id %>)">✗ Rejeter</button>
-                        <% } %>
-                    </td>
-                </tr>
-                <% }); %>
-                </tbody>
-            </table>
+    <!-- Today vs Yesterday chart -->
+    <div class="chart-card" id="tvhCard">
+      <div class="chart-card-header">
+        <div class="ch-icon"><i class="fas fa-chart-bar"></i></div>
+        <div>
+          <h3>Aujourd'hui vs Hier</h3>
         </div>
+        <div style="margin-left:auto;display:flex;gap:10px;font-size:0.75rem;color:#888">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#1a1a1a;border-radius:2px;margin-right:4px"></span>Auj.</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#ccc;border-radius:2px;margin-right:4px"></span>Hier</span>
+        </div>
+      </div>
+      <p style="font-size:0.78rem;color:#aaa;margin-bottom:10px;margin-left:46px">Comparaison des transactions</p>
+      <canvas id="tvhChart" height="160"></canvas>
+      <div class="tvh-grid" id="tvhCards">
+        <div class="tvh-card" style="border-left:3px solid #22c55e">
+          <div class="tvh-label">Dépôts auj.</div>
+          <div class="tvh-num" id="depTodayNum">— <span>FCFA</span></div>
+          <div class="tvh-diff" id="depTodayDiff"></div>
+        </div>
+        <div class="tvh-card" style="border-left:3px solid #ef4444">
+          <div class="tvh-label">Retraits auj.</div>
+          <div class="tvh-num" id="retTodayNum">— <span>FCFA</span></div>
+          <div class="tvh-diff" id="retTodayDiff"></div>
+        </div>
+        <div class="tvh-card" style="border-left:3px solid #22c55e">
+          <div class="tvh-label">Dépôts hier</div>
+          <div class="tvh-num" id="depYestNum">— <span>FCFA</span></div>
+        </div>
+        <div class="tvh-card" style="border-left:3px solid #ef4444">
+          <div class="tvh-label">Retraits hier</div>
+          <div class="tvh-num" id="retYestNum">— <span>FCFA</span></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Retraits Tab -->
-    <div class="tab-content" id="tab-retraits">
-        <div class="table-card">
-            <table>
-                <thead><tr><th>ID</th><th>Utilisateur</th><th>Montant</th><th>Destination</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-                <tbody>
-                <% retraits.forEach(r => { %>
-                <tr>
-                    <td>#<%= r.id %></td>
-                    <td><strong><%= r.nom %></strong><br><small style="color:#a0a0a0"><%= r.telephone %></small></td>
-                    <td style="color:#ef4444;font-weight:700"><%= parseFloat(r.montant).toLocaleString('fr-FR') %> FCFA</td>
-                    <td style="font-size:0.8rem"><%= r.methode %> — <%= r.numero_compte %></td>
-                    <td style="font-size:0.75rem;color:#a0a0a0"><%= new Date(r.date_demande).toLocaleDateString('fr-FR') %></td>
-                    <td><span class="badge badge-<%= r.statut === 'valide' ? 'valid' : r.statut === 'rejete' ? 'rejected' : 'pending' %>"><%= r.statut %></span></td>
-                    <td>
-                        <% if (r.statut === 'en_attente') { %>
-                        <button class="btn-sm btn-validate" onclick="adminAction('validate_retrait',<%= r.id %>)">✓ Valider</button>
-                        <button class="btn-sm btn-reject" onclick="adminAction('reject_retrait',<%= r.id %>)">✗ Rejeter</button>
-                        <% } %>
-                    </td>
-                </tr>
-                <% }); %>
-                </tbody>
-            </table>
+    <!-- 6-month activity chart -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <div class="ch-icon"><i class="fas fa-chart-bar"></i></div>
+        <div>
+          <h3>Activité financière</h3>
         </div>
+      </div>
+      <p>6 derniers mois</p>
+      <canvas id="activityChart" height="170"></canvas>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Dép. validés</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Dép. rejetés</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Ret. validés</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Ret. rejetés</div>
+      </div>
     </div>
 
-    <!-- Users Tab -->
-    <div class="tab-content" id="tab-users">
-        <div class="table-card">
-            <table>
-                <thead><tr><th>ID</th><th>Nom</th><th>Téléphone</th><th>Pays</th><th>Solde</th><th>Admin</th><th>Actions</th></tr></thead>
-                <tbody>
-                <% users.forEach(u => { %>
-                <tr>
-                    <td>#<%= u.id %></td>
-                    <td><strong><%= u.nom %></strong></td>
-                    <td><%= u.telephone %></td>
-                    <td><%= u.pays || '-' %></td>
-                    <td style="color:#76b900;font-weight:700"><%= parseFloat(u.solde || 0).toLocaleString('fr-FR') %> FCFA</td>
-                    <td><% if (u.is_admin) { %><span class="badge badge-valid">Admin</span><% } else { %>—<% } %></td>
-                    <td>
-                        <button class="btn-sm btn-edit" onclick="showBalanceModal(<%= u.id %>, '<%= u.nom %>', <%= u.solde || 0 %>)">💰 Solde</button>
-                        <button class="btn-sm <%= u.is_admin ? 'btn-reject' : 'btn-validate' %>" onclick="adminAction('toggle_admin',<%= u.id %>)"><%= u.is_admin ? '✗ Retirer admin' : '✓ Nommer admin' %></button>
-                    </td>
-                </tr>
-                <% }); %>
-                </tbody>
-            </table>
+    <!-- Daily revenue card -->
+    <div class="revenue-card">
+      <div class="rev-header">
+        <div class="rev-icon"><i class="fas fa-coins"></i></div>
+        <div>
+          <h3>Revenus journaliers</h3>
+          <div class="rev-sub">Automatique chaque jour à 02h00 UTC</div>
         </div>
+      </div>
+      <p>Crédite le revenu journalier sur le solde de chaque investisseur ayant un plan actif. Les plans arrivés à échéance sont automatiquement clôturés.</p>
+      <button class="btn-revenue" id="btnRevenu" onclick="verserRevenus()">
+        <i class="fas fa-paper-plane"></i> Verser les revenus maintenant
+      </button>
     </div>
+  </div>
 
-    <!-- Posts Tab -->
-    <div class="tab-content" id="tab-posts">
-        <div class="table-card">
-            <table>
-                <thead><tr><th>ID</th><th>Auteur</th><th>Message</th><th>Image</th><th>Date</th><th>Actions</th></tr></thead>
-                <tbody>
-                <% posts.forEach(p => { %>
-                <tr>
-                    <td>#<%= p.id %></td>
-                    <td><%= p.nom %></td>
-                    <td style="font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= p.message %></td>
-                    <td><% if (p.image) { %><a href="/uploads/<%= p.image %>" target="_blank" style="color:#76b900;font-size:0.8rem">Voir image</a><% } %></td>
-                    <td style="font-size:0.75rem;color:#a0a0a0"><%= new Date(p.date_creation).toLocaleDateString('fr-FR') %></td>
-                    <td>
-                        <button class="btn-sm btn-validate" onclick="adminAction('validate_post',<%= p.id %>)">✓</button>
-                        <button class="btn-sm btn-reject" onclick="adminAction('reject_post',<%= p.id %>)">✗</button>
-                    </td>
-                </tr>
-                <% }); %>
-                </tbody>
-            </table>
-        </div>
+  <!-- ── PLANS VIP ── -->
+  <div class="section" id="section-plans">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Plans VIP</h3>
+        <span class="data-count" id="plansCount">—</span>
+      </div>
+      <div id="plansContent"><div class="spinner-wrap"><div class="spinner"></div></div></div>
     </div>
-</div>
+  </div>
+
+  <!-- ── UTILISATEURS ── -->
+  <div class="section" id="section-utilisateurs">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Utilisateurs</h3>
+        <span class="data-count" id="usersCount">—</span>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="userSearch" placeholder="Rechercher un utilisateur…" oninput="filterTable('usersTbody', this.value)">
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Nom</th><th>Téléphone</th><th>Pays</th><th>Solde</th><th>VIP</th><th>Filleuls</th><th>Actions</th></tr></thead>
+          <tbody id="usersTbody"><tr><td colspan="8" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DÉPÔTS ── -->
+  <div class="section" id="section-depots">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Dépôts</h3>
+        <span class="data-count" id="depotsCount">—</span>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="depotSearch" placeholder="Rechercher…" oninput="filterTable('depotsTbody', this.value)">
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Utilisateur</th><th>Montant</th><th>Méthode</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="depotsTbody"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RETRAITS ── -->
+  <div class="section" id="section-retraits">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Retraits</h3>
+        <span class="data-count" id="retraitsCount">—</span>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="retraitSearch" placeholder="Rechercher…" oninput="filterTable('retraitsTbody', this.value)">
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Utilisateur</th><th>Montant</th><th>Destination</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="retraitsTbody"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CADEAUX VIP ── -->
+  <div class="section" id="section-cadeaux">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Cadeaux VIP</h3>
+        <span class="data-count" id="cadeauxCount">—</span>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Utilisateur</th><th>Code</th><th>Montant</th><th>Date</th></tr></thead>
+          <tbody id="cadeauxTbody"><tr><td colspan="5" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SALAIRES VIP ── -->
+  <div class="section" id="section-salaires">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Salaires VIP</h3>
+        <span class="data-count" id="salairesCount">—</span>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Nom</th><th>Téléphone</th><th>Niveau VIP</th><th>Invitations</th><th>Solde</th></tr></thead>
+          <tbody id="salairesTbody"><tr><td colspan="6" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TRANSACTIONS ── -->
+  <div class="section" id="section-transactions">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Transactions</h3>
+        <span class="data-count" id="transactionsCount">—</span>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="transSearch" placeholder="Rechercher…" oninput="filterTable('transactionsTbody', this.value)">
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Utilisateur</th><th>Montant</th><th>Type</th><th>Date</th></tr></thead>
+          <tbody id="transactionsTbody"><tr><td colspan="5" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AFFICHES ── -->
+  <div class="section" id="section-affiches">
+    <div class="data-card">
+      <div class="data-card-header">
+        <h3>Affiches</h3>
+        <span class="data-count" id="affichesCount">—</span>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>#</th><th>Auteur</th><th>Message</th><th>Image</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="afficherTbody"><tr><td colspan="7" class="empty-state"><div class="spinner"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PARAMÈTRES ── -->
+  <div class="section" id="section-parametres">
+    <div class="data-card" style="padding:20px">
+      <div class="data-card-header"><h3>Paramètres</h3></div>
+      <div style="padding:20px">
+        <div style="margin-bottom:20px">
+          <div style="font-size:0.9rem;font-weight:600;margin-bottom:8px">Sécurité</div>
+          <div style="font-size:0.85rem;color:#555;background:#F5F5F0;padding:14px;border-radius:10px">
+            Le code admin est défini via la variable d'environnement <code style="background:#e8e8e8;padding:2px 6px;border-radius:4px">ADMIN_CODE</code>.
+          </div>
+        </div>
+        <div>
+          <a href="/adminxyz/logout" style="display:inline-flex;align-items:center;gap:8px;background:#FEF2F2;color:#dc2626;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:700;font-size:0.9rem">
+            <i class="fas fa-sign-out-alt"></i> Se déconnecter
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
 
 <!-- Balance Modal -->
-<div class="modal" id="balanceModal">
-    <div class="modal-box">
-        <h3>💰 Modifier le solde</h3>
-        <p id="balanceUserName" style="color:#a0a0a0;margin-bottom:14px;font-size:0.9rem"></p>
-        <input type="hidden" id="balanceUserId">
-        <input type="number" id="balanceAmount" placeholder="Nouveau solde (FCFA)" step="100">
-        <div class="btns">
-            <button style="background:#555;color:#fff" onclick="closeModal()">Annuler</button>
-            <button style="background:#76b900;color:#000" onclick="updateBalance()">Mettre à jour</button>
-        </div>
+<div class="modal-overlay" id="balanceModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-coins" style="color:#E8931A"></i> Modifier le solde</h3>
+    <p id="balanceUserName" style="color:#888;font-size:0.85rem;margin-bottom:4px"></p>
+    <input type="hidden" id="balanceUserId">
+    <label>Nouveau solde (FCFA)</label>
+    <input type="number" id="balanceAmount" placeholder="0" step="100">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('balanceModal')">Annuler</button>
+      <button class="modal-confirm" onclick="updateBalance()">Mettre à jour</button>
     </div>
+  </div>
 </div>
 
+<!-- Plan Edit Modal -->
+<div class="modal-overlay" id="planModal">
+  <div class="modal-box">
+    <h3><i class="fas fa-chart-line" style="color:#22c55e"></i> Modifier le plan</h3>
+    <input type="hidden" id="planId">
+    <label>Prix (FCFA)</label>
+    <input type="number" id="planPrix" step="100">
+    <label>Durée (jours)</label>
+    <input type="number" id="planDuree" step="1">
+    <label>Rendement journalier (%)</label>
+    <input type="number" id="planRendement" step="0.01">
+    <label>Description</label>
+    <input type="text" id="planDesc">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('planModal')">Annuler</button>
+      <button class="modal-confirm" onclick="updatePlan()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script>
-function showTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    event.target.classList.add('active');
+// ── XSS-safe escape ───────────────────────────────────────────────────
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-async function adminAction(action, id) {
-    if (!confirm(`Confirmer: ${action.replace('_', ' ')} #${id} ?`)) return;
-    const res = await fetch('/adminxyz/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `action=${action}&id=${id}`
-    });
+// ── Sidebar ────────────────────────────────────────────────────────────
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('menuBtn').addEventListener('click', openSidebar);
+
+// ── Navigation ─────────────────────────────────────────────────────────
+const sectionLoaded = {};
+
+function navigate(el, title) {
+  const section = el.getAttribute('data-section');
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('topbarTitle').textContent = title;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + section).classList.add('active');
+  closeSidebar();
+  if (!sectionLoaded[section]) {
+    loadSection(section);
+    sectionLoaded[section] = true;
+  }
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Modal helpers ──────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Admin action ───────────────────────────────────────────────────────
+async function adminAction(action, id, extra = {}) {
+  const labels = { validate_deposit:'Valider ce dépôt', reject_deposit:'Rejeter ce dépôt',
+                   validate_retrait:'Valider ce retrait', reject_retrait:'Rejeter ce retrait',
+                   validate_post:'Valider cette affiche', reject_post:'Rejeter cette affiche',
+                   toggle_admin:'Changer le statut admin', delete_user:'Supprimer cet utilisateur' };
+  if (!confirm((labels[action] || action) + ' ?')) return;
+  try {
+    const body = new URLSearchParams({ action, id, ...extra });
+    const res = await fetch('/adminxyz/action', { method:'POST', body });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const msg = document.getElementById('adminMsg');
     if (data.success) {
-        msg.textContent = '✓ Action effectuée';
-        msg.style.color = '#10b981';
-        setTimeout(() => location.reload(), 1000);
+      showToast('✓ Action effectuée', 'success');
+      Object.keys(sectionLoaded).forEach(k => delete sectionLoaded[k]);
+      setTimeout(() => loadCurrentSection(), 700);
     } else {
-        msg.textContent = '✗ ' + (data.message || 'Erreur');
-        msg.style.color = '#ef4444';
+      showToast('✗ ' + (data.message || 'Erreur'), 'error');
     }
+  } catch(e) { showToast('✗ Erreur réseau: ' + e.message, 'error'); }
 }
 
+function loadCurrentSection() {
+  const active = document.querySelector('.nav-item.active');
+  if (active) { const s = active.getAttribute('data-section'); loadSection(s); }
+}
+
+// ── Balance modal ──────────────────────────────────────────────────────
 function showBalanceModal(userId, name, solde) {
-    document.getElementById('balanceUserId').value = userId;
-    document.getElementById('balanceUserName').textContent = name + ' — Solde actuel: ' + parseFloat(solde).toLocaleString('fr-FR') + ' FCFA';
-    document.getElementById('balanceAmount').value = solde;
-    document.getElementById('balanceModal').classList.add('active');
+  document.getElementById('balanceUserId').value = userId;
+  document.getElementById('balanceUserName').textContent = name + ' — Solde: ' + parseFloat(solde).toLocaleString('fr-FR') + ' FCFA';
+  document.getElementById('balanceAmount').value = solde;
+  openModal('balanceModal');
 }
-
-function closeModal() {
-    document.getElementById('balanceModal').classList.remove('active');
-}
-
 async function updateBalance() {
-    const user_id = document.getElementById('balanceUserId').value;
-    const montant = document.getElementById('balanceAmount').value;
-    const res = await fetch('/adminxyz/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `action=update_balance&user_id=${user_id}&montant=${montant}`
-    });
-    const data = await res.json();
-    if (data.success) { closeModal(); location.reload(); }
-    else alert('Erreur: ' + data.message);
+  const user_id = document.getElementById('balanceUserId').value;
+  const montant = document.getElementById('balanceAmount').value;
+  const res = await fetch('/adminxyz/action', {
+    method:'POST', body: new URLSearchParams({ action:'update_balance', user_id, montant })
+  });
+  const data = await res.json();
+  if (data.success) {
+    closeModal('balanceModal'); showToast('✓ Solde mis à jour', 'success');
+    delete sectionLoaded['utilisateurs']; loadSection('utilisateurs');
+  } else { showToast('✗ ' + (data.message||'Erreur'), 'error'); }
 }
+
+// ── Plan edit modal ────────────────────────────────────────────────────
+function showPlanModal(id, prix, duree, rendement, desc) {
+  document.getElementById('planId').value = id;
+  document.getElementById('planPrix').value = prix;
+  document.getElementById('planDuree').value = duree;
+  document.getElementById('planRendement').value = rendement;
+  document.getElementById('planDesc').value = desc;
+  openModal('planModal');
+}
+async function updatePlan() {
+  const id = document.getElementById('planId').value;
+  const prix = document.getElementById('planPrix').value;
+  const duree_jours = document.getElementById('planDuree').value;
+  const rendement_journalier = document.getElementById('planRendement').value;
+  const description = document.getElementById('planDesc').value;
+  const res = await fetch('/adminxyz/action', {
+    method:'POST', body: new URLSearchParams({ action:'update_plan', id, prix, duree_jours, rendement_journalier, description })
+  });
+  const data = await res.json();
+  if (data.success) {
+    closeModal('planModal'); showToast('✓ Plan mis à jour', 'success');
+    delete sectionLoaded['plans']; loadSection('plans');
+  } else { showToast('✗ ' + (data.message||'Erreur'), 'error'); }
+}
+
+// ── Verser revenus ─────────────────────────────────────────────────────
+async function verserRevenus() {
+  const btn = document.getElementById('btnRevenu');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Versement…';
+  const res = await fetch('/adminxyz/verser-revenus', { method:'POST' });
+  const data = await res.json();
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Verser les revenus maintenant';
+  if (data.success) showToast('✓ ' + data.message, 'success');
+  else showToast('✗ ' + (data.message||'Erreur'), 'error');
+}
+
+// ── Table filter ───────────────────────────────────────────────────────
+function filterTable(tbodyId, query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#' + tbodyId + ' tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── Format helpers ─────────────────────────────────────────────────────
+function fmt(n) { return (parseFloat(n)||0).toLocaleString('fr-FR'); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'; }
+function badge(statut) {
+  if (!statut) return '—';
+  const map = { en_attente:'pending', valide:'valid', rejete:'rejected', refuse:'rejected', actif:'valid', termine:'rejected' };
+  const cls = map[statut] || 'pending';
+  const labels = { en_attente:'En attente', valide:'Validé', rejete:'Rejeté', refuse:'Refusé', actif:'Actif', termine:'Terminé' };
+  return `<span class="badge badge-${cls}">${labels[statut]||statut}</span>`;
+}
+
+// ── Load sections ──────────────────────────────────────────────────────
+async function loadSection(section) {
+  if (section === 'dashboard') { loadCharts(); return; }
+  const endpoints = {
+    plans:'plans', utilisateurs:'utilisateurs', depots:'depots', retraits:'retraits',
+    cadeaux:'cadeaux', salaires:'salaires', transactions:'transactions', affiches:'affiches'
+  };
+  if (!endpoints[section]) return;
+  try {
+    const res = await fetch('/adminxyz/api/' + endpoints[section]);
+    const data = await res.json();
+    renderSection(section, data);
+  } catch(e) { console.error(e); showToast('Erreur de chargement', 'error'); }
+}
+
+function renderSection(section, data) {
+  if (section === 'plans') renderPlans(data);
+  else if (section === 'utilisateurs') renderUtilisateurs(data);
+  else if (section === 'depots') renderDepots(data);
+  else if (section === 'retraits') renderRetraits(data);
+  else if (section === 'cadeaux') renderCadeaux(data);
+  else if (section === 'salaires') renderSalaires(data);
+  else if (section === 'transactions') renderTransactions(data);
+  else if (section === 'affiches') renderAffiches(data);
+}
+
+// ── Render: Plans ──────────────────────────────────────────────────────
+function renderPlans({ plans = [], counts = [], error }) {
+  document.getElementById('plansCount').textContent = plans.length;
+  let html = '';
+  if (error) { html = `<div class="empty-state">${esc(error)}</div>`; }
+  else if (!plans.length) { html = '<div class="empty-state">Aucun plan</div>'; }
+  else {
+    html = '<div class="scroll-x"><table><thead><tr><th>#</th><th>Nom</th><th>Prix (FCFA)</th><th>Durée</th><th>Rendement/j</th><th>Actifs</th><th>Actions</th></tr></thead><tbody>';
+    plans.forEach((p, i) => {
+      const descEscAttr = esc(p.description||'');
+      html += `<tr>
+        <td>#${esc(p.id)}</td>
+        <td><strong>${esc(p.nom)}</strong></td>
+        <td style="color:#E8931A;font-weight:700">${fmt(p.prix)}</td>
+        <td>${esc(p.duree_jours)}j</td>
+        <td>${parseFloat(p.rendement_journalier).toFixed(2)}%</td>
+        <td><span class="badge badge-valid">${counts[i]||0}</span></td>
+        <td>
+          <button class="btn-xs btn-e" onclick='showPlanModal(${parseInt(p.id)},${parseFloat(p.prix)},${parseInt(p.duree_jours)},${parseFloat(p.rendement_journalier)},"${descEscAttr}")'>
+            <i class="fas fa-pen"></i> Modifier
+          </button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('plansContent').innerHTML = html;
+}
+
+// ── Render: Utilisateurs ───────────────────────────────────────────────
+function renderUtilisateurs({ users = [], error }) {
+  document.getElementById('usersCount').textContent = users.length;
+  const tbody = document.getElementById('usersTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Aucun utilisateur</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>#${parseInt(u.id)}</td>
+      <td>
+        <strong>${esc(u.nom)}</strong>
+        ${u.is_admin ? '<br><span class="badge badge-admin">Admin</span>' : ''}
+      </td>
+      <td>${esc(u.telephone)}</td>
+      <td>${esc(u.pays||'—')}</td>
+      <td style="font-weight:700;color:#E8931A">${fmt(u.solde)} <small>FCFA</small></td>
+      <td>${u.niveau_vip > 0 ? `<span class="badge badge-vip">VIP ${parseInt(u.niveau_vip)}</span>` : '—'}</td>
+      <td>${parseInt(u.nb_filleuls)||0} / ${parseInt(u.nb_commandes)||0} inv.</td>
+      <td>
+        <button class="btn-xs btn-e" onclick="showBalanceModal(${parseInt(u.id)},${JSON.stringify(u.nom||'')},${parseFloat(u.solde)||0})">
+          <i class="fas fa-coins"></i> Solde
+        </button>
+        <button class="btn-xs ${u.is_admin ? 'btn-r' : 'btn-v'}" onclick="adminAction('toggle_admin',${parseInt(u.id)})">
+          ${u.is_admin ? '<i class="fas fa-user-minus"></i> -Admin' : '<i class="fas fa-user-shield"></i> +Admin'}
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Render: Dépôts ─────────────────────────────────────────────────────
+function renderDepots({ depots = [], error }) {
+  document.getElementById('depotsCount').textContent = depots.length;
+  const tbody = document.getElementById('depotsTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!depots.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Aucun dépôt</td></tr>'; return; }
+  tbody.innerHTML = depots.map(d => `
+    <tr>
+      <td>#${parseInt(d.id)}</td>
+      <td><strong>${esc(d.nom||'—')}</strong><br><small style="color:#888">${esc(d.telephone||'')}</small></td>
+      <td style="font-weight:700;color:#22c55e">${fmt(d.montant)} <small>FCFA</small></td>
+      <td>${esc(d.methode||'—')}</td>
+      <td style="color:#888;font-size:0.8rem">${fmtDate(d.date_depot)}</td>
+      <td>${badge(d.statut)}</td>
+      <td>
+        ${d.statut === 'en_attente' ? `
+          <button class="btn-xs btn-v" onclick="adminAction('validate_deposit',${parseInt(d.id)})"><i class="fas fa-check"></i> Valider</button>
+          <button class="btn-xs btn-r" onclick="adminAction('reject_deposit',${parseInt(d.id)})"><i class="fas fa-times"></i> Rejeter</button>
+        ` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+// ── Render: Retraits ───────────────────────────────────────────────────
+function renderRetraits({ retraits = [], error }) {
+  document.getElementById('retraitsCount').textContent = retraits.length;
+  const tbody = document.getElementById('retraitsTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!retraits.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Aucun retrait</td></tr>'; return; }
+  tbody.innerHTML = retraits.map(r => `
+    <tr>
+      <td>#${parseInt(r.id)}</td>
+      <td><strong>${esc(r.nom||'—')}</strong><br><small style="color:#888">${esc(r.telephone||'')}</small></td>
+      <td style="font-weight:700;color:#ef4444">${fmt(r.montant)} <small>FCFA</small></td>
+      <td style="font-size:0.8rem">${esc(r.methode||'—')} ${r.numero_compte ? '— '+esc(r.numero_compte) : ''}</td>
+      <td style="color:#888;font-size:0.8rem">${fmtDate(r.date_demande)}</td>
+      <td>${badge(r.statut)}</td>
+      <td>
+        ${r.statut === 'en_attente' ? `
+          <button class="btn-xs btn-v" onclick="adminAction('validate_retrait',${parseInt(r.id)})"><i class="fas fa-check"></i> Valider</button>
+          <button class="btn-xs btn-r" onclick="adminAction('reject_retrait',${parseInt(r.id)})"><i class="fas fa-times"></i> Rejeter</button>
+        ` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+// ── Render: Cadeaux ────────────────────────────────────────────────────
+function renderCadeaux({ codes = [], error }) {
+  document.getElementById('cadeauxCount').textContent = codes.length;
+  const tbody = document.getElementById('cadeauxTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!codes.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucun code cadeau utilisé</td></tr>'; return; }
+  tbody.innerHTML = codes.map(c => `
+    <tr>
+      <td>#${parseInt(c.id)}</td>
+      <td><strong>${esc(c.nom||'—')}</strong><br><small style="color:#888">${esc(c.telephone||'')}</small></td>
+      <td><code style="background:#F5F5F0;padding:2px 8px;border-radius:6px;font-size:0.85rem">${esc(c.code)}</code></td>
+      <td style="font-weight:700;color:#E8931A">${fmt(c.montant)} <small>FCFA</small></td>
+      <td style="color:#888;font-size:0.8rem">${fmtDate(c.date_utilisation)}</td>
+    </tr>`).join('');
+}
+
+// ── Render: Salaires ───────────────────────────────────────────────────
+function renderSalaires({ salaires = [], error }) {
+  document.getElementById('salairesCount').textContent = salaires.length;
+  const tbody = document.getElementById('salairesTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!salaires.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Aucun membre VIP avec salaire</td></tr>'; return; }
+  tbody.innerHTML = salaires.map(s => `
+    <tr>
+      <td>#${parseInt(s.id)}</td>
+      <td><strong>${esc(s.nom||'—')}</strong></td>
+      <td>${esc(s.telephone||'—')}</td>
+      <td><span class="badge badge-vip">VIP ${parseInt(s.niveau)}</span></td>
+      <td>${parseInt(s.invitations_actuelles)||0} / ${parseInt(s.invitations_requises)||3}</td>
+      <td style="font-weight:700;color:#E8931A">${fmt(s.solde)} <small>FCFA</small></td>
+    </tr>`).join('');
+}
+
+// ── Render: Transactions ───────────────────────────────────────────────
+function renderTransactions({ transactions = [], error }) {
+  document.getElementById('transactionsCount').textContent = transactions.length;
+  const tbody = document.getElementById('transactionsTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="5" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!transactions.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucune transaction</td></tr>'; return; }
+  const typeLabels = { paiement_journalier:'Revenu journalier', parrainage:'Parrainage', bonus:'Bonus', cadeau:'Cadeau' };
+  tbody.innerHTML = transactions.map(t => `
+    <tr>
+      <td>#${parseInt(t.id)}</td>
+      <td><strong>${esc(t.nom||'—')}</strong><br><small style="color:#888">${esc(t.telephone||'')}</small></td>
+      <td style="font-weight:700;color:#22c55e">+${fmt(t.montant)} <small>FCFA</small></td>
+      <td><span class="badge badge-valid">${esc(typeLabels[t.type]||t.type||'—')}</span></td>
+      <td style="color:#888;font-size:0.8rem">${fmtDate(t.date_creation)}</td>
+    </tr>`).join('');
+}
+
+// ── Render: Affiches ───────────────────────────────────────────────────
+function renderAffiches({ posts = [], error }) {
+  document.getElementById('affichesCount').textContent = posts.length;
+  const tbody = document.getElementById('afficherTbody');
+  if (error) { tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${esc(error)}</td></tr>`; return; }
+  if (!posts.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Aucune affiche</td></tr>'; return; }
+  tbody.innerHTML = posts.map(p => `
+    <tr>
+      <td>#${parseInt(p.id)}</td>
+      <td>${esc(p.nom||'—')}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem">${esc(p.message||'—')}</td>
+      <td>${p.image ? `<a href="/uploads/${esc(p.image)}" target="_blank" style="color:#E8931A;font-size:0.8rem"><i class="fas fa-image"></i> Voir</a>` : '—'}</td>
+      <td style="color:#888;font-size:0.8rem">${fmtDate(p.date_creation)}</td>
+      <td>${badge(p.statut)}</td>
+      <td>
+        ${p.statut === 'en_attente' ? `
+          <button class="btn-xs btn-v" onclick="adminAction('validate_post',${parseInt(p.id)})"><i class="fas fa-check"></i></button>
+          <button class="btn-xs btn-r" onclick="adminAction('reject_post',${parseInt(p.id)})"><i class="fas fa-times"></i></button>
+        ` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+// ── Charts ─────────────────────────────────────────────────────────────
+let tvhChartInst = null;
+let actChartInst = null;
+
+async function loadCharts() {
+  try {
+    const res = await fetch('/adminxyz/api/chart-data');
+    const data = await res.json();
+    if (data.error) return;
+    renderTvhChart(data.today_vs_yesterday);
+    renderActivityChart(data.months, data.monthly);
+  } catch(e) { console.error('Charts error', e); }
+}
+
+function renderTvhChart(tvh) {
+  const ctx = document.getElementById('tvhChart').getContext('2d');
+  if (tvhChartInst) tvhChartInst.destroy();
+  tvhChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Dépôts', 'Retraits'],
+      datasets: [
+        { label: "Auj.", data: [tvh.dep_today, tvh.ret_today], backgroundColor: ['rgba(34,197,94,0.85)', 'rgba(239,68,68,0.85)'], borderRadius: 6, barPercentage: 0.4 },
+        { label: "Hier", data: [tvh.dep_yesterday, tvh.ret_yesterday], backgroundColor: ['rgba(34,197,94,0.25)', 'rgba(239,68,68,0.25)'], borderRadius: 6, barPercentage: 0.4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#888' } },
+        y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 }, color: '#aaa' } }
+      }
+    }
+  });
+
+  // Update mini cards
+  const fmt2 = n => (parseFloat(n)||0).toLocaleString('fr-FR');
+  document.getElementById('depTodayNum').innerHTML = `${tvh.dep_today_count} <span>· ${fmt2(tvh.dep_today)} FCFA</span>`;
+  document.getElementById('retTodayNum').innerHTML = `${tvh.ret_today_count} <span>· ${fmt2(tvh.ret_today)} FCFA</span>`;
+  document.getElementById('depYestNum').innerHTML  = `${fmt2(tvh.dep_yesterday)} <span>FCFA</span>`;
+  document.getElementById('retYestNum').innerHTML  = `${fmt2(tvh.ret_yesterday)} <span>FCFA</span>`;
+
+  const depDiff = tvh.dep_today - tvh.dep_yesterday;
+  const retDiff = tvh.ret_today - tvh.ret_yesterday;
+  document.getElementById('depTodayDiff').innerHTML = `<span class="tvh-diff ${depDiff >= 0 ? 'up' : 'down'}">
+    ${depDiff >= 0 ? '▲' : '▼'} ${fmt2(Math.abs(depDiff))} vs hier</span>`;
+  document.getElementById('retTodayDiff').innerHTML = `<span class="tvh-diff ${retDiff >= 0 ? 'up' : 'down'}">
+    ${retDiff >= 0 ? '▲' : '▼'} ${fmt2(Math.abs(retDiff))} vs hier</span>`;
+}
+
+function renderActivityChart(labels, monthly) {
+  const ctx = document.getElementById('activityChart').getContext('2d');
+  if (actChartInst) actChartInst.destroy();
+  actChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Dép. validés',  data: monthly.map(m => m.dep_valides),  backgroundColor: 'rgba(34,197,94,0.8)',  borderRadius: 4, barPercentage: 0.6 },
+        { label: 'Dép. rejetés',  data: monthly.map(m => m.dep_rejetes),  backgroundColor: 'rgba(239,68,68,0.8)',  borderRadius: 4, barPercentage: 0.6 },
+        { label: 'Ret. validés',  data: monthly.map(m => m.ret_valides),  backgroundColor: 'rgba(59,130,246,0.8)', borderRadius: 4, barPercentage: 0.6 },
+        { label: 'Ret. rejetés',  data: monthly.map(m => m.ret_rejetes),  backgroundColor: 'rgba(245,158,11,0.8)', borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#888' } },
+        y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 }, color: '#aaa' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────
+loadCharts();
 </script>
 </body>
 </html>
