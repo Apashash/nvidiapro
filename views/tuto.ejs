@@ -107,11 +107,11 @@
             <div class="sec-title">Comment déposer</div>
             <div class="sec-desc">Rechargez votre compte via Mobile Money pour commencer à investir.</div>
             <div class="tuto-btns">
-                <a href="https://t.me/sonycanal/22" target="_blank" class="tuto-btn tuto-btn-telegram">
+                <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/sonycanal/22' %>" target="_blank" class="tuto-btn tuto-btn-telegram">
                     <span class="btn-ico"><i class="fab fa-telegram"></i></span>
                     <div class="btn-txt"><h3>Tutoriel Telegram (XAF)</h3><p>Pour les utilisateurs Cameroun</p></div>
                 </a>
-                <a href="https://t.me/sonycanal/23" target="_blank" class="tuto-btn tuto-btn-telegram">
+                <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/sonycanal/23' %>" target="_blank" class="tuto-btn tuto-btn-telegram">
                     <span class="btn-ico"><i class="fab fa-telegram"></i></span>
                     <div class="btn-txt"><h3>Tutoriel Telegram (XOF)</h3><p>Pour les autres pays</p></div>
                 </a>
@@ -142,7 +142,7 @@
             <div class="sec-title">Comment investir</div>
             <div class="sec-desc">Choisissez un plan et commencez à générer des revenus passifs.</div>
             <div class="tuto-btns">
-                <a href="https://t.me/sonycanal/21" target="_blank" class="tuto-btn tuto-btn-telegram">
+                <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/sonycanal/21' %>" target="_blank" class="tuto-btn tuto-btn-telegram">
                     <span class="btn-ico"><i class="fab fa-telegram"></i></span>
                     <div class="btn-txt"><h3>Tutoriel Investissement</h3><p>Voir la vidéo complète sur Telegram</p></div>
                 </a>
