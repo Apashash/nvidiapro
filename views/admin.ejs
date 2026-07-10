@@ -65,7 +65,9 @@
     .nav-item.active { background:#FFF3E0; border-left-color:#E8931A; }
     .nav-item.active .nav-label { color:#E8931A; font-weight:700; }
     .nav-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; }
-    .nav-label { font-size:0.95rem; color:#2a2a2a; font-weight:500; }
+    .nav-label { font-size:0.95rem; color:#2a2a2a; font-weight:500; flex:1; }
+    .nav-badge { min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#E8931A; color:#fff; font-size:0.72rem; font-weight:700; display:none; align-items:center; justify-content:center; flex-shrink:0; }
+    .nav-badge.show { display:flex; }
     .sidebar-footer { padding:14px 16px; border-top:1px solid #f0f0f0; }
     .sidebar-footer a { display:flex; align-items:center; justify-content:center; gap:8px; background:#fff; border:1.5px solid #e0e0e0; border-radius:12px; padding:12px; color:#555; text-decoration:none; font-size:0.9rem; font-weight:600; transition:background 0.15s; }
     .sidebar-footer a:hover { background:#f5f5f5; }
@@ -296,19 +298,24 @@
       { page:'dashboard',    href:'/adminxyz/dashboard',    icon:'fas fa-chart-pie',          bg:'#FFF3E0', color:'#E8931A', label:'Tableau de bord' },
       { page:'plans',        href:'/adminxyz/plans',        icon:'fas fa-chart-line',          bg:'#F0FDF4', color:'#22c55e', label:'Plans VIP' },
       { page:'utilisateurs', href:'/adminxyz/utilisateurs', icon:'fas fa-users',               bg:'#EFF6FF', color:'#3b82f6', label:'Utilisateurs' },
-      { page:'depots',       href:'/adminxyz/depots',       icon:'fas fa-arrow-down',          bg:'#F0FDF4', color:'#22c55e', label:'Dépôts' },
-      { page:'retraits',     href:'/adminxyz/retraits',     icon:'fas fa-hand-holding-dollar', bg:'#EEF2FF', color:'#6366f1', label:'Retraits' },
+      { page:'depots',       href:'/adminxyz/depots',       icon:'fas fa-arrow-down',          bg:'#F0FDF4', color:'#22c55e', label:'Dépôts',       countKey:'depots' },
+      { page:'retraits',     href:'/adminxyz/retraits',     icon:'fas fa-hand-holding-dollar', bg:'#EEF2FF', color:'#6366f1', label:'Retraits',     countKey:'retraits' },
       { page:'cadeaux',      href:'/adminxyz/cadeaux',      icon:'fas fa-gift',                bg:'#FFF7ED', color:'#E8931A', label:'Cadeaux VIP' },
       { page:'salaires',     href:'/adminxyz/salaires',     icon:'fas fa-money-bill-wave',     bg:'#F0FDF4', color:'#22c55e', label:'Salaires VIP' },
       { page:'transactions', href:'/adminxyz/transactions', icon:'fas fa-receipt',             bg:'#F5F3FF', color:'#7c3aed', label:'Transactions' },
-      { page:'affiches',     href:'/adminxyz/affiches',     icon:'fas fa-image',               bg:'#FFF7ED', color:'#E8931A', label:'Affiches' },
+      { page:'affiches',     href:'/adminxyz/affiches',     icon:'fas fa-image',               bg:'#FFF7ED', color:'#E8931A', label:'Affiches',     countKey:'affiches' },
       { page:'tuto',         href:'/adminxyz/tuto',         icon:'fas fa-video',               bg:'#FDF2F8', color:'#db2777', label:'Tuto' },
       { page:'parametres',   href:'/adminxyz/parametres',   icon:'fas fa-gear',                bg:'#F5F5F0', color:'#6b7280', label:'Paramètres' },
     ]; %>
-    <% nav.forEach(item => { %>
+    <% nav.forEach(item => {
+      const n = item.countKey ? (pendingCounts && pendingCounts[item.countKey] || 0) : 0;
+    %>
     <a href="<%= item.href %>" class="nav-item <%= currentPage === item.page ? 'active' : '' %>">
       <span class="nav-icon" style="background:<%= item.bg %>"><i class="<%= item.icon %>" style="color:<%= item.color %>"></i></span>
       <span class="nav-label"><%= item.label %></span>
+      <% if (item.countKey) { %>
+      <span class="nav-badge <%= n > 0 ? 'show' : '' %>" data-nav-count="<%= item.countKey %>"><%= n > 99 ? '99+' : n %></span>
+      <% } %>
     </a>
     <% }); %>
   </nav>
@@ -1212,20 +1219,29 @@ function renderNotifCounts(counts) {
   if (!counts || counts.total <= 0) {
     badge.style.display = 'none';
     list.innerHTML = '<div class="notif-empty">Aucune notification</div>';
-    return;
-  }
-  badge.style.display = 'flex';
-  badge.textContent = counts.total > 99 ? '99+' : counts.total;
+  } else {
+    badge.style.display = 'flex';
+    badge.textContent = counts.total > 99 ? '99+' : counts.total;
 
-  list.innerHTML = Object.keys(NOTIF_LABELS).map(key => {
-    const n = counts[key] || 0;
-    if (n <= 0) return '';
-    const meta = NOTIF_LABELS[key];
-    return `<a class="notif-item" href="${meta.href}">
-      <span><i class="fas ${meta.icon}" style="color:#E8931A;margin-right:8px"></i>${meta.label}</span>
-      <span class="notif-count">${n}</span>
-    </a>`;
-  }).join('') || '<div class="notif-empty">Aucune notification</div>';
+    list.innerHTML = Object.keys(NOTIF_LABELS).map(key => {
+      const n = counts[key] || 0;
+      if (n <= 0) return '';
+      const meta = NOTIF_LABELS[key];
+      return `<a class="notif-item" href="${meta.href}">
+        <span><i class="fas ${meta.icon}" style="color:#E8931A;margin-right:8px"></i>${meta.label}</span>
+        <span class="notif-count">${n}</span>
+      </a>`;
+    }).join('') || '<div class="notif-empty">Aucune notification</div>';
+  }
+
+  // Also reflect the same counts as badges directly on the sidebar nav items
+  // (Dépôts, Retraits, Affiches) — updated live so a newly created deposit/
+  // withdrawal shows immediately, and clears once it's validated or rejected.
+  document.querySelectorAll('[data-nav-count]').forEach(el => {
+    const n = (counts && counts[el.dataset.navCount]) || 0;
+    el.textContent = n > 99 ? '99+' : n;
+    el.classList.toggle('show', n > 0);
+  });
 }
 
 function toggleNotifDropdown() {
