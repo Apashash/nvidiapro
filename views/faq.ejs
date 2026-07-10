@@ -151,7 +151,7 @@
         <!-- SECTION : Plans d'investissement -->
         <div class="section-label"><i class="fas fa-chart-line"></i> Plans d'investissement</div>
 
-        <% const plansActifs = (typeof plans !== 'undefined' && plans) ? plans.filter(p => !p.bloque) : []; %>
+        <% const plansActifs = (typeof plans !== 'undefined' && plans) ? plans : []; %>
         <% const planMin = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) < parseFloat(b.prix) ? a : b) : null; %>
         <% const planMax = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) > parseFloat(b.prix) ? a : b) : null; %>
 
