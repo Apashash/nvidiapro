@@ -1031,11 +1031,11 @@
     <div class="hours-grid">
       <div class="form-group">
         <label>Heure de début</label>
-        <input type="number" class="param-input" id="heureDebut" value="<%= params.retrait_heure_debut || 8 %>" min="0" max="23">
+        <input type="time" class="param-input" id="heureDebut" value="<%= /^\d{1,2}:\d{2}$/.test(params.retrait_heure_debut) ? params.retrait_heure_debut : String(parseInt(params.retrait_heure_debut) || 8).padStart(2,'0') + ':00' %>">
       </div>
       <div class="form-group">
         <label>Heure de fin</label>
-        <input type="number" class="param-input" id="heureFin" value="<%= params.retrait_heure_fin || 17 %>" min="0" max="23">
+        <input type="time" class="param-input" id="heureFin" value="<%= /^\d{1,2}:\d{2}$/.test(params.retrait_heure_fin) ? params.retrait_heure_fin : String(parseInt(params.retrait_heure_fin) || 17).padStart(2,'0') + ':00' %>">
       </div>
     </div>
     <label class="param-label">Nombre de retraits max par utilisateur / 24h</label>

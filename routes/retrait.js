@@ -7,21 +7,44 @@ const { getParams } = require('../services/params');
 // Maps admin day abbreviations → JS getUTCDay() values (0=Sun … 6=Sat)
 const DAY_MAP = { 'Dim': 0, 'Lun': 1, 'Mar': 2, 'Mer': 3, 'Jeu': 4, 'Ven': 5, 'Sam': 6 };
 
+// Accepts "HH:MM" (new format) or a bare hour number (legacy format, e.g. "9")
+// and returns total minutes since midnight. Falls back to `defaultHour` if
+// the value is missing or unparsable, so a stray empty/invalid setting never
+// produces NaN.
+function parseHeureToMinutes(value, defaultHour) {
+  const str = String(value ?? '').trim();
+  const match = str.match(/^(\d{1,2}):(\d{2})$/);
+  if (match) {
+    const h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (!Number.isNaN(h) && !Number.isNaN(m)) return h * 60 + m;
+  }
+  const h = parseInt(str, 10);
+  return (!Number.isNaN(h) ? h : defaultHour) * 60;
+}
+
+function formatMinutes(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`;
+}
+
 function buildScheduleStatus(params) {
-  const jours      = (params.retrait_jours || 'Lun,Mar,Mer,Jeu,Ven,Sam').split(',').map(d => d.trim());
-  const heureDebut = parseInt(params.retrait_heure_debut ?? 9);
-  const heureFin   = parseInt(params.retrait_heure_fin   ?? 19);
+  const jours       = (params.retrait_jours || 'Lun,Mar,Mer,Jeu,Ven,Sam').split(',').map(d => d.trim());
+  const debutMins   = parseHeureToMinutes(params.retrait_heure_debut, 9);
+  const finMins     = parseHeureToMinutes(params.retrait_heure_fin, 19);
   const allowedDays = jours.map(d => DAY_MAP[d]).filter(v => v !== undefined);
 
-  const now  = new Date();
-  const hGmt = parseInt(now.toUTCString().split(' ')[4].split(':')[0]);
-  const day  = now.getUTCDay();
+  const now = new Date();
+  const [hGmt, mGmt] = now.toUTCString().split(' ')[4].split(':').map(Number);
+  const nowMins = hGmt * 60 + mGmt;
+  const day = now.getUTCDay();
 
   const dayOk   = allowedDays.includes(day);
-  const heureOk = hGmt >= heureDebut && hGmt < heureFin;
+  const heureOk = nowMins >= debutMins && nowMins < finMins;
 
   const joursLabel  = jours.join(', ');
-  const heuresLabel = `${heureDebut}h à ${heureFin}h GMT`;
+  const heuresLabel = `${formatMinutes(debutMins)} à ${formatMinutes(finMins)} GMT`;
 
   return {
     disponible: dayOk && heureOk,
