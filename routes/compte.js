@@ -116,41 +116,15 @@ router.get('/historique', requireAuth, async (req, res) => {
   }
 });
 
-// Collect daily salary (salaire journalier)
+// Collect daily salary (salaire journalier). Gains are also credited
+// automatically every 24h by services/autoPayout.js; this endpoint shares
+// the same row-locked payout function so the two paths can never double-credit.
 router.post('/compte/collecter', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   try {
-    const [commandes] = await db.query(
-      "SELECT * FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE AND statut = 'actif'",
-      [user_id]
-    );
-    const now = Date.now();
-    let total_gain = 0;
-    for (const cmd of commandes) {
-      const created = new Date(cmd.date_creation).getTime();
-      const hoursSince = (now - created) / 3600000;
-      if (hoursSince < 24) continue;
-
-      const [[lp]] = await db.query(
-        "SELECT MAX(date_paiement) as last_payment FROM historique_revenus WHERE user_id = ? AND commande_id = ? AND type = 'paiement_journalier'",
-        [user_id, cmd.id]
-      );
-      let canCollect = false;
-      if (lp.last_payment) {
-        const diff = (now - new Date(lp.last_payment).getTime()) / 3600000;
-        if (diff >= 24) canCollect = true;
-      } else canCollect = true;
-
-      if (canCollect) {
-        total_gain += parseFloat(cmd.gain_journalier);
-        await db.query(
-          "INSERT INTO historique_revenus (user_id, commande_id, montant, type) VALUES (?, ?, ?, 'paiement_journalier')",
-          [user_id, cmd.id, cmd.gain_journalier]
-        );
-      }
-    }
+    const { payDueCommandesForUser } = require('../services/autoPayout');
+    const total_gain = await payDueCommandesForUser(user_id);
     if (total_gain > 0) {
-      await db.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [total_gain, user_id]);
       return res.json({ success: true, message: `Vous avez collecté ${total_gain.toFixed(2)} FCFA !` });
     } else {
       return res.json({ success: false, message: 'Aucun paiement disponible pour le moment.' });

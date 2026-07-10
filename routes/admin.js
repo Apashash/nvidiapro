@@ -259,34 +259,23 @@ router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
 });
 
 // ── AJAX: Verser revenus ───────────────────────────────────────────────────────
+// Delegates to the same row-locked payDueCommande() used by the 24h auto-payout
+// scheduler and the manual user "collecter" endpoint, so admin-triggered payouts
+// can never double-credit a commande that was already paid by another path.
 router.post('/adminxyz/verser-revenus', requireAdminAuth, async (req, res) => {
-  const conn = await db.getConnection();
   try {
-    await conn.beginTransaction();
-    const [commandes] = await conn.query(`
-      SELECT c.*, p.rendement_journalier FROM commandes c
-      LEFT JOIN planinvestissement p ON c.plan_id=p.id
-      WHERE c.statut='actif'`);
+    const { payDueCommande } = require('../services/autoPayout');
+    const [commandes] = await db.query("SELECT id FROM commandes WHERE statut='actif' AND date_fin >= CURRENT_DATE");
     let versed = 0;
     for (const cmd of commandes) {
-      const gain = parseFloat(cmd.montant) * parseFloat(cmd.rendement_journalier) / 100;
-      if (gain <= 0) continue;
-      if (cmd.date_fin && new Date() > new Date(cmd.date_fin)) {
-        await conn.query("UPDATE commandes SET statut='termine' WHERE id=?", [cmd.id]);
-        continue;
-      }
-      const [[sl]] = await conn.query('SELECT * FROM soldes WHERE user_id=?', [cmd.user_id]);
-      if (sl) await conn.query('UPDATE soldes SET solde=solde+? WHERE user_id=?', [gain, cmd.user_id]);
-      else     await conn.query('INSERT INTO soldes (user_id,solde) VALUES (?,?)', [cmd.user_id, gain]);
-      await conn.query(
-        'INSERT INTO historique_revenus (user_id,commande_id,montant,type,date_paiement) VALUES (?,?,?,?,NOW())',
-        [cmd.user_id, cmd.id, gain, 'paiement_journalier']);
-      versed++;
+      const gain = await payDueCommande(cmd.id);
+      if (gain > 0) versed++;
     }
-    await conn.commit(); conn.release();
+    // Close out orders whose end date has passed
+    await db.query("UPDATE commandes SET statut='termine' WHERE statut='actif' AND date_fin < CURRENT_DATE");
     res.json({ success: true, message: `Revenus versés à ${versed} investisseur(s).` });
   } catch (e) {
-    await conn.rollback(); conn.release();
+    console.error(e);
     res.json({ success: false, message: e.message });
   }
 });
@@ -358,16 +347,16 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
 
       case 'update_plan':
         await db.query(
-          'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, description=? WHERE id=?',
-          [nom, prix, duree_jours, rendement_journalier, description, id]);
+          'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, image_url=?, description=? WHERE id=?',
+          [nom, prix, duree_jours, rendement_journalier, req.body.image_url || null, description, id]);
         return res.json({ success: true });
 
       case 'add_plan': {
         if (!nom || !prix || !duree_jours || !rendement_journalier)
           return res.json({ success: false, message: 'Tous les champs sont requis' });
         await db.query(
-          'INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, description) VALUES (?,?,?,?,?)',
-          [nom, prix, duree_jours, rendement_journalier, description || '']);
+          'INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, image_url, description) VALUES (?,?,?,?,?,?)',
+          [nom, prix, duree_jours, rendement_journalier, req.body.image_url || null, description || '']);
         return res.json({ success: true });
       }
 

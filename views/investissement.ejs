@@ -271,7 +271,7 @@
                     <% commandes.forEach(function(cmd) { %>
                     <div class="order-card">
                         <div class="order-head">
-                            <div class="order-img"><img src="<%= cmd.plan_image %>" alt="<%= cmd.plan_nom %>"></div>
+                            <div class="order-img"><img src="<%= cmd.plan_image || '/images/altiora-logo-banner.jpeg' %>" alt="<%= cmd.plan_nom %>"></div>
                             <div>
                                 <div class="order-name"><%= cmd.plan_nom %></div>
                                 <div class="order-amount">Montant investi : <strong><%= parseFloat(cmd.montant).toLocaleString() %> FCFA</strong></div>

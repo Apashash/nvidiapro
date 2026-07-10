@@ -457,6 +457,7 @@
         data-prix="<%= p.prix %>"
         data-duree="<%= p.duree_jours %>"
         data-rend="<%= p.rendement_journalier %>"
+        data-image="<%- (p.image_url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
         data-desc="<%- (p.description||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
         onclick="openPlanModalBtn(this)">
         <i class="fas fa-pen"></i>
@@ -1033,6 +1034,8 @@
     <input type="number" id="planDuree">
     <label>Rendement journalier (%)</label>
     <input type="number" id="planRend" step="0.01">
+    <label>URL de l'image du plan</label>
+    <input type="text" id="planImage" placeholder="https://... (laisser vide pour l'image par défaut)">
     <label>Description</label>
     <input type="text" id="planDesc">
     <div class="modal-btns">
@@ -1054,6 +1057,8 @@
     <input type="number" id="newPlanDuree" min="1">
     <label>Rendement journalier (%)</label>
     <input type="number" id="newPlanRend" step="0.01" min="0">
+    <label>URL de l'image du plan</label>
+    <input type="text" id="newPlanImage" placeholder="https://... (laisser vide pour l'image par défaut)">
     <label>Description</label>
     <input type="text" id="newPlanDesc">
     <div class="modal-btns">
@@ -1237,6 +1242,7 @@ function openPlanModalBtn(btn) {
   document.getElementById('planPrix').value  = btn.dataset.prix;
   document.getElementById('planDuree').value = btn.dataset.duree;
   document.getElementById('planRend').value  = btn.dataset.rend;
+  document.getElementById('planImage').value = btn.dataset.image || '';
   document.getElementById('planDesc').value  = btn.dataset.desc;
   openModal('planModal');
 }
@@ -1257,6 +1263,7 @@ async function savePlan() {
     prix: document.getElementById('planPrix').value,
     duree_jours: document.getElementById('planDuree').value,
     rendement_journalier: document.getElementById('planRend').value,
+    image_url: document.getElementById('planImage').value,
     description: document.getElementById('planDesc').value,
   });
   const r = await fetch('/adminxyz/action', { method:'POST', body });
@@ -1272,6 +1279,7 @@ async function addPlan() {
     prix: document.getElementById('newPlanPrix').value,
     duree_jours: document.getElementById('newPlanDuree').value,
     rendement_journalier: document.getElementById('newPlanRend').value,
+    image_url: document.getElementById('newPlanImage').value,
     description: document.getElementById('newPlanDesc').value,
   });
   const r = await fetch('/adminxyz/action', { method:'POST', body });
