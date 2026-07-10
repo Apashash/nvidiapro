@@ -189,23 +189,44 @@
     <script>
         const indicatifSelect = document.getElementById('indicatif');
         const isoToIndicatifMap = <%- JSON.stringify(isoMap) %>;
-        function detectUserCountry() {
+
+        // Auto-detect the user's country to preselect the phone prefix, without
+        // overriding a value the user already picked (form re-render, or manual change).
+        function detectFromLocale() {
             try {
                 const locale = navigator.language || navigator.userLanguage;
-                const parts = locale.split('-');
+                const parts = (locale || '').split('-');
                 if (parts.length > 1) {
-                    const cc = parts[parts.length-1].toUpperCase();
+                    const cc = parts[parts.length - 1].toUpperCase();
                     if (cc.length === 2 && isoToIndicatifMap.hasOwnProperty(cc)) return cc;
                 }
-            } catch(e) {}
+            } catch (e) {}
             return null;
         }
-        const det = detectUserCountry();
-        const phpInd = '<%= form_data.indicatif %>';
-        if (det && !phpInd) {
-            const req = isoToIndicatifMap[det];
-            if (req) indicatifSelect.value = req;
+        async function detectCountry() {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 2500);
+                const resp = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                clearTimeout(timeout);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.country_code && isoToIndicatifMap.hasOwnProperty(data.country_code)) {
+                        return data.country_code;
+                    }
+                }
+            } catch (e) {}
+            return detectFromLocale();
         }
+        const phpInd = '<%= form_data.indicatif %>';
+        (async function() {
+            if (phpInd || indicatifSelect.value) return;
+            const cc = await detectCountry();
+            if (cc && !indicatifSelect.value) {
+                const ind = isoToIndicatifMap[cc];
+                if (ind) indicatifSelect.value = ind;
+            }
+        })();
         function togglePwd(id, btn) {
             const inp = document.getElementById(id);
             if (inp.type === 'password') { inp.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; }

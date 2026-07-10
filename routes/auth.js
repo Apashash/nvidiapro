@@ -66,7 +66,7 @@ router.get('/inscription', (req, res) => {
   const code_parrain = p || req.session.parrain_code || '';
   const error = req.session.error || null;
   delete req.session.error;
-  res.render('inscription1', { code_parrain, error, pays_eligibles: paysEligibles });
+  res.render('inscription1', { code_parrain, error, pays_eligibles: paysEligibles, iso_map: isoMap });
 });
 
 // GET /inscription1
@@ -76,7 +76,7 @@ router.get('/inscription1', (req, res) => {
   if (req.query.p) req.session.parrain_code = req.query.p;
   const error = req.session.error || null;
   delete req.session.error;
-  res.render('inscription1', { code_parrain, error, pays_eligibles: paysEligibles });
+  res.render('inscription1', { code_parrain, error, pays_eligibles: paysEligibles, iso_map: isoMap });
 });
 
 // POST /inscription1

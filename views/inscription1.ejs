@@ -163,7 +163,7 @@
                         <option value="">Code</option>
                         <% Object.entries(pays_eligibles).forEach(([code, pays]) => { %>
                             <option value="<%= code %>"
-                                <%= (typeof form_data !== 'undefined' && form_data && form_data.indicatif === code) || (typeof form_data === 'undefined' && code === '+225') ? 'selected' : '' %>>
+                                <%= (typeof form_data !== 'undefined' && form_data && form_data.indicatif === code) ? 'selected' : '' %>>
                                 <%= code %>
                             </option>
                         <% }) %>
@@ -203,8 +203,49 @@
         const indicatifSelect = document.getElementById('indicatif');
         const paysInput = document.getElementById('pays');
         const paysMap = <%- JSON.stringify(pays_eligibles) %>;
+        const isoToIndicatifMap = <%- JSON.stringify(iso_map) %>;
         function updatePays() { paysInput.value = paysMap[indicatifSelect.value] || ''; }
-        updatePays();
+
+        // Auto-detect the user's country to preselect the phone prefix, without
+        // overriding a value the user already picked (form re-render, or manual change).
+        function detectFromLocale() {
+            try {
+                const locale = navigator.language || navigator.userLanguage;
+                const parts = (locale || '').split('-');
+                if (parts.length > 1) {
+                    const cc = parts[parts.length - 1].toUpperCase();
+                    if (cc.length === 2 && isoToIndicatifMap.hasOwnProperty(cc)) return cc;
+                }
+            } catch (e) {}
+            return null;
+        }
+        async function detectCountry() {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 2500);
+                const resp = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                clearTimeout(timeout);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.country_code && isoToIndicatifMap.hasOwnProperty(data.country_code)) {
+                        return data.country_code;
+                    }
+                }
+            } catch (e) {}
+            return detectFromLocale();
+        }
+        const serverIndicatif = '<%= (typeof form_data !== "undefined" && form_data && form_data.indicatif) ? form_data.indicatif : "" %>';
+        (async function() {
+            if (serverIndicatif || indicatifSelect.value) { updatePays(); return; }
+            const cc = await detectCountry();
+            if (cc && !indicatifSelect.value) {
+                const ind = isoToIndicatifMap[cc];
+                if (ind) indicatifSelect.value = ind;
+            } else if (!indicatifSelect.value) {
+                indicatifSelect.value = '+225';
+            }
+            updatePays();
+        })();
         indicatifSelect.addEventListener('change', updatePays);
         function togglePwd(id, btn) {
             const inp = document.getElementById(id);
