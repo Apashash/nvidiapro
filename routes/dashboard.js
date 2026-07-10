@@ -39,13 +39,18 @@ router.get('/', requireAuth, async (req, res) => {
       "SELECT p.*, u.nom FROM posts p LEFT JOIN utilisateurs u ON p.user_id = u.id WHERE p.statut = 'valide' ORDER BY p.date_creation DESC LIMIT 10"
     );
 
+    // 2 plans VIP actifs pour la section aperçu du dashboard
+    const [plans] = await db.query(
+      "SELECT * FROM planinvestissement WHERE COALESCE(bloque, false) = false ORDER BY id ASC LIMIT 2"
+    );
+
     const devise = 'FCFA';
     const success_message = req.session.success_message || null;
     const error_message = req.session.error_message || null;
     delete req.session.success_message;
     delete req.session.error_message;
 
-    res.render('index', { user, solde: user.solde || 0, revenus: rev, posts, devise, success_message, error_message, notifications: [] });
+    res.render('index', { user, solde: user.solde || 0, revenus: rev, posts, plans, devise, success_message, error_message, notifications: [] });
   } catch (e) {
     console.error(e);
     res.redirect('/connexion');

@@ -210,6 +210,69 @@
         cursor:pointer; transition:all 0.3s; flex-shrink:0; }
     .post-indicator.active { background:var(--amber); width:20px; border-radius:4px; }
 
+    /* ───────────── MINI PLANS SECTION ───────────── */
+    .mini-plans-section { padding: 0 16px 16px; }
+    .mini-plans-header {
+        display:flex; justify-content:space-between; align-items:center;
+        margin-bottom:12px;
+    }
+    .mini-plans-title {
+        font-size:15px; font-weight:700; color:var(--text-dark);
+        display:flex; align-items:center; gap:8px;
+    }
+    .mini-plans-title i { color:var(--amber); }
+    .mini-plan-card {
+        background:#fff; border-radius:16px;
+        border:1px solid var(--border);
+        box-shadow:0 3px 12px rgba(196,125,30,0.10);
+        overflow:hidden; margin-bottom:12px;
+        display:flex; flex-direction:column;
+    }
+    .mini-plan-img {
+        height:110px; overflow:hidden; background:#000;
+        position:relative;
+    }
+    .mini-plan-img img { width:100%; height:100%; object-fit:contain; }
+    .mini-plan-badge {
+        position:absolute; top:8px; right:8px;
+        background:linear-gradient(135deg,#D4921F,#B07018);
+        color:#fff; font-size:11px; font-weight:700;
+        padding:3px 10px; border-radius:20px;
+    }
+    .mini-plan-body { padding:12px 14px; }
+    .mini-plan-name { font-size:14px; font-weight:700; color:var(--amber); margin-bottom:8px; }
+    .mini-plan-stats {
+        display:grid; grid-template-columns:1fr 1fr;
+        gap:6px; background:var(--light-bg); border-radius:10px;
+        padding:8px 10px; margin-bottom:10px;
+    }
+    .mini-stat-val { font-size:14px; font-weight:800; color:var(--amber); }
+    .mini-stat-lbl { font-size:10px; color:var(--text-muted); margin-top:1px; }
+    .mini-plan-price {
+        display:flex; align-items:center; justify-content:space-between;
+        border-top:1px solid var(--border); padding-top:8px;
+    }
+    .mini-price-lbl { font-size:12px; color:var(--text-muted); }
+    .mini-price-val { font-size:15px; font-weight:800; color:var(--text-dark); }
+    .mini-invest-btn {
+        display:block; width:100%;
+        background:linear-gradient(135deg,#D4921F,#B07018);
+        color:#fff; border:none; border-radius:12px;
+        padding:10px; font-size:13px; font-weight:700;
+        cursor:pointer; text-align:center;
+        font-family:'Poppins',sans-serif;
+        margin-top:10px; text-decoration:none;
+    }
+    .mini-voir-plus-btn {
+        display:flex; align-items:center; justify-content:center; gap:8px;
+        width:100%; background:var(--light-bg);
+        border:2px solid var(--amber); border-radius:14px;
+        padding:12px; font-size:14px; font-weight:700;
+        color:var(--amber); text-decoration:none;
+        box-shadow:0 2px 8px rgba(196,125,30,0.12);
+        margin-top:4px;
+    }
+
     /* ───────────── POPUP GENERIC ───────────── */
     .popup {
         display: none; position: fixed; inset: 0;
@@ -531,6 +594,61 @@
                 <% } %>
             </div>
         </div>
+    </div>
+
+    <!-- Mini Plans VIP section -->
+    <div class="mini-plans-section">
+        <div class="mini-plans-header">
+            <div class="mini-plans-title">
+                <i class="fas fa-crown"></i>
+                Plans Actions VIP
+            </div>
+        </div>
+
+        <% if (typeof plans !== 'undefined' && plans && plans.length > 0) { %>
+            <% plans.forEach(function(plan) {
+                const prix   = parseFloat(plan.prix || 0);
+                const taux   = parseFloat(plan.rendement_journalier || 0);
+                const gain_j = Math.round(prix * taux / 100);
+                const duree  = parseInt(plan.duree_jours || 0);
+                const total  = gain_j * duree;
+            %>
+            <div class="mini-plan-card">
+                <div class="mini-plan-img">
+                    <img src="/images/altiora-logo-banner.jpeg" alt="<%= plan.nom %>"
+                         onerror="this.src='/images/altiora-logo.png'">
+                    <div class="mini-plan-badge"><%= duree %> Jours</div>
+                </div>
+                <div class="mini-plan-body">
+                    <div class="mini-plan-name"><%= plan.nom %></div>
+                    <div class="mini-plan-stats">
+                        <div>
+                            <div class="mini-stat-val"><%= gain_j.toLocaleString('fr-FR') %> FCFA</div>
+                            <div class="mini-stat-lbl">Gain / jour</div>
+                        </div>
+                        <div>
+                            <div class="mini-stat-val"><%= total.toLocaleString('fr-FR') %> FCFA</div>
+                            <div class="mini-stat-lbl">Gain total</div>
+                        </div>
+                    </div>
+                    <div class="mini-plan-price">
+                        <div>
+                            <div class="mini-price-lbl">Investissement</div>
+                            <div class="mini-price-val"><%= prix.toLocaleString('fr-FR') %> FCFA</div>
+                        </div>
+                    </div>
+                    <a href="/investissement" class="mini-invest-btn">
+                        <i class="fas fa-crown" style="margin-right:6px;"></i> Investir maintenant
+                    </a>
+                </div>
+            </div>
+            <% }); %>
+        <% } %>
+
+        <a href="/investissement" class="mini-voir-plus-btn">
+            <i class="fas fa-th-large"></i> Voir tous les plans
+            <i class="fas fa-chevron-right" style="font-size:12px;"></i>
+        </a>
     </div>
 </div>
 

@@ -159,8 +159,14 @@
         </div>
         <div class="vip-bar-wrap">
             <div class="vip-label">
-                <span>VIP <%= vip ? vip.niveau : '0' %> — <%= vip ? (vip.pourcentage || 0) : 0 %>%</span>
-                <span><%= vip && vip.niveau < 5 ? 'Encore ' + (vip.invitations_requises || 0) + ' filleuls' : 'Niveau max !' %></span>
+                <span><i class="fas fa-crown" style="font-size:10px;margin-right:3px;"></i> VIP <%= vip ? vip.niveau : '0' %> &nbsp;·&nbsp; <%= vip ? (vip.invitations_actuelles || 0) : 0 %>/3 filleuls</span>
+                <span style="font-size:10px;">
+                    <% if (vip && vip.niveau >= 10) { %>
+                        🏆 Niveau max !
+                    <% } else { %>
+                        Encore <%= vip ? (vip.invitations_requises || 3) : 3 %> pour VIP <%= vip ? (parseInt(vip.niveau) + 1) : 1 %>
+                    <% } %>
+                </span>
             </div>
             <div class="vip-bar-bg">
                 <div class="vip-bar-fill" style="width:<%= vip ? Math.min(100, vip.pourcentage || 0) : 0 %>%"></div>

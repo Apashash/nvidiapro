@@ -10,6 +10,38 @@ router.get('/compte', requireAuth, async (req, res) => {
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const [[piecesRow]] = await db.query('SELECT solde FROM pieces WHERE user_id = ?', [user_id]);
     const [[rev]] = await db.query('SELECT SUM(montant) as total FROM historique_revenus WHERE user_id = ?', [user_id]);
+    // Filleuls directs ayant au moins une commande active (date_fin >= aujourd'hui)
+    const [[filleulRow]] = await db.query(`
+      SELECT COUNT(DISTINCT u.id) AS cnt
+      FROM utilisateurs u
+      WHERE u.parrain_id = ?
+        AND EXISTS (
+          SELECT 1 FROM commandes c
+          WHERE c.user_id = u.id AND c.date_fin >= CURRENT_DATE
+        )
+    `, [user_id]);
+    const filleuls_actifs = parseInt(filleulRow ? filleulRow.cnt : 0) || 0;
+
+    // 3 filleuls actifs = 1 niveau VIP
+    const MAX_VIP = 10;
+    const niveau_vip = Math.min(MAX_VIP, Math.floor(filleuls_actifs / 3));
+    const inv_actuelles = filleuls_actifs % 3;
+    const inv_requises  = niveau_vip >= MAX_VIP ? 0 : (3 - inv_actuelles);
+    const pourcentage   = niveau_vip >= MAX_VIP ? 100 : Math.round(inv_actuelles / 3 * 100);
+
+    // Upsert dans la table vip
+    const [[existVip]] = await db.query('SELECT id FROM vip WHERE user_id = ?', [user_id]);
+    if (existVip) {
+      await db.query(
+        'UPDATE vip SET niveau=?, pourcentage=?, invitations_actuelles=?, invitations_requises=? WHERE user_id=?',
+        [niveau_vip, pourcentage, inv_actuelles, inv_requises, user_id]
+      );
+    } else {
+      await db.query(
+        'INSERT INTO vip (user_id, niveau, pourcentage, invitations_actuelles, invitations_requises) VALUES (?,?,?,?,?)',
+        [user_id, niveau_vip, pourcentage, inv_actuelles, inv_requises]
+      );
+    }
     const [[vip]] = await db.query('SELECT * FROM vip WHERE user_id = ?', [user_id]);
 
     const [transactions] = await db.query(`
