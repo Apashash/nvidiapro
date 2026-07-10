@@ -23,6 +23,9 @@ app.use(session({
   },
 }));
 
+// Params middleware — loads app_parametres into res.locals.appParams for all views
+app.use(require('./middleware/paramLoader'));
+
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));

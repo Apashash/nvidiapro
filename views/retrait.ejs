@@ -150,15 +150,22 @@
 
         <div id="notif-zone"></div>
 
-        <% if (!retraits_disponibles) { %>
+        <% if (locals.suspendu) { %>
+        <div class="warning-card" style="background:#FFF0EE;border-color:#F5A9A0;color:#C0392B;">
+            <i class="fas fa-ban"></i>
+            <span>Le retrait est <strong>indisponible pour le moment</strong>, veuillez réessayer plus tard.</span>
+        </div>
+        <% } else if (!retraits_disponibles) { %>
         <div class="warning-card">
             <i class="fas fa-clock"></i>
-            <span>Les retraits sont disponibles du <strong>lundi au samedi de 9h à 19h GMT</strong>.</span>
+            <span><%= locals.schedule ? schedule.message : 'Les retraits ne sont pas disponibles en ce moment.' %></span>
         </div>
         <% } %>
 
         <div class="info-card">
-            ℹ️ Montant minimum : <strong>1 200 FCFA</strong> — Un seul retrait par 24h — Traitement sous 24h.
+            ℹ️ Montant minimum : <strong><%= parseInt(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200).toLocaleString('fr-FR') %> FCFA</strong>
+            — Max <strong><%= locals.params && params.retrait_max_par_jour ? params.retrait_max_par_jour : 1 %></strong> retrait(s) / 24h
+            — Traitement sous 24h.
         </div>
 
         <div class="form-card">

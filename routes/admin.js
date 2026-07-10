@@ -26,12 +26,7 @@ function requireAdminAuth(req, res, next) {
   next();
 }
 
-async function getParams() {
-  const [rows] = await db.query('SELECT cle, valeur FROM app_parametres');
-  const p = {};
-  rows.forEach(r => { p[r.cle] = r.valeur; });
-  return p;
-}
+const { getParams, invalidateCache } = require('../services/params');
 
 async function getPendingCounts() {
   const [[d]] = await db.query("SELECT COUNT(*) as c FROM depots WHERE statut='en_attente'");
@@ -251,6 +246,7 @@ router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
   if (!cle) return res.json({ success: false, message: 'Clé manquante' });
   try {
     await db.query('INSERT INTO app_parametres (cle, valeur) VALUES (?,?) ON CONFLICT (cle) DO UPDATE SET valeur=?', [cle, valeur, valeur]);
+    invalidateCache();
     res.json({ success: true });
   } catch (e) {
     console.error(e);

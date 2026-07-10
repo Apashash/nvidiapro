@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const axios = require('axios');
+const { getParams } = require('../services/params');
 
 // Countries & operators from AshtechPay /v1/countries
 // Stored locally to avoid an extra API call on every page load
@@ -48,8 +49,10 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   const numero       = (req.body.numero       || '').trim();
 
   // ── Validations ────────────────────────────────────────────────────────────
-  if (montant < 200) {
-    req.session.error = 'Le montant minimum est de 200';
+  const params = await getParams();
+  const depotMin = parseFloat(params.depot_minimum ?? 200);
+  if (montant < depotMin) {
+    req.session.error = `Le montant minimum de dépôt est de ${depotMin.toLocaleString('fr-FR')} FCFA.`;
     return res.redirect('/depot');
   }
   if (!country_code || !operateur || !numero) {

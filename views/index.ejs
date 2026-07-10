@@ -534,41 +534,29 @@
     </div>
 </div>
 
-<!-- Floating service btn -->
-<button class="floating-service" onclick="toggleServicePopup()">
-    <i class="fas fa-phone-alt"></i>
-</button>
-<div class="service-popup" id="servicePopup">
-    <div class="service-header">Service Client</div>
-    <button class="service-option" onclick="contactCustomerService()">
-        <i class="fas fa-comment-dots"></i><span>Nous contacter</span>
-    </button>
-</div>
-
-<!-- Welcome popup -->
-<div class="welcome-popup" id="welcomePopup">
+<!-- Welcome popup — contrôlé par l'admin (popup_active + popup_message) -->
+<% const _p = locals.appParams || {}; %>
+<div class="welcome-popup" id="welcomePopup" style="<%= _p.popup_active === '1' ? '' : 'display:none' %>">
     <div class="welcome-content">
         <div class="welcome-header">
             <h3>Altiora Capital Africa</h3>
             <div class="welcome-message">
-                Fondée en 2026 à Douala, Altiora Capital Africa est une plateforme panafricaine d'investissement participatif. Investissez dans des projets à fort potentiel et générez des revenus quotidiens. <em>« Ensemble, construisons la richesse de demain. »</em>
+                <%= _p.popup_message || 'Bienvenue sur Altiora Capital Africa ! Investissez dans des projets à fort potentiel et générez des revenus quotidiens.' %>
             </div>
             <button class="welcome-close-top" onclick="closeWelcomePopup()">&times;</button>
         </div>
         <div class="welcome-body">
-            <div class="bonus-section">
-                <div class="bonus-title">🎁 Bonus d'inscription : 250 FCFA</div>
-                <div class="bonus-text">Invitez vos amis et gagnez 20% de leur investissement</div>
-            </div>
             <div class="welcome-buttons">
-                <div class="button-row">
-                    <a href="https://t.me/officielcanalBlackRock" class="welcome-btn welcome-btn-join">
-                        <i class="fab fa-telegram"></i> Canal
-                    </a>
-                    <a href="https://t.me/groupeofficielblackrock" class="welcome-btn welcome-btn-join">
-                        <i class="fab fa-telegram"></i> Groupe
-                    </a>
-                </div>
+                <% if (_p.telegram_link) { %>
+                <a href="<%- _p.telegram_link %>" target="_blank" rel="noopener" class="welcome-btn welcome-btn-join">
+                    <i class="fab fa-telegram"></i> Canal Telegram
+                </a>
+                <% } %>
+                <% if (_p.whatsapp_group_link) { %>
+                <a href="<%- _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="welcome-btn" style="background:#25D366;color:#fff;">
+                    <i class="fab fa-whatsapp"></i> Groupe WhatsApp
+                </a>
+                <% } %>
                 <button class="welcome-btn welcome-btn-close" onclick="closeWelcomePopup()">
                     <i class="fas fa-times"></i> Fermer
                 </button>
@@ -577,30 +565,37 @@
     </div>
 </div>
 
-<!-- Telegram popup -->
+<!-- Communauté popup (bouton "Rejoindre") -->
 <div class="popup" id="telegramPopup">
     <div class="popup-content">
         <div class="popup-header">
-            <h3>Rejoignez notre Communauté Altiora</h3>
+            <h3>Rejoignez notre Communauté</h3>
             <button class="popup-close" onclick="closePopup('telegramPopup')">&times;</button>
         </div>
         <div class="popup-body">
-            <p class="popup-text">Restez connecté avec la communauté Altiora Capital Africa et ne manquez aucune opportunité d'investissement!</p>
+            <p class="popup-text">Restez connecté et ne manquez aucune opportunité d'investissement !</p>
             <div class="community-buttons">
-                <a href="https://t.me/officielcanalBlackRock" class="community-btn">
-                    <i class="fab fa-telegram"></i>
+                <% if (_p.telegram_link) { %>
+                <a href="<%- _p.telegram_link %>" target="_blank" rel="noopener" class="community-btn">
+                    <i class="fab fa-telegram" style="color:#2AABEE"></i>
                     <div class="community-btn-text">
-                        <h4>Canal Officiel</h4>
+                        <h4>Canal Telegram officiel</h4>
                         <p>Annonces et actualités</p>
                     </div>
                 </a>
-                <a href="https://t.me/groupeofficielblackrock" class="community-btn">
-                    <i class="fab fa-telegram"></i>
+                <% } %>
+                <% if (_p.whatsapp_group_link) { %>
+                <a href="<%- _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="community-btn">
+                    <i class="fab fa-whatsapp" style="color:#25D366"></i>
                     <div class="community-btn-text">
-                        <h4>Groupe Discussion</h4>
+                        <h4>Groupe WhatsApp</h4>
                         <p>Échangez avec la communauté</p>
                     </div>
                 </a>
+                <% } %>
+                <% if (!_p.telegram_link && !_p.whatsapp_group_link) { %>
+                <p style="color:#A87D50;font-size:13px;text-align:center;">Liens de communauté non configurés.</p>
+                <% } %>
             </div>
         </div>
     </div>
@@ -648,20 +643,7 @@ function closeWelcomePopup() { closePopup('welcomePopup'); }
 function openTelegramPopup() { document.getElementById('telegramPopup').style.display = 'flex'; }
 function openPostPopup() { document.getElementById('postPopup').style.display = 'flex'; }
 
-// ── SERVICE POPUP ──
-function toggleServicePopup() {
-    const popup = document.getElementById('servicePopup');
-    popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
-}
-function contactCustomerService() {
-    window.open('https://t.me/blackrock_support', '_blank');
-    document.getElementById('servicePopup').style.display = 'none';
-}
-document.addEventListener('click', e => {
-    const sp = document.getElementById('servicePopup');
-    const fb = document.querySelector('.floating-service');
-    if (sp && fb && !sp.contains(e.target) && !fb.contains(e.target)) sp.style.display = 'none';
-});
+// (floating WhatsApp button is rendered by menu partial)
 
 // ── PHOTO SLIDER ──
 let currentPhoto = 0;

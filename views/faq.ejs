@@ -287,6 +287,47 @@
             </div>
         </div>
 
+        <!-- SECTION : Communauté & Support -->
+        <% if ((locals.appParams && appParams.telegram_link) || (locals.appParams && appParams.whatsapp_group_link)) { %>
+        <div class="section-label"><i class="fas fa-users"></i> Rejoindre la communauté</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+            <% if (locals.appParams && appParams.telegram_link) { %>
+            <a href="<%- appParams.telegram_link %>" target="_blank" rel="noopener"
+               style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #F0E0C8;
+                      border-radius:14px;padding:14px 16px;text-decoration:none;
+                      box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s;"
+               onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div style="width:44px;height:44px;border-radius:50%;background:#2AABEE;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fab fa-telegram" style="font-size:22px;color:#fff;"></i>
+                </div>
+                <div>
+                    <div style="font-weight:700;font-size:14px;color:#3D2B1F;">Canal Telegram officiel</div>
+                    <div style="font-size:12px;color:#A87D50;margin-top:2px;">Annonces, actualités et offres exclusives</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#C47D1E;margin-left:auto;"></i>
+            </a>
+            <% } %>
+
+            <% if (locals.appParams && appParams.whatsapp_group_link) { %>
+            <a href="<%- appParams.whatsapp_group_link %>" target="_blank" rel="noopener"
+               style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #F0E0C8;
+                      border-radius:14px;padding:14px 16px;text-decoration:none;
+                      box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s;"
+               onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div style="width:44px;height:44px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fab fa-whatsapp" style="font-size:22px;color:#fff;"></i>
+                </div>
+                <div>
+                    <div style="font-weight:700;font-size:14px;color:#3D2B1F;">Groupe WhatsApp</div>
+                    <div style="font-size:12px;color:#A87D50;margin-top:2px;">Échangez avec la communauté Altiora</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:#C47D1E;margin-left:auto;"></i>
+            </a>
+            <% } %>
+        </div>
+        <% } %>
+
     </div>
 </div>
 
