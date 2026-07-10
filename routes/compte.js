@@ -45,11 +45,11 @@ router.get('/compte', requireAuth, async (req, res) => {
     const [[vip]] = await db.query('SELECT * FROM vip WHERE user_id = ?', [user_id]);
 
     const [transactions] = await db.query(`
-      (SELECT 'depot' as type, montant, date_depot as date, statut FROM depots WHERE user_id = ?)
+      (SELECT id, 'depot' as type, montant, date_depot as date, statut FROM depots WHERE user_id = ?)
       UNION ALL
-      (SELECT 'retrait' as type, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
+      (SELECT NULL as id, 'retrait' as type, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
       UNION ALL
-      (SELECT 'revenu' as type, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
+      (SELECT NULL as id, 'revenu' as type, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
       ORDER BY date DESC LIMIT 20
     `, [user_id, user_id, user_id]);
 
@@ -122,11 +122,11 @@ router.get('/historique', requireAuth, async (req, res) => {
     const offset = (page - 1) * PAGE_SIZE;
 
     const unionQuery = `
-      (SELECT 'depot' as type, montant, date_depot as date, statut FROM depots WHERE user_id = ?)
+      (SELECT id, 'depot' as type, montant, date_depot as date, statut FROM depots WHERE user_id = ?)
       UNION ALL
-      (SELECT 'retrait' as type, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
+      (SELECT NULL as id, 'retrait' as type, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
       UNION ALL
-      (SELECT 'revenu' as type, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
+      (SELECT NULL as id, 'revenu' as type, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
     `;
 
     const [[countRow]] = await db.query(

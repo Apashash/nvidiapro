@@ -97,6 +97,50 @@
         @keyframes spin { to { transform:rotate(360deg); } }
         .loading-wrap p { color:#A87D50; font-size:14px; font-weight:500; }
         .loading-wrap small { color:#C4A07A; font-size:12px; display:block; margin-top:4px; }
+
+        /* ── Payment pending card ── */
+        .payment-pending-card {
+            background:#fff; border-radius:18px;
+            border:2px solid #C47D1E;
+            box-shadow:0 6px 24px rgba(196,125,30,0.18);
+            padding:20px 18px; margin-bottom:16px;
+            transition:border-color 0.4s, box-shadow 0.4s;
+        }
+        .payment-pending-card.success { border-color:#16A34A; box-shadow:0 6px 24px rgba(22,163,74,0.18); }
+        .payment-pending-card.failed  { border-color:#DC2626; box-shadow:0 6px 24px rgba(220,38,38,0.18); }
+
+        .ppc-header { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+        .ppc-spinner {
+            width:32px; height:32px; flex-shrink:0;
+            border:3px solid #F0E0C8; border-top-color:#C47D1E;
+            border-radius:50%; animation:spin 1s linear infinite;
+        }
+        .ppc-spinner.done { animation:none; border-color:#16A34A; border-top-color:#16A34A; background:#F0FFF4;
+            display:flex; align-items:center; justify-content:center; font-size:14px; color:#16A34A; }
+        .ppc-spinner.failed { animation:none; border-color:#DC2626; border-top-color:#DC2626; background:#FFF0EE;
+            display:flex; align-items:center; justify-content:center; font-size:14px; color:#DC2626; }
+        .ppc-title { font-size:16px; font-weight:700; color:#3D2B1F; }
+        .payment-pending-card.success .ppc-title { color:#16A34A; }
+        .payment-pending-card.failed  .ppc-title { color:#DC2626; }
+
+        .ppc-phone {
+            display:flex; align-items:center; gap:8px;
+            background:#FBF5EC; border-radius:12px; padding:10px 14px;
+            margin-bottom:12px;
+        }
+        .ppc-phone i { color:#C47D1E; font-size:18px; flex-shrink:0; }
+        .ppc-phone span { font-size:13px; color:#7D5A38; }
+        .ppc-phone strong { font-size:16px; font-weight:800; color:#3D2B1F; margin-left:auto; letter-spacing:0.5px; }
+
+        .ppc-note { font-size:12px; color:#7D5A38; display:flex; align-items:flex-start; gap:7px; margin-bottom:14px; line-height:1.5; }
+        .ppc-note i { color:#C47D1E; margin-top:2px; flex-shrink:0; }
+
+        .ppc-progress-bar { background:#F0E0C8; border-radius:20px; height:5px; overflow:hidden; }
+        .ppc-progress-fill {
+            height:100%; width:0%; border-radius:20px;
+            background:linear-gradient(90deg,#D4921F,#B07018);
+            transition:width 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -128,8 +172,23 @@
         <% if (locals.error) { %>
             <div class="alert-box alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
         <% } %>
-        <% if (locals.success) { %>
-            <div class="alert-box alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+
+        <% if (locals.pending_depot_id) { %>
+        <div class="payment-pending-card" id="paymentStatusCard">
+            <div class="ppc-header">
+                <div class="ppc-spinner" id="ppcSpinner"></div>
+                <div class="ppc-title" id="ppcTitle">Paiement initié</div>
+            </div>
+            <div class="ppc-phone">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Confirmez sur votre téléphone</span>
+                <strong><%= pending_numero %></strong>
+            </div>
+            <div class="ppc-note" id="ppcNote">
+                <i class="fas fa-clock"></i> Votre solde sera crédité automatiquement dès confirmation.
+            </div>
+            <div class="ppc-progress-bar"><div class="ppc-progress-fill" id="ppcBar"></div></div>
+        </div>
         <% } %>
 
         <div class="form-card" id="formCard">
@@ -236,6 +295,69 @@ document.getElementById('depotForm').addEventListener('submit', function (e) {
     document.getElementById('loadingDiv').style.display = 'block';
     document.getElementById('submitBtn').disabled = true;
 });
+
+// ── Polling du statut de paiement ──────────────────────────────────────────
+<% if (locals.pending_depot_id) { %>
+(function () {
+    const depotId  = <%= pending_depot_id %>;
+    const card     = document.getElementById('paymentStatusCard');
+    const spinner  = document.getElementById('ppcSpinner');
+    const title    = document.getElementById('ppcTitle');
+    const note     = document.getElementById('ppcNote');
+    const bar      = document.getElementById('ppcBar');
+
+    let elapsed = 0;
+    const MAX_WAIT = 180; // 3 minutes max
+
+    // Animate progress bar slowly over MAX_WAIT seconds
+    function tickBar() {
+        elapsed += 3;
+        const pct = Math.min(95, Math.round(elapsed / MAX_WAIT * 100));
+        bar.style.width = pct + '%';
+    }
+
+    function setSuccess() {
+        card.classList.add('success');
+        spinner.classList.add('done');
+        spinner.innerHTML = '✓';
+        title.textContent = 'Paiement confirmé !';
+        note.innerHTML = '<i class="fas fa-check-circle"></i> Votre solde a été crédité automatiquement.';
+        bar.style.width = '100%';
+        bar.style.background = '#16A34A';
+        clearInterval(pollInterval);
+        setTimeout(() => { window.location.href = '/'; }, 2500);
+    }
+
+    function setFailed() {
+        card.classList.add('failed');
+        spinner.classList.add('failed');
+        spinner.innerHTML = '✗';
+        title.textContent = 'Paiement échoué';
+        note.innerHTML = '<i class="fas fa-times-circle"></i> La transaction a été rejetée. Veuillez réessayer.';
+        bar.style.width = '100%';
+        bar.style.background = '#DC2626';
+        clearInterval(pollInterval);
+    }
+
+    function setTimeout_() {
+        title.textContent = 'En attente de confirmation…';
+        note.innerHTML = '<i class="fas fa-info-circle"></i> Vérifiez votre téléphone. Le solde sera crédité dès validation.';
+        clearInterval(pollInterval);
+    }
+
+    const pollInterval = setInterval(async function () {
+        tickBar();
+        if (elapsed >= MAX_WAIT) { setTimeout_(); return; }
+        try {
+            const r = await fetch('/depot/status/' + depotId);
+            const d = await r.json();
+            if (d.statut === 'valide')  setSuccess();
+            else if (d.statut === 'rejete') setFailed();
+            // en_attente → continuer
+        } catch(e) { /* réseau — continuer */ }
+    }, 3000);
+})();
+<% } %>
 </script>
 </body>
 </html>

@@ -63,6 +63,17 @@
         }
         .page-btn.disabled { color:#D8C4A0; pointer-events:none; opacity:0.6; }
         .page-info { font-size:12px; color:#A87D50; white-space:nowrap; }
+
+        /* Verify button */
+        .btn-verify {
+            margin-top:6px; display:inline-flex; align-items:center; gap:5px;
+            background:#FBF5EC; border:1.5px solid #C47D1E; border-radius:8px;
+            color:#C47D1E; font-size:11px; font-weight:700; padding:4px 10px;
+            cursor:pointer; font-family:'Poppins',sans-serif;
+        }
+        .btn-verify:disabled { opacity:0.5; cursor:not-allowed; }
+        .btn-verify.ok  { border-color:#16A34A; color:#16A34A; background:#F0FFF4; }
+        .btn-verify.err { border-color:#DC2626; color:#DC2626; background:#FFF0EE; }
     </style>
 </head>
 <body>
@@ -81,15 +92,22 @@
         <div class="tx-card">
             <ul class="tx-list">
                 <% transactions.forEach(tx => { %>
-                <li class="tx-item">
-                    <div class="tx-left">
+                <li class="tx-item" style="flex-wrap:wrap;gap:4px;">
+                    <div class="tx-left" style="flex:1;min-width:0;">
                         <div class="tx-ico <%= tx.type %>">
                             <i class="fas <%= tx.type === 'depot' ? 'fa-arrow-down' : tx.type === 'retrait' ? 'fa-arrow-up' : 'fa-coins' %>"></i>
                         </div>
-                        <div>
-                            <div class="tx-type"><%= tx.type %></div>
+                        <div style="min-width:0;">
+                            <div class="tx-type"><%= tx.type === 'depot' ? 'Dépôt' : tx.type === 'retrait' ? 'Retrait' : 'Revenu' %></div>
                             <div class="tx-date"><%= tx.date ? new Date(tx.date).toLocaleString('fr-FR') : '' %></div>
-                            <div class="tx-statut <%= tx.statut %>"><%= tx.statut %></div>
+                            <div class="tx-statut <%= tx.statut %>">
+                                <%= tx.statut === 'valide' ? '✓ Validé' : tx.statut === 'en_attente' ? '⏳ En attente' : '✗ Rejeté' %>
+                            </div>
+                            <% if (tx.type === 'depot' && tx.statut === 'en_attente' && tx.id) { %>
+                            <button class="btn-verify" onclick="verifierDepot(this, <%= tx.id %>)">
+                                <i class="fas fa-sync-alt"></i> Vérifier
+                            </button>
+                            <% } %>
                         </div>
                     </div>
                     <span class="tx-amt <%= (tx.type === 'retrait') ? 'tx-neg' : 'tx-pos' %>">
@@ -115,5 +133,36 @@
         <% } %>
     </div>
 </div>
+<script>
+async function verifierDepot(btn, depotId) {
+    btn.disabled = true;
+    const icon = btn.querySelector('i');
+    icon.classList.add('fa-spin');
+    btn.textContent = ' Vérification…';
+    btn.prepend(icon);
+    try {
+        const r = await fetch('/depot/status/' + depotId);
+        const d = await r.json();
+        icon.classList.remove('fa-spin');
+        if (d.statut === 'valide') {
+            btn.classList.add('ok');
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Validé — ' + parseFloat(d.montant).toLocaleString('fr-FR') + ' FCFA crédités';
+            // Refresh after 1.5s so the row reflects the new status
+            setTimeout(() => location.reload(), 1500);
+        } else if (d.statut === 'rejete') {
+            btn.classList.add('err');
+            btn.innerHTML = '<i class="fas fa-times-circle"></i> Rejeté';
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Toujours en attente';
+        }
+    } catch(e) {
+        icon.classList.remove('fa-spin');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Réessayer';
+    }
+}
+</script>
 </body>
 </html>

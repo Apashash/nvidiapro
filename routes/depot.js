@@ -28,14 +28,16 @@ router.get('/depot', requireAuth, async (req, res) => {
   try {
     const user_id = req.session.user_id;
     const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
-    const error   = req.session.error   || null;
-    const success = req.session.success || (req.query.success === '1' ? 'Dépôt en cours de traitement...' : null);
+    const error   = req.session.error  || null;
     const failed  = req.query.failed === '1' ? 'Paiement échoué. Veuillez réessayer.' : null;
+    const pending_depot_id = req.session.pending_depot_id || null;
+    const pending_numero   = req.session.pending_numero   || null;
     delete req.session.error;
-    delete req.session.success;
+    delete req.session.pending_depot_id;
+    delete req.session.pending_numero;
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
-    res.render('depot', { user, countries: ashtechCountries, error, success, failed, depotMin });
+    res.render('depot', { user, countries: ashtechCountries, error, failed, depotMin, pending_depot_id, pending_numero });
   } catch (e) {
     console.error('GET /depot error:', e);
     res.redirect('/');
@@ -115,7 +117,8 @@ router.post('/depot/process', requireAuth, async (req, res) => {
       [`${reference}|${data.transaction_id}`, depot_id]
     );
 
-    req.session.success = `Paiement initié. Confirmez sur votre téléphone (${numero}). Votre solde sera crédité automatiquement.`;
+    req.session.pending_depot_id = depot_id;
+    req.session.pending_numero   = numero;
     res.redirect('/depot');
 
   } catch (e) {
@@ -124,6 +127,22 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
     req.session.error = e.response?.data?.message || 'Erreur de connexion au serveur de paiement';
     res.redirect('/depot');
+  }
+});
+
+// ── GET /depot/status/:id  (polling by client) ───────────────────────────────
+router.get('/depot/status/:id', requireAuth, async (req, res) => {
+  try {
+    const depot_id = parseInt(req.params.id);
+    const user_id  = req.session.user_id;
+    const [[depot]] = await db.query(
+      'SELECT id, statut, montant FROM depots WHERE id = ? AND user_id = ?',
+      [depot_id, user_id]
+    );
+    if (!depot) return res.status(404).json({ error: 'Introuvable' });
+    res.json({ statut: depot.statut, montant: depot.montant });
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
