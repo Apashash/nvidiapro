@@ -69,80 +69,110 @@
             border-bottom:1px solid #F0E0C8;
         }
 
-        /* Progress block */
-        .progress-header {
-            display:flex; justify-content:space-between; align-items:center;
-            margin-bottom:10px;
+        /* Palier progress cards */
+        .palier-card {
+            background:#fff; border-radius:16px; border:1px solid #F0E0C8;
+            padding:16px; margin-bottom:12px;
+            box-shadow:0 2px 10px rgba(196,125,30,0.08);
+            position:relative; overflow:hidden;
+            transition:box-shadow 0.2s;
         }
-        .progress-label { font-size:13px; color:#7D5A38; font-weight:500; }
-        .progress-count { font-size:20px; font-weight:800; color:#C47D1E; }
-        .progress-bar-bg {
-            background:#F0E0C8; border-radius:20px; height:12px;
-            overflow:hidden; margin-bottom:6px;
+        .palier-card.unlocked {
+            border-color:#C47D1E;
+            box-shadow:0 4px 16px rgba(196,125,30,0.18);
         }
-        .progress-bar-fill {
-            background:linear-gradient(90deg,#D4921F,#B07018);
-            height:100%; border-radius:20px;
-            transition:width 0.8s cubic-bezier(.4,0,.2,1);
+        .palier-card.actuel {
+            border-color:#D4921F;
+            background:linear-gradient(135deg,#FFFBF3,#FFF5E0);
+            box-shadow:0 6px 22px rgba(196,125,30,0.22);
         }
-        .progress-hint { font-size:11px; color:#A87D50; text-align:right; }
+        .palier-card.locked { opacity:0.65; }
 
-        /* Filleul dots grid */
-        .filleul-dots {
-            display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;
+        /* Top row: badge + salary */
+        .palier-top {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-bottom:12px;
         }
-        .dot-item {
-            display:flex; flex-direction:column; align-items:center; gap:4px;
-            width:52px;
-        }
-        .dot-avatar {
-            width:42px; height:42px; border-radius:50%;
+        .palier-left { display:flex; align-items:center; gap:10px; }
+        .palier-num {
+            width:36px; height:36px; border-radius:50%; flex-shrink:0;
             display:flex; align-items:center; justify-content:center;
-            font-weight:700; font-size:15px; color:#fff;
-            position:relative;
+            font-weight:800; font-size:14px;
+            background:#F0E0C8; color:#A87D50; border:2px solid #E8D5B0;
         }
-        .dot-avatar.actif    { background:linear-gradient(135deg,#D4921F,#B07018); }
-        .dot-avatar.inactif  { background:#E8D5B0; color:#A87D50; }
-        .dot-check {
-            position:absolute; bottom:-2px; right:-2px;
-            width:16px; height:16px; border-radius:50%;
-            background:#16A34A; border:2px solid #fff;
-            display:flex; align-items:center; justify-content:center;
-        }
-        .dot-check i { font-size:8px; color:#fff; }
-        .dot-name { font-size:9px; color:#7D5A38; text-align:center;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; }
-
-        /* Empty slots */
-        .dot-empty {
-            width:42px; height:42px; border-radius:50%;
-            background:#F5EFE6; border:2px dashed #E8D5B0;
-            display:flex; align-items:center; justify-content:center;
-            color:#C8A87A; font-size:14px;
-        }
-
-        /* Salary table */
-        .niveau-item {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:10px 0; border-bottom:1px solid #F5EFE6;
-        }
-        .niveau-item:last-child { border-bottom:none; }
-        .niveau-info { display:flex; align-items:center; gap:12px; }
-        .niveau-num {
-            width:32px; height:32px; border-radius:50%;
-            display:flex; align-items:center; justify-content:center;
-            font-weight:800; font-size:13px; border:1.5px solid #E8D5B0;
-            color:#A87D50; background:#FBF5EC; flex-shrink:0;
-        }
-        .niveau-item.actuel .niveau-num {
+        .palier-card.unlocked .palier-num,
+        .palier-card.actuel   .palier-num {
             background:linear-gradient(135deg,#D4921F,#B07018);
             color:#fff; border-color:transparent;
         }
-        .niveau-details { display:flex; flex-direction:column; }
-        .niveau-name { font-size:13px; color:#3D2B1F; font-weight:500; }
-        .niveau-req  { font-size:11px; color:#A87D50; margin-top:1px; }
-        .niveau-item.actuel .niveau-name { font-weight:700; color:#C47D1E; }
-        .niveau-salary { font-weight:700; color:#C47D1E; font-size:14px; white-space:nowrap; }
+        .palier-label { font-size:14px; font-weight:700; color:#3D2B1F; }
+        .palier-card.actuel .palier-label { color:#C47D1E; }
+        .palier-sublabel { font-size:11px; color:#A87D50; margin-top:1px; }
+
+        .palier-salary {
+            font-size:15px; font-weight:800; color:#C47D1E;
+            white-space:nowrap;
+        }
+        .palier-card.locked .palier-salary { color:#B0926A; }
+
+        /* Progress bar */
+        .palier-prog-row {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-bottom:6px;
+        }
+        .palier-prog-lbl { font-size:11px; color:#7D5A38; }
+        .palier-prog-cnt { font-size:12px; font-weight:700; color:#C47D1E; }
+        .palier-bar-bg {
+            background:#F0E0C8; border-radius:20px; height:10px; overflow:hidden;
+        }
+        .palier-bar-fill {
+            height:100%; border-radius:20px;
+            background:linear-gradient(90deg,#D4921F,#B07018);
+            transition:width 1s cubic-bezier(.4,0,.2,1);
+        }
+        .palier-card.unlocked .palier-bar-fill { background:linear-gradient(90deg,#16A34A,#15803D); }
+
+        /* Status badge */
+        .palier-status {
+            margin-top:8px; font-size:11px; font-weight:600;
+            display:flex; align-items:center; gap:5px;
+        }
+        .palier-status.done    { color:#16A34A; }
+        .palier-status.current { color:#C47D1E; }
+        .palier-status.locked  { color:#A87D50; }
+
+        /* Filleul dots */
+        .filleul-dots {
+            display:flex; flex-wrap:wrap; gap:7px; margin-top:10px;
+        }
+        .dot-item {
+            display:flex; flex-direction:column; align-items:center; gap:3px;
+            width:46px;
+        }
+        .dot-avatar {
+            width:38px; height:38px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:700; font-size:13px; color:#fff; position:relative;
+        }
+        .dot-avatar.actif   { background:linear-gradient(135deg,#D4921F,#B07018); }
+        .dot-avatar.inactif { background:#E8D5B0; color:#A87D50; }
+        .dot-check {
+            position:absolute; bottom:-2px; right:-2px;
+            width:14px; height:14px; border-radius:50%;
+            background:#16A34A; border:2px solid #fff;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .dot-check i { font-size:7px; color:#fff; }
+        .dot-name {
+            font-size:9px; color:#7D5A38; text-align:center;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;
+        }
+        .dot-empty {
+            width:38px; height:38px; border-radius:50%;
+            background:#F5EFE6; border:2px dashed #E8D5B0;
+            display:flex; align-items:center; justify-content:center;
+            color:#C8A87A; font-size:13px;
+        }
 
         /* Success popup */
         .popup {
@@ -222,70 +252,83 @@
             </button>
         </form>
 
-        <!-- Progress section -->
-        <% if (palier_actuel) { %>
-        <div class="section-card">
-            <div class="section-title"><i class="fas fa-chart-line"></i> Progression filleuls actifs</div>
+        <!-- Per-palier progress cards -->
+        <div style="margin-bottom:4px;">
+            <div style="font-size:13px;color:#A87D50;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-trophy" style="color:#C47D1E;"></i> Progression par palier VIP
+            </div>
 
-            <div class="progress-header">
-                <div class="progress-label">Filleuls avec plan actif</div>
-                <div class="progress-count"><%= filleuls_actifs %> / <%= filleuls_requis %></div>
-            </div>
-            <div class="progress-bar-bg">
-                <div class="progress-bar-fill" style="width:<%= Math.min(100, filleuls_requis > 0 ? Math.round(filleuls_actifs / filleuls_requis * 100) : 0) %>%"></div>
-            </div>
-            <div class="progress-hint">
-                <% if (seuil_atteint) { %>
-                    ✅ Seuil atteint — vous pouvez réclamer votre salaire !
+            <% paliers.forEach(function(p) {
+                const req     = parseInt(p.filleuls_requis) || 1;
+                const filled  = Math.min(filleuls_actifs, req);
+                const pct     = Math.round(filled / req * 100);
+                const done    = filleuls_actifs >= req;
+                const isCur   = p.niveau == niveau_actuel;
+                const cardCls = done ? 'unlocked' : (isCur ? 'actuel' : 'locked');
+                // Dots: show actual filleuls up to req, then empty slots
+                const dotsFilleuls = filleuls_directs.slice(0, req);
+                const emptySlots   = Math.max(0, req - filleuls_directs.length);
+            %>
+            <div class="palier-card <%= cardCls %>">
+
+                <!-- Top: num + label + salary -->
+                <div class="palier-top">
+                    <div class="palier-left">
+                        <div class="palier-num"><%= p.niveau %></div>
+                        <div>
+                            <div class="palier-label"><%= p.label || ('Niveau VIP ' + p.niveau) %></div>
+                            <div class="palier-sublabel"><i class="fas fa-users" style="font-size:9px"></i> <%= req %> filleul(s) actif(s) requis</div>
+                        </div>
+                    </div>
+                    <div class="palier-salary"><%= new Intl.NumberFormat('fr-FR').format(parseFloat(p.montant_cadeau)) %> FCFA/j</div>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="palier-prog-row">
+                    <div class="palier-prog-lbl">Filleuls actifs</div>
+                    <div class="palier-prog-cnt"><%= filled %> / <%= req %></div>
+                </div>
+                <div class="palier-bar-bg">
+                    <div class="palier-bar-fill" style="width:<%= pct %>%"></div>
+                </div>
+
+                <!-- Status -->
+                <% if (done) { %>
+                <div class="palier-status done"><i class="fas fa-check-circle"></i> Débloqué — salaire disponible !</div>
+                <% } else if (isCur) { %>
+                <div class="palier-status current"><i class="fas fa-clock"></i> En cours — encore <%= req - filleuls_actifs %> filleul(s)</div>
                 <% } else { %>
-                    Encore <%= filleuls_requis - filleuls_actifs %> filleul(s) actif(s) nécessaire(s)
+                <div class="palier-status locked"><i class="fas fa-lock"></i> Verrouillé — <%= req - filleuls_actifs %> filleul(s) manquants</div>
                 <% } %>
-            </div>
 
-            <!-- Filleul dots -->
-            <div class="filleul-dots">
-                <%
-                  // Show actual filleuls first, then empty slots up to filleuls_requis
-                  const shown = filleuls_directs.slice(0, Math.max(filleuls_requis, filleuls_directs.length));
-                %>
-                <% shown.forEach(function(f) { %>
-                <div class="dot-item">
-                    <div class="dot-avatar <%= f.actif ? 'actif' : 'inactif' %>">
-                        <%= (f.nom || '?').charAt(0).toUpperCase() %>
-                        <% if (f.actif) { %>
-                        <div class="dot-check"><i class="fas fa-check"></i></div>
-                        <% } %>
+                <!-- Filleul avatars (only show for current + unlocked) -->
+                <% if (cardCls !== 'locked' || done || isCur) { %>
+                <div class="filleul-dots">
+                    <% dotsFilleuls.forEach(function(f) { %>
+                    <div class="dot-item">
+                        <div class="dot-avatar <%= f.actif ? 'actif' : 'inactif' %>">
+                            <%= (f.nom || '?').charAt(0).toUpperCase() %>
+                            <% if (f.actif) { %><div class="dot-check"><i class="fas fa-check"></i></div><% } %>
+                        </div>
+                        <div class="dot-name"><%= (f.nom || '').split(' ')[0] %></div>
                     </div>
-                    <div class="dot-name"><%= (f.nom || '').split(' ')[0] %></div>
-                </div>
-                <% }); %>
-                <% for (let i = filleuls_directs.length; i < filleuls_requis; i++) { %>
-                <div class="dot-item">
-                    <div class="dot-empty"><i class="fas fa-user-plus"></i></div>
-                    <div class="dot-name" style="color:#C8A87A">Inviter</div>
+                    <% }); %>
+                    <% for (let i = 0; i < emptySlots; i++) { %>
+                    <div class="dot-item">
+                        <div class="dot-empty"><i class="fas fa-user-plus"></i></div>
+                        <div class="dot-name" style="color:#C8A87A">Inviter</div>
+                    </div>
+                    <% } %>
                 </div>
                 <% } %>
-            </div>
-        </div>
-        <% } %>
 
-        <!-- Salary table from DB -->
-        <div class="section-card">
-            <div class="section-title"><i class="fas fa-trophy"></i> Paliers de Rémunération</div>
-            <% paliers.forEach(function(p) { %>
-            <div class="niveau-item <%= p.niveau == niveau_actuel ? 'actuel' : '' %>">
-                <div class="niveau-info">
-                    <div class="niveau-num"><%= p.niveau %></div>
-                    <div class="niveau-details">
-                        <div class="niveau-name"><%= p.label || ('Niveau VIP ' + p.niveau) %></div>
-                        <div class="niveau-req"><i class="fas fa-users" style="font-size:9px"></i> <%= p.filleuls_requis %> filleuls actifs requis</div>
-                    </div>
-                </div>
-                <div class="niveau-salary"><%= new Intl.NumberFormat('fr-FR').format(parseFloat(p.montant_cadeau)) %> FCFA/j</div>
             </div>
             <% }); %>
+
             <% if (!paliers.length) { %>
-            <div style="text-align:center;color:#A87D50;font-size:13px;padding:16px 0;">Aucun palier configuré.</div>
+            <div style="text-align:center;color:#A87D50;font-size:13px;padding:20px 0;background:#fff;border-radius:16px;border:1px solid #F0E0C8;">
+                Aucun palier configuré.
+            </div>
             <% } %>
         </div>
 
