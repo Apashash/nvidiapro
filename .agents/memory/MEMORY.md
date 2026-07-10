@@ -1,1 +1,2 @@
 - [Agricultural theme redesign](agricultural-theme.md) — all 16 views + menu.ejs redesigned to warm cream/amber palette; wheat icon 5-tab nav; logic and French text intact.
+- [Supabase DB connection](supabase-db-connection.md) — app's real DB is Supabase via SUPABASE_DATABASE_URL secret, takes precedence over Replit's DATABASE_URL.

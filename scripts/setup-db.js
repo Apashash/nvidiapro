@@ -7,14 +7,17 @@
 
 const { Pool } = require('pg');
 
-if (!process.env.DATABASE_URL) {
-  console.error('Error: DATABASE_URL environment variable is not set.');
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+const isSupabase = !!process.env.SUPABASE_DATABASE_URL;
+
+if (!connectionString) {
+  console.error('Error: SUPABASE_DATABASE_URL or DATABASE_URL environment variable is not set.');
   process.exit(1);
 }
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionString,
+  ssl: isSupabase || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 const SCHEMA = `

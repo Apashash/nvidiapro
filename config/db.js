@@ -1,8 +1,11 @@
 const { Pool } = require('pg');
 
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+const isSupabase = !!process.env.SUPABASE_DATABASE_URL;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionString,
+  ssl: isSupabase || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 // Convert MySQL ? placeholders to PostgreSQL $1, $2, ...
