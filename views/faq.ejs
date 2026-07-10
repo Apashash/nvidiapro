@@ -151,48 +151,49 @@
         <!-- SECTION : Plans d'investissement -->
         <div class="section-label"><i class="fas fa-chart-line"></i> Plans d'investissement</div>
 
+        <% const plansActifs = (typeof plans !== 'undefined' && plans) ? plans.filter(p => !p.bloque) : []; %>
+        <% const planMin = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) < parseFloat(b.prix) ? a : b) : null; %>
+        <% const planMax = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) > parseFloat(b.prix) ? a : b) : null; %>
+
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
                 <span class="q-text">Quel est le montant minimum pour investir ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
             <div class="faq-answer">
-                Le montant minimum d'investissement est de <strong>5 000 FCFA</strong> (Plan DÉCOUVERTE).<br>
-                Le plan maximum est de <strong>15 000 000 FCFA</strong> (Plan LEGACY).<br><br>
-                Altiora Capital Africa propose <strong>20 plans d'investissement</strong> adaptés à tous les profils.
+                <% if (planMin) { %>
+                Le montant minimum d'investissement est de <strong><%= parseInt(planMin.prix).toLocaleString('fr-FR') %> FCFA</strong> (<%= planMin.nom %>).<br>
+                <% } %>
+                <% if (planMax) { %>
+                Le plan maximum est de <strong><%= parseInt(planMax.prix).toLocaleString('fr-FR') %> FCFA</strong> (<%= planMax.nom %>).<br><br>
+                <% } %>
+                Altiora Capital Africa propose <strong><%= plansActifs.length %> plan<%= plansActifs.length > 1 ? 's' : '' %> d'investissement</strong> adaptés à tous les profils.
             </div>
         </div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
-                <span class="q-text">Quels sont les 20 plans disponibles ?</span>
+                <span class="q-text">Quels sont les plans disponibles ?</span>
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
             <div class="faq-answer">
+                <% if (plansActifs.length > 0) { %>
                 <table class="plans-table">
-                    <tr><th>Plan</th><th>Montant (FCFA)</th><th>Rendement/jr</th></tr>
-                    <tr><td class="plan-name">01. DÉCOUVERTE</td><td>5 000</td><td>3%</td></tr>
-                    <tr><td class="plan-name">02. STARTER</td><td>10 000</td><td>3%</td></tr>
-                    <tr><td class="plan-name">03. BASIC PLUS</td><td>20 000</td><td>3,2%</td></tr>
-                    <tr><td class="plan-name">04. BRONZE</td><td>30 000</td><td>3,3%</td></tr>
-                    <tr><td class="plan-name">05. BRONZE PLUS</td><td>50 000</td><td>3,5%</td></tr>
-                    <tr><td class="plan-name">06. SILVER</td><td>75 000</td><td>3,7%</td></tr>
-                    <tr><td class="plan-name">07. SILVER PLUS</td><td>100 000</td><td>4%</td></tr>
-                    <tr><td class="plan-name">08. GOLD</td><td>150 000</td><td>4,2%</td></tr>
-                    <tr><td class="plan-name">09. GOLD PLUS</td><td>200 000</td><td>4,5%</td></tr>
-                    <tr><td class="plan-name">10. PLATINUM</td><td>300 000</td><td>4,7%</td></tr>
-                    <tr><td class="plan-name">11. PLATINUM PLUS</td><td>500 000</td><td>5%</td></tr>
-                    <tr><td class="plan-name">12. DIAMOND</td><td>750 000</td><td>5,2%</td></tr>
-                    <tr><td class="plan-name">13. DIAMOND PLUS</td><td>1 000 000</td><td>5,5%</td></tr>
-                    <tr><td class="plan-name">14. ÉLITE</td><td>1 500 000</td><td>5,7%</td></tr>
-                    <tr><td class="plan-name">15. ÉLITE PLUS</td><td>2 000 000</td><td>6%</td></tr>
-                    <tr><td class="plan-name">16. PRESTIGE</td><td>3 000 000</td><td>6,2%</td></tr>
-                    <tr><td class="plan-name">17. PRESTIGE PLUS</td><td>5 000 000</td><td>6,5%</td></tr>
-                    <tr><td class="plan-name">18. EMPIRE</td><td>7 500 000</td><td>6,7%</td></tr>
-                    <tr><td class="plan-name">19. EMPIRE PLUS</td><td>10 000 000</td><td>6,9%</td></tr>
-                    <tr><td class="plan-name">20. LEGACY</td><td>15 000 000</td><td>7%</td></tr>
+                    <tr><th>#</th><th>Plan</th><th>Montant (FCFA)</th><th>Rendement/jr</th><th>Durée</th></tr>
+                    <% plansActifs.forEach(function(p, i) { %>
+                    <tr>
+                        <td style="color:#A87D50"><%= String(i+1).padStart(2,'0') %></td>
+                        <td class="plan-name"><%= p.nom %></td>
+                        <td><%= parseInt(p.prix).toLocaleString('fr-FR') %></td>
+                        <td><strong><%= parseFloat(p.rendement_journalier).toFixed(1).replace('.',',') %>%</strong></td>
+                        <td><%= p.duree_jours %>j</td>
+                    </tr>
+                    <% }); %>
                 </table>
-                <br>Les rendements sont basés sur la performance des projets financés et peuvent varier.
+                <br>Les rendements sont basés sur la performance des projets financés.
+                <% } else { %>
+                <em style="color:#A87D50">Aucun plan actif pour le moment.</em>
+                <% } %>
             </div>
         </div>
 
