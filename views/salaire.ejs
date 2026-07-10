@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Salaire - Altiora Capital Africa</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -11,17 +11,16 @@
         body { background:#F5EFE6; color:#3D2B1F; min-height:100vh; padding-bottom:90px; }
         .container { max-width:430px; margin:0 auto; }
 
-        /* Header */
         .page-header {
-            background: linear-gradient(135deg, #D4921F, #A0631A);
-            padding: 50px 20px 36px; text-align:center; color:#fff; position:relative;
+            background:linear-gradient(135deg,#D4921F,#A0631A);
+            padding:50px 20px 36px; text-align:center; color:#fff;
         }
         .page-header h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
-        .page-header p { font-size:13px; color:rgba(255,255,255,0.85); }
+        .page-header p  { font-size:13px; color:rgba(255,255,255,0.85); }
 
-        /* VIP Salary card */
+        /* Salary hero card */
         .salary-card {
-            margin: -20px 16px 0; position:relative; z-index:10;
+            margin:-20px 16px 0; position:relative; z-index:10;
             background:#fff; border-radius:20px;
             box-shadow:0 8px 28px rgba(196,125,30,0.20);
             padding:28px 20px; text-align:center;
@@ -36,14 +35,16 @@
         .salary-amount { font-size:44px; font-weight:900; color:#C47D1E; line-height:1.1; }
         .salary-period { color:#A87D50; font-size:14px; font-weight:500; margin-top:8px; }
 
-        /* Content */
-        .content { padding:16px; }
+        .content { padding:16px; margin-top:20px; }
 
+        /* Alerts */
         .alert-box { padding:13px 16px; border-radius:12px; margin-bottom:14px;
             font-size:14px; display:flex; align-items:center; gap:9px; }
-        .alert-error { background:#FFF0EE; border:1px solid #F5A9A0; color:#C0392B; }
+        .alert-error   { background:#FFF0EE; border:1px solid #F5A9A0; color:#C0392B; }
         .alert-warning { background:#FFFBF0; border:1px solid #F5D78A; color:#92660A; }
+        .alert-success { background:#F0FFF4; border:1px solid #86EFAC; color:#166534; }
 
+        /* Collect button */
         .btn-collect {
             width:100%; padding:18px;
             background:linear-gradient(135deg,#D4921F,#B07018);
@@ -56,7 +57,7 @@
         .btn-collect:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 10px 26px rgba(196,125,30,0.48); }
         .btn-collect:disabled { background:#E8D5B0; color:#A87D50; cursor:not-allowed; transform:none; box-shadow:none; }
 
-        /* Section card */
+        /* Section cards */
         .section-card {
             background:#fff; border-radius:16px; border:1px solid #F0E0C8;
             padding:18px; margin-bottom:14px;
@@ -68,9 +69,62 @@
             border-bottom:1px solid #F0E0C8;
         }
 
+        /* Progress block */
+        .progress-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:10px;
+        }
+        .progress-label { font-size:13px; color:#7D5A38; font-weight:500; }
+        .progress-count { font-size:20px; font-weight:800; color:#C47D1E; }
+        .progress-bar-bg {
+            background:#F0E0C8; border-radius:20px; height:12px;
+            overflow:hidden; margin-bottom:6px;
+        }
+        .progress-bar-fill {
+            background:linear-gradient(90deg,#D4921F,#B07018);
+            height:100%; border-radius:20px;
+            transition:width 0.8s cubic-bezier(.4,0,.2,1);
+        }
+        .progress-hint { font-size:11px; color:#A87D50; text-align:right; }
+
+        /* Filleul dots grid */
+        .filleul-dots {
+            display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;
+        }
+        .dot-item {
+            display:flex; flex-direction:column; align-items:center; gap:4px;
+            width:52px;
+        }
+        .dot-avatar {
+            width:42px; height:42px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:700; font-size:15px; color:#fff;
+            position:relative;
+        }
+        .dot-avatar.actif    { background:linear-gradient(135deg,#D4921F,#B07018); }
+        .dot-avatar.inactif  { background:#E8D5B0; color:#A87D50; }
+        .dot-check {
+            position:absolute; bottom:-2px; right:-2px;
+            width:16px; height:16px; border-radius:50%;
+            background:#16A34A; border:2px solid #fff;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .dot-check i { font-size:8px; color:#fff; }
+        .dot-name { font-size:9px; color:#7D5A38; text-align:center;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; }
+
+        /* Empty slots */
+        .dot-empty {
+            width:42px; height:42px; border-radius:50%;
+            background:#F5EFE6; border:2px dashed #E8D5B0;
+            display:flex; align-items:center; justify-content:center;
+            color:#C8A87A; font-size:14px;
+        }
+
+        /* Salary table */
         .niveau-item {
             display:flex; justify-content:space-between; align-items:center;
-            padding:11px 0; border-bottom:1px solid #F5EFE6;
+            padding:10px 0; border-bottom:1px solid #F5EFE6;
         }
         .niveau-item:last-child { border-bottom:none; }
         .niveau-info { display:flex; align-items:center; gap:12px; }
@@ -78,30 +132,19 @@
             width:32px; height:32px; border-radius:50%;
             display:flex; align-items:center; justify-content:center;
             font-weight:800; font-size:13px; border:1.5px solid #E8D5B0;
-            color:#A87D50; background:#FBF5EC;
+            color:#A87D50; background:#FBF5EC; flex-shrink:0;
         }
         .niveau-item.actuel .niveau-num {
             background:linear-gradient(135deg,#D4921F,#B07018);
             color:#fff; border-color:transparent;
         }
-        .niveau-name { font-size:14px; color:#3D2B1F; font-weight:500; }
-        .niveau-salary { font-weight:700; color:#C47D1E; font-size:14px; }
+        .niveau-details { display:flex; flex-direction:column; }
+        .niveau-name { font-size:13px; color:#3D2B1F; font-weight:500; }
+        .niveau-req  { font-size:11px; color:#A87D50; margin-top:1px; }
         .niveau-item.actuel .niveau-name { font-weight:700; color:#C47D1E; }
+        .niveau-salary { font-weight:700; color:#C47D1E; font-size:14px; white-space:nowrap; }
 
-        .info-item {
-            display:flex; align-items:flex-start; gap:12px; padding:10px 0;
-            border-bottom:1px solid #F5EFE6;
-        }
-        .info-item:last-child { border-bottom:none; }
-        .info-icon {
-            width:36px; height:36px; border-radius:10px; flex-shrink:0;
-            background:rgba(196,125,30,0.12); display:flex; align-items:center;
-            justify-content:center; color:#C47D1E; font-size:15px;
-        }
-        .info-text { font-size:13px; color:#7D5A38; line-height:1.5; flex:1; }
-        .info-text strong { color:#C47D1E; }
-
-        /* Popup */
+        /* Success popup */
         .popup {
             display:none; position:fixed; inset:0;
             background:rgba(0,0,0,0.6); backdrop-filter:blur(6px);
@@ -113,19 +156,16 @@
             box-shadow:0 24px 60px rgba(0,0,0,0.25);
             animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
         }
-        @keyframes popIn { from { transform:scale(0.85); opacity:0; } to { transform:scale(1); opacity:1; } }
-        .popup-head {
-            background:linear-gradient(135deg,#EF4444,#B91C1C);
-            padding:20px; text-align:center;
-        }
-        .popup-head h3 { color:#fff; font-weight:800; font-size:18px; }
+        @keyframes popIn { from{transform:scale(0.85);opacity:0;} to{transform:scale(1);opacity:1;} }
+        .popup-head-success { background:linear-gradient(135deg,#D4921F,#B07018); padding:20px; text-align:center; }
+        .popup-head-success h3 { color:#fff; font-weight:800; font-size:18px; }
         .popup-body { padding:28px 24px; text-align:center; }
-        .popup-icon { font-size:52px; color:#EF4444; margin-bottom:14px; }
-        .popup-msg { font-size:14px; color:#7D5A38; line-height:1.6; margin-bottom:20px; }
-        .popup-btn {
-            width:100%; background:#EF4444; color:#fff; border:none;
-            border-radius:12px; padding:14px; font-size:15px; font-weight:700;
-            cursor:pointer; font-family:'Poppins',sans-serif;
+        .popup-icon { font-size:52px; color:#C47D1E; margin-bottom:14px; }
+        .popup-msg  { font-size:14px; color:#7D5A38; line-height:1.6; margin-bottom:20px; }
+        .popup-btn  {
+            width:100%; background:linear-gradient(135deg,#D4921F,#B07018);
+            color:#fff; border:none; border-radius:12px; padding:14px;
+            font-size:15px; font-weight:700; cursor:pointer; font-family:'Poppins',sans-serif;
         }
     </style>
 </head>
@@ -138,6 +178,7 @@
         <p>Recevez votre rémunération selon votre niveau VIP</p>
     </div>
 
+    <!-- Hero salary card -->
     <div class="salary-card">
         <div class="vip-badge">NIVEAU VIP <%= niveau_actuel %></div>
         <div class="salary-amount"><%= new Intl.NumberFormat('fr-FR').format(salaire_actuel) %> FCFA</div>
@@ -145,69 +186,142 @@
     </div>
 
     <div class="content">
+
         <% if (locals.message_erreur) { %>
             <div class="alert-box alert-error"><i class="fas fa-exclamation-circle"></i> <%= message_erreur %></div>
         <% } %>
-        <% if (niveau_actuel == 0) { %>
-            <div class="alert-box alert-warning"><i class="fas fa-info-circle"></i> Invitez 3 utilisateurs pour activer votre premier versement (Niveau 1)</div>
+
+        <%
+          // success message set after POST redirect
+          const successMontant = locals.salaire_success;
+        %>
+        <% if (successMontant) { %>
+            <div class="alert-box alert-success"><i class="fas fa-check-circle"></i>
+                <strong><%= new Intl.NumberFormat('fr-FR').format(successMontant) %> FCFA</strong> versés dans votre portefeuille !
+            </div>
         <% } %>
 
-        <button class="btn-collect" onclick="reclamerSalaire()" <%= (niveau_actuel == 0) ? 'disabled' : '' %>>
-            <i class="fas fa-coins"></i> Récupérer Mon Salaire
-        </button>
+        <% if (niveau_actuel === 0) { %>
+            <div class="alert-box alert-warning"><i class="fas fa-info-circle"></i>
+                Atteignez le niveau VIP 1 en invitant <strong><%= filleuls_requis %></strong> filleuls actifs pour débloquer votre salaire.
+            </div>
+        <% } %>
 
-        <!-- Progression -->
+        <!-- Collect button -->
+        <form method="POST" action="/salaire">
+            <button type="submit" class="btn-collect"
+                <%= (!seuil_atteint || deja_reclame || niveau_actuel === 0) ? 'disabled' : '' %>>
+                <i class="fas fa-coins"></i>
+                <% if (deja_reclame) { %>
+                    Déjà réclamé aujourd'hui
+                <% } else if (!seuil_atteint) { %>
+                    Débloquez votre salaire
+                <% } else { %>
+                    Récupérer Mon Salaire
+                <% } %>
+            </button>
+        </form>
+
+        <!-- Progress section -->
+        <% if (palier_actuel) { %>
         <div class="section-card">
-            <div class="section-title"><i class="fas fa-chart-line"></i> Progression des Rémunérations</div>
-            <% Object.entries(salaires_par_niveau).forEach(([niveau, salaire]) => { %>
-            <div class="niveau-item <%= niveau == niveau_actuel ? 'actuel' : '' %>">
-                <div class="niveau-info">
-                    <div class="niveau-num"><%= niveau %></div>
-                    <div class="niveau-name">Niveau VIP <%= niveau %></div>
+            <div class="section-title"><i class="fas fa-chart-line"></i> Progression filleuls actifs</div>
+
+            <div class="progress-header">
+                <div class="progress-label">Filleuls avec plan actif</div>
+                <div class="progress-count"><%= filleuls_actifs %> / <%= filleuls_requis %></div>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width:<%= Math.min(100, filleuls_requis > 0 ? Math.round(filleuls_actifs / filleuls_requis * 100) : 0) %>%"></div>
+            </div>
+            <div class="progress-hint">
+                <% if (seuil_atteint) { %>
+                    ✅ Seuil atteint — vous pouvez réclamer votre salaire !
+                <% } else { %>
+                    Encore <%= filleuls_requis - filleuls_actifs %> filleul(s) actif(s) nécessaire(s)
+                <% } %>
+            </div>
+
+            <!-- Filleul dots -->
+            <div class="filleul-dots">
+                <%
+                  // Show actual filleuls first, then empty slots up to filleuls_requis
+                  const shown = filleuls_directs.slice(0, Math.max(filleuls_requis, filleuls_directs.length));
+                %>
+                <% shown.forEach(function(f) { %>
+                <div class="dot-item">
+                    <div class="dot-avatar <%= f.actif ? 'actif' : 'inactif' %>">
+                        <%= (f.nom || '?').charAt(0).toUpperCase() %>
+                        <% if (f.actif) { %>
+                        <div class="dot-check"><i class="fas fa-check"></i></div>
+                        <% } %>
+                    </div>
+                    <div class="dot-name"><%= (f.nom || '').split(' ')[0] %></div>
                 </div>
-                <div class="niveau-salary"><%= new Intl.NumberFormat('fr-FR').format(salaire) %> FCFA/j</div>
+                <% }); %>
+                <% for (let i = filleuls_directs.length; i < filleuls_requis; i++) { %>
+                <div class="dot-item">
+                    <div class="dot-empty"><i class="fas fa-user-plus"></i></div>
+                    <div class="dot-name" style="color:#C8A87A">Inviter</div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Salary table from DB -->
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-trophy"></i> Paliers de Rémunération</div>
+            <% paliers.forEach(function(p) { %>
+            <div class="niveau-item <%= p.niveau == niveau_actuel ? 'actuel' : '' %>">
+                <div class="niveau-info">
+                    <div class="niveau-num"><%= p.niveau %></div>
+                    <div class="niveau-details">
+                        <div class="niveau-name"><%= p.label || ('Niveau VIP ' + p.niveau) %></div>
+                        <div class="niveau-req"><i class="fas fa-users" style="font-size:9px"></i> <%= p.filleuls_requis %> filleuls actifs requis</div>
+                    </div>
+                </div>
+                <div class="niveau-salary"><%= new Intl.NumberFormat('fr-FR').format(parseFloat(p.montant_cadeau)) %> FCFA/j</div>
             </div>
             <% }); %>
+            <% if (!paliers.length) { %>
+            <div style="text-align:center;color:#A87D50;font-size:13px;padding:16px 0;">Aucun palier configuré.</div>
+            <% } %>
         </div>
 
-        <!-- VIP Criteria -->
-        <div class="section-card">
-            <div class="section-title"><i class="fas fa-star"></i> Critères d'Accès VIP</div>
-            <div class="info-item"><div class="info-icon"><i class="fas fa-user-plus"></i></div><div class="info-text"><strong>Niveau VIP 1:</strong> 3 invitations validées → 700 FCFA/jour</div></div>
-            <div class="info-item"><div class="info-icon"><i class="fas fa-users"></i></div><div class="info-text"><strong>Niveau VIP 2:</strong> 7 invitations validées → 1 200 FCFA/jour</div></div>
-            <div class="info-item"><div class="info-icon"><i class="fas fa-crown"></i></div><div class="info-text"><strong>Niveau VIP 3:</strong> 12 invitations validées → 4 000 FCFA/jour</div></div>
-            <div class="info-item"><div class="info-icon"><i class="fas fa-star"></i></div><div class="info-text"><strong>Niveau VIP 4:</strong> 20 invitations validées → 5 000 FCFA/jour</div></div>
-            <div class="info-item"><div class="info-icon"><i class="fas fa-gem"></i></div><div class="info-text"><strong>Niveau VIP 5:</strong> 40 invitations validées → 7 500 FCFA/jour</div></div>
-        </div>
-    </div>
-</div>
-
-<!-- Access Popup -->
-<div class="popup" id="blacklistPopup">
-    <div class="popup-box">
-        <div class="popup-head"><h3>ACCÈS RESTREINT</h3></div>
-        <div class="popup-body">
-            <div class="popup-icon"><i class="fas fa-ban"></i></div>
-            <div class="popup-msg">
-                <%= locals.message_blacklist || "Votre accès a été temporairement restreint. Veuillez contacter le support technique Altiora Capital Africa." %>
-            </div>
-            <button class="popup-btn" onclick="closePopup()"><i class="fas fa-headset"></i> Contacter le Support</button>
-        </div>
     </div>
 </div>
 
 <script>
-function reclamerSalaire() { document.getElementById('blacklistPopup').style.display = 'flex'; }
-function closePopup() {
-    document.getElementById('blacklistPopup').style.display = 'none';
-    window.open('https://t.me/blackrock_support', '_blank');
+// Show success popup if salary was just claimed
+<% if (successMontant) { %>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('successPopup').style.display = 'flex';
+});
+<% } %>
+function closeSuccess() {
+    document.getElementById('successPopup').style.display = 'none';
 }
-window.onclick = function(e) {
-    const popup = document.getElementById('blacklistPopup');
-    if (e.target === popup) closePopup();
-};
-document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive:false });
 document.addEventListener('gesturestart', e => e.preventDefault());
 </script>
+
+<!-- Success popup -->
+<% if (successMontant) { %>
+<div class="popup" id="successPopup">
+    <div class="popup-box">
+        <div class="popup-head-success"><h3>🎉 SALAIRE REÇU !</h3></div>
+        <div class="popup-body">
+            <div class="popup-icon"><i class="fas fa-coins"></i></div>
+            <div class="popup-msg">
+                Félicitations ! <strong><%= new Intl.NumberFormat('fr-FR').format(successMontant) %> FCFA</strong>
+                ont été versés dans votre portefeuille.<br><br>Revenez demain pour votre prochain versement.
+            </div>
+            <button class="popup-btn" onclick="closeSuccess()"><i class="fas fa-check"></i> Super, merci !</button>
+        </div>
+    </div>
+</div>
+<% } %>
+
 </body>
 </html>
