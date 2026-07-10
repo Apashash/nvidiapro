@@ -106,6 +106,9 @@
         <div class="section active" id="section-depot">
             <div class="sec-title">Comment déposer</div>
             <div class="sec-desc">Rechargez votre compte via Mobile Money pour commencer à investir.</div>
+            <% if (locals.appParams && appParams.tuto_video_depot) { %>
+            <video src="<%= appParams.tuto_video_depot %>" controls style="width:100%; border-radius:14px; margin-bottom:18px; background:#000; box-shadow:0 4px 14px rgba(0,0,0,0.12);"></video>
+            <% } %>
             <div class="tuto-btns">
                 <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/sonycanal/22' %>" target="_blank" class="tuto-btn tuto-btn-telegram">
                     <span class="btn-ico"><i class="fab fa-telegram"></i></span>
@@ -129,6 +132,9 @@
         <div class="section" id="section-retrait">
             <div class="sec-title">Comment retirer</div>
             <div class="sec-desc">Retirez vos gains sur votre compte Mobile Money.</div>
+            <% if (locals.appParams && appParams.tuto_video_retrait) { %>
+            <video src="<%= appParams.tuto_video_retrait %>" controls style="width:100%; border-radius:14px; margin-bottom:18px; background:#000; box-shadow:0 4px 14px rgba(0,0,0,0.12);"></video>
+            <% } %>
             <div class="tip-card"><strong>⚠️ Conditions :</strong> Vous devez avoir un plan actif et un dépôt validé. Retraits disponibles Lun-Sam 9h-19h GMT.</div>
             <div class="steps-box">
                 <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Allez dans Retrait</h4><p>Accédez à la section Retrait depuis votre profil.</p></div></div>
@@ -141,6 +147,9 @@
         <div class="section" id="section-investir">
             <div class="sec-title">Comment investir</div>
             <div class="sec-desc">Choisissez un plan et commencez à générer des revenus passifs.</div>
+            <% if (locals.appParams && appParams.tuto_video_investir) { %>
+            <video src="<%= appParams.tuto_video_investir %>" controls style="width:100%; border-radius:14px; margin-bottom:18px; background:#000; box-shadow:0 4px 14px rgba(0,0,0,0.12);"></video>
+            <% } %>
             <div class="tuto-btns">
                 <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/sonycanal/21' %>" target="_blank" class="tuto-btn tuto-btn-telegram">
                     <span class="btn-ico"><i class="fab fa-telegram"></i></span>
@@ -160,6 +169,9 @@
         <div class="section" id="section-astuces">
             <div class="sec-title">Astuces &amp; Conseils</div>
             <div class="sec-desc">Maximisez vos gains avec ces conseils.</div>
+            <% if (locals.appParams && appParams.tuto_video_astuces) { %>
+            <video src="<%= appParams.tuto_video_astuces %>" controls style="width:100%; border-radius:14px; margin-bottom:18px; background:#000; box-shadow:0 4px 14px rgba(0,0,0,0.12);"></video>
+            <% } %>
             <div class="tip-card"><strong>💡 Parrainage :</strong> Invitez des amis et gagnez 20% sur chaque investissement qu'ils font. C'est la méthode la plus rapide pour augmenter vos gains !</div>
             <div class="tip-card"><strong>🎰 Machine à sous :</strong> Jouez gratuitement toutes les 48 heures pour gagner jusqu'à 2 000 FCFA sans rien dépenser !</div>
             <div class="tip-card"><strong>👑 Niveaux VIP :</strong> Plus vous avez de filleuls actifs, plus votre niveau VIP est élevé et plus vous gagnez de salaire journalier.</div>

@@ -302,6 +302,7 @@
       { page:'salaires',     href:'/adminxyz/salaires',     icon:'fas fa-money-bill-wave',     bg:'#F0FDF4', color:'#22c55e', label:'Salaires VIP' },
       { page:'transactions', href:'/adminxyz/transactions', icon:'fas fa-receipt',             bg:'#F5F3FF', color:'#7c3aed', label:'Transactions' },
       { page:'affiches',     href:'/adminxyz/affiches',     icon:'fas fa-image',               bg:'#FFF7ED', color:'#E8931A', label:'Affiches' },
+      { page:'tuto',         href:'/adminxyz/tuto',         icon:'fas fa-video',               bg:'#FDF2F8', color:'#db2777', label:'Tuto' },
       { page:'parametres',   href:'/adminxyz/parametres',   icon:'fas fa-gear',                bg:'#F5F5F0', color:'#6b7280', label:'Paramètres' },
     ]; %>
     <% nav.forEach(item => { %>
@@ -845,6 +846,82 @@
 
     render();
   })();
+  </script>
+
+<%# ══════════════════ TUTO ══════════════════ %>
+<% } else if (currentPage === 'tuto') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-video"></i></div>
+      <div><div class="page-title">Tuto</div></div>
+    </div>
+  </div>
+
+  <% const tutoSections = [
+    { key: 'depot',    label: 'Dépôt',    desc: 'Vidéo affichée en tête de la section "Dépôt" de la page Tuto',    icon: 'fas fa-arrow-down',          color: '#22c55e', bg: '#F0FDF4' },
+    { key: 'retrait',  label: 'Retrait',  desc: 'Vidéo affichée en tête de la section "Retrait" de la page Tuto',  icon: 'fas fa-hand-holding-dollar',  color: '#6366f1', bg: '#EEF2FF' },
+    { key: 'investir', label: 'Investir', desc: 'Vidéo affichée en tête de la section "Investir" de la page Tuto', icon: 'fas fa-chart-line',           color: '#E8931A', bg: '#FFF7ED' },
+    { key: 'astuces',  label: 'Astuces',  desc: 'Vidéo affichée en tête de la section "Astuces" de la page Tuto',  icon: 'fas fa-lightbulb',            color: '#db2777', bg: '#FDF2F8' },
+  ]; %>
+
+  <% tutoSections.forEach(sec => { %>
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:<%= sec.bg %>"><i class="<%= sec.icon %>" style="color:<%= sec.color %>"></i></div>
+      <div class="param-head-text">
+        <h3>Vidéo — <%= sec.label %></h3>
+        <p><%= sec.desc %></p>
+      </div>
+    </div>
+    <% const currentVideo = params['tuto_video_' + sec.key]; %>
+    <% if (currentVideo) { %>
+      <video src="<%= currentVideo %>" controls style="width:100%; border-radius:12px; margin-bottom:12px; background:#000;"></video>
+    <% } %>
+    <label class="param-label">Téléverser une vidéo (MP4, WebM — 100 Mo max)</label>
+    <input type="file" class="param-input" id="tutoVideo_<%= sec.key %>" accept="video/mp4,video/webm,video/ogg,video/quicktime">
+    <button class="btn-save" id="tutoBtn_<%= sec.key %>" onclick="uploadTutoVideo('<%= sec.key %>')"><i class="fas fa-upload"></i> Téléverser</button>
+    <div id="tutoMsg_<%= sec.key %>" style="font-size:13px; margin-top:8px;"></div>
+  </div>
+  <% }) %>
+
+  <script>
+    async function uploadTutoVideo(section) {
+      const input = document.getElementById('tutoVideo_' + section);
+      const btn = document.getElementById('tutoBtn_' + section);
+      const msg = document.getElementById('tutoMsg_' + section);
+      msg.textContent = '';
+      msg.style.color = '';
+      if (!input.files || !input.files[0]) {
+        msg.style.color = '#dc2626';
+        msg.textContent = 'Veuillez choisir un fichier vidéo.';
+        return;
+      }
+      const fd = new FormData();
+      fd.append('video', input.files[0]);
+      fd.append('section', section);
+      btn.disabled = true;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Téléversement...';
+      try {
+        const resp = await fetch('/adminxyz/tuto/upload', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (data.success) {
+          msg.style.color = '#16a34a';
+          msg.textContent = 'Vidéo mise à jour avec succès.';
+          setTimeout(() => location.reload(), 900);
+        } else {
+          msg.style.color = '#dc2626';
+          msg.textContent = data.message || 'Échec du téléversement.';
+        }
+      } catch (e) {
+        msg.style.color = '#dc2626';
+        msg.textContent = 'Erreur réseau.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
   </script>
 
 <%# ══════════════════ PARAMÈTRES ══════════════════ %>

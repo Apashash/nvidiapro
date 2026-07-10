@@ -1,6 +1,40 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
+if (!fs.existsSync(TUTO_UPLOAD_DIR)) fs.mkdirSync(TUTO_UPLOAD_DIR, { recursive: true });
+
+const tutoVideoStorage = multer.diskStorage({
+  destination: TUTO_UPLOAD_DIR,
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + '-' + Math.random().toString(36).slice(2) + ext);
+  },
+});
+const TUTO_ALLOWED_MIMES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+const TUTO_ALLOWED_EXTS = ['.mp4', '.webm', '.ogg', '.ogv', '.mov'];
+const uploadTutoVideo = multer({
+  storage: tutoVideoStorage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    cb(null, TUTO_ALLOWED_MIMES.includes(file.mimetype) && TUTO_ALLOWED_EXTS.includes(ext));
+  },
+});
+const TUTO_SECTIONS = ['depot', 'retrait', 'investir', 'astuces'];
+
+// Deletes a tuto video file only if it resolves inside TUTO_UPLOAD_DIR — guards
+// against path traversal via a poisoned app_parametres value or req.file.path.
+function safeUnlinkTutoFile(filePath) {
+  if (!filePath) return;
+  const resolved = path.resolve(filePath);
+  const resolvedDir = path.resolve(TUTO_UPLOAD_DIR) + path.sep;
+  if (resolved.startsWith(resolvedDir)) fs.unlink(resolved, () => {});
+}
 
 const SECURITY_CODE = process.env.ADMIN_CODE || 'Apashash28';
 const SESSION_TIMEOUT = 30 * 60 * 1000;
@@ -234,6 +268,48 @@ router.get('/adminxyz/affiches', requireAdminAuth, async (req, res) => {
 });
 
 // ── Paramètres ─────────────────────────────────────────────────────────────────
+router.get('/adminxyz/tuto', requireAdminAuth, async (req, res) => {
+  try {
+    const params = await getParams();
+    res.render('admin', { currentPage: 'tuto', pageTitle: 'Tuto', params });
+  } catch (e) {
+    console.error(e);
+    res.render('admin', { currentPage: 'tuto', pageTitle: 'Tuto', params: {} });
+  }
+});
+
+router.post('/adminxyz/tuto/upload', requireAdminAuth, (req, res) => {
+  uploadTutoVideo.single('video')(req, res, async (err) => {
+    if (err) {
+      safeUnlinkTutoFile(req.file && req.file.path);
+      return res.json({ success: false, message: 'Échec du téléversement (vidéo invalide ou trop volumineuse, max 100 Mo).' });
+    }
+    const { section } = req.body;
+    if (!TUTO_SECTIONS.includes(section)) {
+      safeUnlinkTutoFile(req.file && req.file.path);
+      return res.json({ success: false, message: 'Section invalide' });
+    }
+    if (!req.file) return res.json({ success: false, message: 'Aucune vidéo reçue' });
+    try {
+      const cle = `tuto_video_${section}`;
+      const valeur = `/uploads/tuto/${req.file.filename}`;
+      // Remove the previous video file for this section, if any, to avoid orphaned uploads
+      const [[existing]] = await db.query('SELECT valeur FROM app_parametres WHERE cle = ?', [cle]);
+      await db.query('INSERT INTO app_parametres (cle, valeur) VALUES (?,?) ON CONFLICT (cle) DO UPDATE SET valeur=?', [cle, valeur, valeur]);
+      invalidateCache();
+      if (existing && existing.valeur && existing.valeur.startsWith('/uploads/tuto/')) {
+        safeUnlinkTutoFile(path.join(__dirname, '..', existing.valeur));
+      }
+      res.json({ success: true, url: valeur });
+    } catch (e) {
+      console.error(e);
+      // DB write failed — don't leave the newly uploaded file orphaned on disk
+      safeUnlinkTutoFile(req.file && req.file.path);
+      res.json({ success: false, message: e.message });
+    }
+  });
+});
+
 router.get('/adminxyz/parametres', requireAdminAuth, async (req, res) => {
   try {
     const params = await getParams();
