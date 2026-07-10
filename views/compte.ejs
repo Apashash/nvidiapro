@@ -189,17 +189,11 @@
                 <i class="fas fa-money-bill-wave"></i>
                 <span>Salaire VIP</span>
             </a>
-            <div class="action-btn collect-btn <%= (!can_collect || !has_active_command) ? 'disabled' : '' %>"
-                 id="collectBtn"
-                 onclick="<%= (can_collect && has_active_command) ? 'collectGain()' : '' %>">
-                <i class="fas fa-coins"></i>
-                <span>Récupérer Gain</span>
-            </div>
+            <a href="/investissement?menu=commande" class="action-btn">
+                <i class="fas fa-list-alt"></i>
+                <span>Commandes</span>
+            </a>
         </div>
-
-        <% if (!can_collect && has_active_command && next_payment_info) { %>
-        <div class="timing-box show"><i class="fas fa-clock"></i> <%- next_payment_info %></div>
-        <% } %>
 
         <!-- Menu -->
         <div class="menu-card">
@@ -267,17 +261,7 @@ function copyId(btn) {
         try { document.execCommand('copy'); } catch(e) {}
     });
 }
-async function collectGain() {
-    const btn = document.getElementById('collectBtn');
-    if (btn.classList.contains('disabled')) return;
-    btn.classList.add('disabled');
-    try {
-        const res = await fetch('/compte/collecter', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'} });
-        const data = await res.json();
-        if (data.success) { alert('✓ ' + data.message); location.reload(); }
-        else { alert('✗ ' + data.message); btn.classList.remove('disabled'); }
-    } catch(e) { alert('Erreur réseau'); btn.classList.remove('disabled'); }
-}
+
 </script>
 </body>
 </html>
