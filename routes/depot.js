@@ -179,15 +179,39 @@ function pollTransactionStatus(depot_id, transaction_id, apiKey) {
 }
 
 // ── GET /depot/status/:id  (polling by client) ───────────────────────────────
+// If still en_attente, actively re-checks AshtechPay before answering — this
+// is what makes the "Vérifier" button on /historique work even after the
+// background poller has timed out (5 min) or the server has restarted.
 router.get('/depot/status/:id', requireAuth, async (req, res) => {
   try {
     const depot_id = parseInt(req.params.id);
     const user_id  = req.session.user_id;
     const [[depot]] = await db.query(
-      'SELECT id, statut, montant FROM depots WHERE id = ? AND user_id = ?',
+      'SELECT * FROM depots WHERE id = ? AND user_id = ?',
       [depot_id, user_id]
     );
     if (!depot) return res.status(404).json({ error: 'Introuvable' });
+
+    if (depot.statut === 'en_attente') {
+      const transaction_id = (depot.numero_transaction || '').split('|')[1];
+      const apiKey = process.env.ASHTECHPAY_API_KEY;
+      if (transaction_id && apiKey) {
+        try {
+          const { data } = await axios.get(
+            `https://ashtechpay.top/v1/transaction/${transaction_id}`,
+            { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
+          );
+          if (data.status === 'success' || data.status === 'failed') {
+            await finalizeDepot(depot, data.status);
+            depot.statut = data.status === 'success' ? 'valide' : 'rejete';
+          }
+        } catch (e) {
+          // Live check failed (network/API) — fall back to the last known DB status
+          console.error(`AshtechPay live status check error (depot ${depot_id}):`, e.response?.data || e.message);
+        }
+      }
+    }
+
     res.json({ statut: depot.statut, montant: depot.montant });
   } catch (e) {
     res.status(500).json({ error: 'Erreur serveur' });
