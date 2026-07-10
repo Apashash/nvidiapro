@@ -33,7 +33,9 @@ router.get('/depot', requireAuth, async (req, res) => {
     const failed  = req.query.failed === '1' ? 'Paiement échoué. Veuillez réessayer.' : null;
     delete req.session.error;
     delete req.session.success;
-    res.render('depot', { user, countries: ashtechCountries, error, success, failed });
+    const params = await getParams();
+    const depotMin = parseFloat(params.depot_minimum ?? 200);
+    res.render('depot', { user, countries: ashtechCountries, error, success, failed, depotMin });
   } catch (e) {
     console.error('GET /depot error:', e);
     res.redirect('/');
