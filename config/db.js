@@ -11,10 +11,11 @@ function convertPlaceholders(sql) {
   return sql.replace(/\?/g, () => `$${++i}`);
 }
 
-// Auto-append RETURNING id to INSERT statements so result.insertId works
+// Auto-append RETURNING id to plain INSERT statements so result.insertId works.
+// Skip for upserts (ON CONFLICT) — those tables may not have an id column.
 function prepareSql(sql) {
   let s = convertPlaceholders(sql);
-  if (/^\s*INSERT\s+/i.test(s) && !/RETURNING/i.test(s)) {
+  if (/^\s*INSERT\s+/i.test(s) && !/RETURNING/i.test(s) && !/ON\s+CONFLICT/i.test(s)) {
     s = s.trimEnd().replace(/;?\s*$/, '') + ' RETURNING id';
   }
   return s;
