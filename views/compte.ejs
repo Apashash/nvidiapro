@@ -222,7 +222,7 @@
                 <span class="menu-txt">FAQ</span>
                 <i class="fas fa-chevron-right menu-arr"></i>
             </a>
-            <a href="https://t.me/groupeofficielblackrock" target="_blank" class="menu-item">
+            <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/groupeofficielblackrock' %>" target="_blank" class="menu-item">
                 <span class="menu-ico"><i class="fab fa-telegram"></i></span>
                 <span class="menu-txt">Groupe Telegram</span>
                 <i class="fas fa-chevron-right menu-arr"></i>
