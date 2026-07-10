@@ -1213,18 +1213,40 @@ const NOTIF_LABELS = {
   affiches: { label: 'Affiches en attente', icon: 'fa-image',               href: '/adminxyz/affiches' },
 };
 
+// The bell shows an "unread" style badge: it disappears once the admin opens
+// the dropdown (has "seen" the current pending items), and only reappears
+// when a NEW item arrives on top of what was already seen. The per-item
+// sidebar badges (Dépôts, Retraits, Affiches) are never dismissed this way —
+// they always reflect the true pending count in the database and only
+// disappear once that item is actually validated/rejected.
+let lastCounts = null;   // most recent counts fetched from the server
+let seenCounts = {};     // counts snapshot at the moment the bell was last opened
+
 function renderNotifCounts(counts) {
+  lastCounts = counts || { total: 0, depots: 0, retraits: 0, affiches: 0 };
   const badge = document.getElementById('notifBadge');
   const list  = document.getElementById('notifList');
-  if (!counts || counts.total <= 0) {
+
+  const unread = {};
+  let unreadTotal = 0;
+  Object.keys(NOTIF_LABELS).forEach(key => {
+    const n = Math.max(0, (lastCounts[key] || 0) - (seenCounts[key] || 0));
+    unread[key] = n;
+    unreadTotal += n;
+  });
+
+  if (unreadTotal <= 0) {
     badge.style.display = 'none';
-    list.innerHTML = '<div class="notif-empty">Aucune notification</div>';
   } else {
     badge.style.display = 'flex';
-    badge.textContent = counts.total > 99 ? '99+' : counts.total;
+    badge.textContent = unreadTotal > 99 ? '99+' : unreadTotal;
+  }
 
+  if (lastCounts.total <= 0) {
+    list.innerHTML = '<div class="notif-empty">Aucune notification</div>';
+  } else {
     list.innerHTML = Object.keys(NOTIF_LABELS).map(key => {
-      const n = counts[key] || 0;
+      const n = lastCounts[key] || 0;
       if (n <= 0) return '';
       const meta = NOTIF_LABELS[key];
       return `<a class="notif-item" href="${meta.href}">
@@ -1234,18 +1256,24 @@ function renderNotifCounts(counts) {
     }).join('') || '<div class="notif-empty">Aucune notification</div>';
   }
 
-  // Also reflect the same counts as badges directly on the sidebar nav items
-  // (Dépôts, Retraits, Affiches) — updated live so a newly created deposit/
-  // withdrawal shows immediately, and clears once it's validated or rejected.
+  // Sidebar nav badges: always the real pending count — persist until the
+  // item's status actually changes, unaffected by opening the bell.
   document.querySelectorAll('[data-nav-count]').forEach(el => {
-    const n = (counts && counts[el.dataset.navCount]) || 0;
+    const n = (lastCounts && lastCounts[el.dataset.navCount]) || 0;
     el.textContent = n > 99 ? '99+' : n;
     el.classList.toggle('show', n > 0);
   });
 }
 
 function toggleNotifDropdown() {
-  document.getElementById('notifDropdown').classList.toggle('open');
+  const dd = document.getElementById('notifDropdown');
+  const opening = !dd.classList.contains('open');
+  dd.classList.toggle('open');
+  if (opening) {
+    // Mark current counts as seen — hides the bell badge immediately.
+    seenCounts = { ...(lastCounts || {}) };
+    renderNotifCounts(lastCounts);
+  }
 }
 document.addEventListener('click', e => {
   const dd = document.getElementById('notifDropdown');
