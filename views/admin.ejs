@@ -25,6 +25,30 @@
     }
     .topbar-title { color:#fff; font-size:1.05rem; font-weight:700; }
 
+    /* ── Notification bell ── */
+    .bell-wrap { position:relative; }
+    .notif-badge {
+      position:absolute; top:-4px; right:-4px; min-width:18px; height:18px;
+      background:#dc2626; color:#fff; border-radius:20px; font-size:0.68rem;
+      font-weight:800; display:flex; align-items:center; justify-content:center;
+      padding:0 4px; border:2px solid #E8931A;
+    }
+    .notif-dropdown {
+      position:absolute; top:52px; right:16px; width:270px; background:#fff;
+      border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,0.18); z-index:600;
+      overflow:hidden; display:none;
+    }
+    .notif-dropdown.open { display:block; }
+    .notif-dropdown-header { padding:14px 16px; background:#FFF7ED; font-weight:800; font-size:0.9rem; color:#333; }
+    .notif-item {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px 16px; text-decoration:none; color:#333; border-top:1px solid #f2f2f2;
+      font-size:0.85rem; font-weight:600;
+    }
+    .notif-item:hover { background:#FFF8F0; }
+    .notif-count { background:#dc2626; color:#fff; border-radius:12px; padding:2px 9px; font-size:0.75rem; font-weight:800; }
+    .notif-empty { padding:20px 16px; text-align:center; color:#aaa; font-size:0.85rem; }
+
     /* ── Sidebar ── */
     .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:400; opacity:0; pointer-events:none; transition:opacity 0.25s; }
     .overlay.open { opacity:1; pointer-events:all; }
@@ -246,7 +270,16 @@
 <div class="topbar">
   <button class="topbar-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
   <span class="topbar-title"><%= pageTitle %></span>
-  <a href="/adminxyz/logout" class="topbar-btn" title="Déconnexion"><i class="fas fa-bell"></i></a>
+  <div class="bell-wrap">
+    <button class="topbar-btn" id="bellBtn" onclick="toggleNotifDropdown()" title="Notifications">
+      <i class="fas fa-bell"></i>
+      <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+    </button>
+    <div class="notif-dropdown" id="notifDropdown">
+      <div class="notif-dropdown-header">Notifications</div>
+      <div id="notifList"></div>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
@@ -1063,6 +1096,58 @@ function toast(msg, type = '') {
   el.className = 'toast show' + (type ? ' ' + type : '');
   setTimeout(() => el.classList.remove('show'), 3000);
 }
+
+// ── Notification bell ─────────────────────────────────────────────────
+const NOTIF_LABELS = {
+  depots:   { label: 'Dépôts en attente',   icon: 'fa-arrow-down',          href: '/adminxyz/depots' },
+  retraits: { label: 'Retraits en attente', icon: 'fa-hand-holding-dollar', href: '/adminxyz/retraits' },
+  affiches: { label: 'Affiches en attente', icon: 'fa-image',               href: '/adminxyz/affiches' },
+};
+
+function renderNotifCounts(counts) {
+  const badge = document.getElementById('notifBadge');
+  const list  = document.getElementById('notifList');
+  if (!counts || counts.total <= 0) {
+    badge.style.display = 'none';
+    list.innerHTML = '<div class="notif-empty">Aucune notification</div>';
+    return;
+  }
+  badge.style.display = 'flex';
+  badge.textContent = counts.total > 99 ? '99+' : counts.total;
+
+  list.innerHTML = Object.keys(NOTIF_LABELS).map(key => {
+    const n = counts[key] || 0;
+    if (n <= 0) return '';
+    const meta = NOTIF_LABELS[key];
+    return `<a class="notif-item" href="${meta.href}">
+      <span><i class="fas ${meta.icon}" style="color:#E8931A;margin-right:8px"></i>${meta.label}</span>
+      <span class="notif-count">${n}</span>
+    </a>`;
+  }).join('') || '<div class="notif-empty">Aucune notification</div>';
+}
+
+function toggleNotifDropdown() {
+  document.getElementById('notifDropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const dd = document.getElementById('notifDropdown');
+  const btn = document.getElementById('bellBtn');
+  if (dd && btn && !dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove('open');
+});
+
+let notifPollTimer = null;
+async function refreshNotifCounts() {
+  try {
+    const r = await fetch('/adminxyz/pending-counts');
+    if (r.status === 401) { clearInterval(notifPollTimer); return; }
+    const counts = await r.json();
+    renderNotifCounts(counts);
+  } catch (e) { /* silent */ }
+}
+
+// Initial render from server-side data, then poll for live updates
+renderNotifCounts(<%- JSON.stringify(pendingCounts || { total: 0, depots: 0, retraits: 0, affiches: 0 }) %>);
+notifPollTimer = setInterval(refreshNotifCounts, 15000);
 
 // ── Modals ─────────────────────────────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.add('open'); }

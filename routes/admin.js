@@ -33,6 +33,40 @@ async function getParams() {
   return p;
 }
 
+async function getPendingCounts() {
+  const [[d]] = await db.query("SELECT COUNT(*) as c FROM depots WHERE statut='en_attente'");
+  const [[r]] = await db.query("SELECT COUNT(*) as c FROM retraits WHERE statut='en_attente'");
+  const [[p]] = await db.query("SELECT COUNT(*) as c FROM posts WHERE statut='en_attente'");
+  const depots   = parseInt(d.c) || 0;
+  const retraits = parseInt(r.c) || 0;
+  const affiches = parseInt(p.c) || 0;
+  return { total: depots + retraits + affiches, depots, retraits, affiches };
+}
+
+// Attach pending notification counts to every authenticated admin page render
+// (skip the polling endpoint itself, which computes its own counts).
+router.use(async (req, res, next) => {
+  if (req.session.security_authenticated && req.path !== '/adminxyz/pending-counts') {
+    try {
+      res.locals.pendingCounts = await getPendingCounts();
+    } catch (e) {
+      console.error(e);
+      res.locals.pendingCounts = { total: 0, depots: 0, retraits: 0, affiches: 0 };
+    }
+  }
+  next();
+});
+
+// AJAX polling endpoint for the notification bell
+router.get('/adminxyz/pending-counts', (req, res) => {
+  if (!req.session.user_id || !req.session.security_authenticated) {
+    return res.status(401).json({ error: 'unauthenticated', total: 0, depots: 0, retraits: 0, affiches: 0 });
+  }
+  getPendingCounts()
+    .then(counts => res.json(counts))
+    .catch(() => res.status(500).json({ total: 0, depots: 0, retraits: 0, affiches: 0 }));
+});
+
 // ── Login ──────────────────────────────────────────────────────────────────────
 router.get('/adminxyz', requireAppAdmin, (req, res) => {
   if (req.session.security_authenticated) return res.redirect('/adminxyz/dashboard');
