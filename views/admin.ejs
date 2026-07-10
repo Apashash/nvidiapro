@@ -304,6 +304,7 @@
       { page:'salaires',     href:'/adminxyz/salaires',     icon:'fas fa-money-bill-wave',     bg:'#F0FDF4', color:'#22c55e', label:'Salaires VIP' },
       { page:'transactions', href:'/adminxyz/transactions', icon:'fas fa-receipt',             bg:'#F5F3FF', color:'#7c3aed', label:'Transactions' },
       { page:'affiches',     href:'/adminxyz/affiches',     icon:'fas fa-image',               bg:'#FFF7ED', color:'#E8931A', label:'Affiches',     countKey:'affiches' },
+      { page:'codes-cadeaux', href:'/adminxyz/codes-cadeaux', icon:'fas fa-ticket-alt',         bg:'#FFF7ED', color:'#E8931A', label:'Code Cadeau' },
       { page:'tuto',         href:'/adminxyz/tuto',         icon:'fas fa-video',               bg:'#FDF2F8', color:'#db2777', label:'Tuto' },
       { page:'parametres',   href:'/adminxyz/parametres',   icon:'fas fa-gear',                bg:'#F5F5F0', color:'#6b7280', label:'Paramètres' },
     ]; %>
@@ -855,6 +856,91 @@
   })();
   </script>
 
+<%# ══════════════════ CODE CADEAU ══════════════════ %>
+<% } else if (currentPage === 'codes-cadeaux') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-ticket-alt"></i></div>
+      <div><div class="page-title">Code Cadeau (<%= codes.length %>)</div></div>
+    </div>
+  </div>
+
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#FFF7ED"><i class="fas fa-plus-circle" style="color:#E8931A"></i></div>
+      <div class="param-head-text">
+        <h3>Créer un code cadeau</h3>
+        <p>Le code est utilisable par les utilisateurs depuis la page "Cadeaux"</p>
+      </div>
+    </div>
+    <div id="codeCadeauError" style="display:none;color:#dc2626;font-size:13px;margin-bottom:10px"></div>
+    <form method="POST" action="/adminxyz/codes-cadeaux/create">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Code</label>
+          <input type="text" name="code" placeholder="Ex: ALTIORA2026" required style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label>Montant à gagner (FCFA)</label>
+          <input type="number" name="montant" min="1" step="0.01" required>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Places disponibles</label>
+          <input type="number" name="places_disponibles" min="1" step="1" value="1" required>
+        </div>
+        <div class="form-group">
+          <label>Durée de validité (jours, vide = illimitée)</label>
+          <input type="number" name="duree_jours" min="1" step="1" placeholder="Ex: 30">
+        </div>
+      </div>
+      <button type="submit" class="btn-save"><i class="fas fa-save"></i> Créer le code</button>
+    </form>
+  </div>
+
+  <% codes.forEach(c => {
+    const expired = c.date_expiration && new Date(c.date_expiration) < new Date();
+    const full = c.places_utilisees >= c.places_disponibles;
+    const statutLabel = !c.actif ? 'Désactivé' : (expired ? 'Expiré' : (full ? 'Épuisé' : 'Actif'));
+    const statutClass = (!c.actif || expired || full) ? 'badge-rejected' : 'badge-valid';
+  %>
+  <div class="card">
+    <div class="card-row" style="align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:15px;letter-spacing:0.5px"><%= c.code %></div>
+        <div class="dep-meta" style="margin:4px 0">
+          <%= parseFloat(c.montant).toLocaleString('fr-FR') %> FCFA · <%= c.places_utilisees %>/<%= c.places_disponibles %> places
+          <% if (c.date_expiration) { %> · expire le <%= new Date(c.date_expiration).toLocaleDateString('fr-FR') %><% } %>
+        </div>
+        <span class="badge <%= statutClass %>"><%= statutLabel %></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <form method="POST" action="/adminxyz/codes-cadeaux/toggle/<%= c.id %>">
+          <button type="submit" class="btn-xs btn-v" style="padding:5px 10px"><i class="fas <%= c.actif ? 'fa-pause' : 'fa-play' %>"></i> <%= c.actif ? 'Désactiver' : 'Activer' %></button>
+        </form>
+        <form method="POST" action="/adminxyz/codes-cadeaux/delete/<%= c.id %>" onsubmit="return confirm('Supprimer ce code cadeau ?')">
+          <button type="submit" class="btn-xs btn-r" style="padding:5px 10px"><i class="fas fa-trash"></i> Supprimer</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <% }); %>
+  <% if (!codes.length) { %><div class="empty">Aucun code cadeau créé</div><% } %>
+
+  <script>
+    (function() {
+      const params = new URLSearchParams(location.search);
+      const err = params.get('error');
+      if (err) {
+        const el = document.getElementById('codeCadeauError');
+        el.textContent = err;
+        el.style.display = 'block';
+      }
+    })();
+  </script>
+
 <%# ══════════════════ TUTO ══════════════════ %>
 <% } else if (currentPage === 'tuto') { %>
 
@@ -887,12 +973,42 @@
     <% } %>
     <label class="param-label">Téléverser une vidéo (MP4, WebM — 100 Mo max)</label>
     <input type="file" class="param-input" id="tutoVideo_<%= sec.key %>" accept="video/mp4,video/webm,video/ogg,video/quicktime">
-    <button class="btn-save" id="tutoBtn_<%= sec.key %>" onclick="uploadTutoVideo('<%= sec.key %>')"><i class="fas fa-upload"></i> Téléverser</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-save" id="tutoBtn_<%= sec.key %>" onclick="uploadTutoVideo('<%= sec.key %>')"><i class="fas fa-upload"></i> Téléverser</button>
+      <% if (currentVideo) { %>
+      <button class="btn-save" style="background:#ef4444" id="tutoDelBtn_<%= sec.key %>" onclick="deleteTutoVideo('<%= sec.key %>')"><i class="fas fa-trash"></i> Supprimer la vidéo</button>
+      <% } %>
+    </div>
     <div id="tutoMsg_<%= sec.key %>" style="font-size:13px; margin-top:8px;"></div>
   </div>
   <% }) %>
 
   <script>
+    async function deleteTutoVideo(section) {
+      if (!confirm('Supprimer cette vidéo ?')) return;
+      const btn = document.getElementById('tutoDelBtn_' + section);
+      const msg = document.getElementById('tutoMsg_' + section);
+      btn.disabled = true;
+      try {
+        const resp = await fetch('/adminxyz/tuto/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ section }),
+        });
+        const data = await resp.json();
+        if (data.success) {
+          location.reload();
+        } else {
+          msg.style.color = '#dc2626';
+          msg.textContent = data.message || 'Échec de la suppression.';
+          btn.disabled = false;
+        }
+      } catch (e) {
+        msg.style.color = '#dc2626';
+        msg.textContent = 'Erreur réseau.';
+        btn.disabled = false;
+      }
+    }
     async function uploadTutoVideo(section) {
       const input = document.getElementById('tutoVideo_' + section);
       const btn = document.getElementById('tutoBtn_' + section);

@@ -121,101 +121,26 @@ const code_message = success
 <div class="container">
     <div class="page-header">
         <h1><i class="fas fa-gift"></i> Cadeaux</h1>
-        <p>Créez ou utilisez des codes cadeau</p>
+        <p>Utilisez un code cadeau</p>
     </div>
 
     <div class="content">
-        <!-- Choice section -->
-        <div id="choiceSection">
-            <div class="choice-grid">
-                <div class="choice-card" onclick="showCreationSection()">
-                    <div class="choice-icon"><i class="fas fa-gift"></i></div>
-                    <div class="choice-text">
-                        <h3>Créer vos codes cadeau</h3>
-                        <p>Créez vos propres codes cadeau et gagnez 40% de commission sur chaque utilisation</p>
-                    </div>
+        <div class="panel-card">
+            <div class="panel-title">Utiliser un code cadeau</div>
+            <%- code_message %>
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label" for="code_cadeau">Code cadeau</label>
+                    <input type="text" id="code_cadeau" name="code" class="form-input"
+                           placeholder="Ex: ALTIORA2026" required>
                 </div>
-                <div class="choice-card" onclick="showUsageSection()">
-                    <div class="choice-icon"><i class="fas fa-ticket-alt"></i></div>
-                    <div class="choice-text">
-                        <h3>Utiliser un code cadeau</h3>
-                        <p>Entrez un code cadeau pour recevoir une récompense immédiate</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Creation section -->
-        <div class="section-panel" id="creationSection">
-            <button class="back-btn" onclick="showChoiceSection()"><i class="fas fa-arrow-left"></i> Retour</button>
-            <div class="panel-card">
-                <div class="panel-title">Créer vos codes cadeau</div>
-                <div class="eligibility-box">
-                    <div class="elig-title"><i class="fas fa-info-circle"></i> Conditions d'éligibilité</div>
-                    <div class="elig-desc">Pour créer vos propres codes cadeau, vous devez remplir l'une des conditions suivantes :</div>
-                    <div class="stats-grid">
-                        <div class="stat-cell">
-                            <div class="stat-val"><%= filleuls_actifs %>/10</div>
-                            <div class="stat-lbl">Filleuls actifs</div>
-                        </div>
-                        <div class="stat-cell">
-                            <div class="stat-val"><%= filleuls_inscrits %>/50</div>
-                            <div class="stat-lbl">Filleuls inscrits</div>
-                        </div>
-                    </div>
-                    <% if (!est_eligible) { %>
-                        <div class="alert info"><%= message_eligibilite %></div>
-                    <% } else { %>
-                        <div class="alert success">✅ Félicitations ! Vous êtes éligible pour créer des codes cadeau.</div>
-                    <% } %>
-                </div>
-                <div class="commission-box">
-                    <div class="comm-title"><i class="fas fa-percentage"></i> Commission de 40%</div>
-                    <div class="comm-desc">Pour chaque personne qui utilise un de vos codes cadeau, vous recevrez 40% de commission sur le montant qu'ils reçoivent.</div>
-                </div>
-                <form method="POST">
-                    <button type="submit" name="creer_code" class="btn-primary" <%= est_eligible ? '' : 'disabled' %>>
-                        <i class="fas fa-plus-circle"></i> Créer mon code cadeau
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Usage section -->
-        <div class="section-panel" id="usageSection">
-            <button class="back-btn" onclick="showChoiceSection()"><i class="fas fa-arrow-left"></i> Retour</button>
-            <div class="panel-card">
-                <div class="panel-title">Utiliser un code cadeau</div>
-                <%- code_message %>
-                <form method="POST">
-                    <div class="form-group">
-                        <label class="form-label" for="code_cadeau">Code cadeau</label>
-                        <input type="text" id="code_cadeau" name="code" class="form-input"
-                               placeholder="Ex: ALTIORA2026" required>
-                    </div>
-                    <button type="submit" class="btn-primary"><i class="fas fa-gift"></i> Utiliser le code</button>
-                </form>
-            </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-gift"></i> Utiliser le code</button>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-function showChoiceSection() {
-    document.getElementById('choiceSection').style.display = 'block';
-    document.getElementById('creationSection').classList.remove('active');
-    document.getElementById('usageSection').classList.remove('active');
-}
-function showCreationSection() {
-    document.getElementById('choiceSection').style.display = 'none';
-    document.getElementById('creationSection').classList.add('active');
-    document.getElementById('usageSection').classList.remove('active');
-}
-function showUsageSection() {
-    document.getElementById('choiceSection').style.display = 'none';
-    document.getElementById('creationSection').classList.remove('active');
-    document.getElementById('usageSection').classList.add('active');
-}
 document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
 document.addEventListener('gesturestart', e => e.preventDefault());
 </script>

@@ -310,6 +310,73 @@ router.post('/adminxyz/tuto/upload', requireAdminAuth, (req, res) => {
   });
 });
 
+router.post('/adminxyz/tuto/delete', requireAdminAuth, async (req, res) => {
+  const { section } = req.body;
+  if (!TUTO_SECTIONS.includes(section)) {
+    return res.json({ success: false, message: 'Section invalide' });
+  }
+  try {
+    const cle = `tuto_video_${section}`;
+    const [[existing]] = await db.query('SELECT valeur FROM app_parametres WHERE cle = ?', [cle]);
+    await db.query('DELETE FROM app_parametres WHERE cle = ?', [cle]);
+    invalidateCache();
+    if (existing && existing.valeur && existing.valeur.startsWith('/uploads/tuto/')) {
+      safeUnlinkTutoFile(path.join(__dirname, '..', existing.valeur));
+    }
+    res.json({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.json({ success: false, message: e.message });
+  }
+});
+
+// ── Codes cadeaux ────────────────────────────────────────────────────────────
+router.get('/adminxyz/codes-cadeaux', requireAdminAuth, async (req, res) => {
+  try {
+    const [codes] = await db.query('SELECT * FROM codes_cadeaux ORDER BY date_creation DESC');
+    res.render('admin', { currentPage: 'codes-cadeaux', pageTitle: 'Code Cadeau', codes });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.post('/adminxyz/codes-cadeaux/create', requireAdminAuth, async (req, res) => {
+  try {
+    let { code, montant, places_disponibles, duree_jours } = req.body;
+    code = (code || '').trim().toUpperCase();
+    montant = parseFloat(montant);
+    places_disponibles = parseInt(places_disponibles, 10);
+    if (!code || !Number.isFinite(montant) || montant <= 0 || !Number.isInteger(places_disponibles) || places_disponibles <= 0) {
+      return res.redirect('/adminxyz/codes-cadeaux?error=' + encodeURIComponent('Champs invalides.'));
+    }
+    const jours = parseInt(duree_jours, 10);
+    const date_expiration = Number.isFinite(jours) && jours > 0
+      ? new Date(Date.now() + jours * 24 * 60 * 60 * 1000)
+      : null;
+    await db.query(
+      'INSERT INTO codes_cadeaux (code, montant, places_disponibles, date_expiration) VALUES (?, ?, ?, ?)',
+      [code, montant, places_disponibles, date_expiration]
+    );
+    res.redirect('/adminxyz/codes-cadeaux');
+  } catch (e) {
+    console.error(e);
+    const msg = e.code === '23505' ? 'Ce code existe déjà.' : e.message;
+    res.redirect('/adminxyz/codes-cadeaux?error=' + encodeURIComponent(msg));
+  }
+});
+
+router.post('/adminxyz/codes-cadeaux/toggle/:id', requireAdminAuth, async (req, res) => {
+  try {
+    await db.query('UPDATE codes_cadeaux SET actif = NOT actif WHERE id = ?', [req.params.id]);
+    res.redirect('/adminxyz/codes-cadeaux');
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.post('/adminxyz/codes-cadeaux/delete/:id', requireAdminAuth, async (req, res) => {
+  try {
+    await db.query('DELETE FROM codes_cadeaux WHERE id = ?', [req.params.id]);
+    res.redirect('/adminxyz/codes-cadeaux');
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
 router.get('/adminxyz/parametres', requireAdminAuth, async (req, res) => {
   try {
     const params = await getParams();

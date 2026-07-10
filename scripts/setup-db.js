@@ -159,6 +159,21 @@ CREATE TABLE IF NOT EXISTS vip_paliers (
   filleuls_requis INTEGER DEFAULT 0,
   montant_cadeau NUMERIC(15,2) DEFAULT 0
 );
+
+-- Gift codes created and managed by the admin (replaces the old hardcoded
+-- validCodes object in routes/cadeau.js). places_utilisees is incremented
+-- atomically each time a user redeems the code; the code stops working once
+-- places_utilisees reaches places_disponibles or date_expiration has passed.
+CREATE TABLE IF NOT EXISTS codes_cadeaux (
+  id SERIAL PRIMARY KEY,
+  code VARCHAR(100) UNIQUE NOT NULL,
+  montant NUMERIC(15,2) NOT NULL,
+  places_disponibles INTEGER NOT NULL DEFAULT 1,
+  places_utilisees INTEGER NOT NULL DEFAULT 0,
+  date_expiration TIMESTAMP,
+  actif BOOLEAN DEFAULT true,
+  date_creation TIMESTAMP DEFAULT NOW()
+);
 `;
 
 // rendement_journalier values computed from original absolute gains:
@@ -191,9 +206,10 @@ async function setup() {
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false`,
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS retrait_bloque BOOLEAN DEFAULT false`,
       `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS bloque BOOLEAN DEFAULT false`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS codes_utilises_user_code_uidx ON codes_utilises (user_id, code)`,
     ];
     for (const sql of alterations) await client.query(sql);
-    console.log('✓ Schema ready (17 tables)');
+    console.log('✓ Schema ready (18 tables)');
 
     console.log('Seeding investment plans…');
     const res = await client.query(SEED_PLANS);
