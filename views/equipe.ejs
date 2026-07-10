@@ -231,7 +231,10 @@
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <div class="stat-num"><%= Math.round((invest_niveau1 * 0.20) + (invest_niveau2 * 0.10) + (invest_niveau3 * 0.05)).toLocaleString('fr-FR') %></div>
+                <% const c1 = parseFloat(appParams.commission_niveau1 ?? 20) / 100;
+                   const c2 = parseFloat(appParams.commission_niveau2 ?? 10) / 100;
+                   const c3 = parseFloat(appParams.commission_niveau3 ?? 5)  / 100; %>
+                <div class="stat-num"><%= Math.round((invest_niveau1 * c1) + (invest_niveau2 * c2) + (invest_niveau3 * c3)).toLocaleString('fr-FR') %></div>
                 <div class="stat-lbl">Total commission</div>
             </div>
         </div>
@@ -246,9 +249,9 @@
             </div>
             <div class="comm-row">
                 <span>1,2,3</span>
-                <span class="pct">20%</span>
-                <span class="pct">10%</span>
-                <span class="pct">5%</span>
+                <span class="pct"><%= appParams.commission_niveau1 ?? 20 %>%</span>
+                <span class="pct"><%= appParams.commission_niveau2 ?? 10 %>%</span>
+                <span class="pct"><%= appParams.commission_niveau3 ?? 5 %>%</span>
             </div>
         </div>
 
@@ -272,7 +275,7 @@
                 <div class="acc-icon-wrap"><i class="fas fa-users"></i></div>
                 <div class="acc-info">
                     <div class="acc-title">Équipe niveau 1</div>
-                    <div class="acc-sub"><%= filleuls_niveau1.length %> membre(s) • 20%</div>
+                    <div class="acc-sub"><%= filleuls_niveau1.length %> membre(s) • <%= appParams.commission_niveau1 ?? 20 %>%</div>
                 </div>
                 <div class="acc-chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
@@ -294,7 +297,7 @@
                 <div class="acc-icon-wrap"><i class="fas fa-user-friends"></i></div>
                 <div class="acc-info">
                     <div class="acc-title">Équipe niveau 2</div>
-                    <div class="acc-sub"><%= filleuls_niveau2.length %> membre(s) • 10%</div>
+                    <div class="acc-sub"><%= filleuls_niveau2.length %> membre(s) • <%= appParams.commission_niveau2 ?? 10 %>%</div>
                 </div>
                 <div class="acc-chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
@@ -316,7 +319,7 @@
                 <div class="acc-icon-wrap"><i class="fas fa-sitemap"></i></div>
                 <div class="acc-info">
                     <div class="acc-title">Équipe niveau 3</div>
-                    <div class="acc-sub"><%= filleuls_niveau3.length %> membre(s) • 5%</div>
+                    <div class="acc-sub"><%= filleuls_niveau3.length %> membre(s) • <%= appParams.commission_niveau3 ?? 5 %>%</div>
                 </div>
                 <div class="acc-chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
