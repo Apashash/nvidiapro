@@ -11,7 +11,7 @@ router.get('/investissement', requireAuth, async (req, res) => {
 
     const menu_actif = ['vip', 'commande'].includes(req.query.menu) ? req.query.menu : 'vip';
 
-    const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY prix ASC');
+    const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY id ASC');
     const plans_corriges = [];
     const seenIds = new Set();
     for (const plan of plans) {
