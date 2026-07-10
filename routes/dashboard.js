@@ -39,7 +39,7 @@ router.get('/', requireAuth, async (req, res) => {
       "SELECT p.*, u.nom FROM posts p LEFT JOIN utilisateurs u ON p.user_id = u.id WHERE p.statut = 'valide' ORDER BY p.date_creation DESC LIMIT 10"
     );
 
-    const devise = user.pays === 'Cameroun' ? 'XAF' : 'XOF';
+    const devise = 'FCFA';
     const success_message = req.session.success_message || null;
     const error_message = req.session.error_message || null;
     delete req.session.success_message;
