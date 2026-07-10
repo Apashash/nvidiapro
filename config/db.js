@@ -25,6 +25,9 @@ function buildResult(pgResult, originalSql) {
   if (/^\s*INSERT\s+/i.test(originalSql)) {
     return [{ insertId: pgResult.rows[0]?.id ?? null, affectedRows: pgResult.rowCount }, []];
   }
+  if (/^\s*(UPDATE|DELETE)\s+/i.test(originalSql)) {
+    return [{ affectedRows: pgResult.rowCount }, []];
+  }
   return [pgResult.rows, []];
 }
 

@@ -548,12 +548,12 @@
         <div class="welcome-body">
             <div class="welcome-buttons">
                 <% if (_p.telegram_link) { %>
-                <a href="<%- _p.telegram_link %>" target="_blank" rel="noopener" class="welcome-btn welcome-btn-join">
+                <a href="<%= _p.telegram_link %>" target="_blank" rel="noopener" class="welcome-btn welcome-btn-join">
                     <i class="fab fa-telegram"></i> Canal Telegram
                 </a>
                 <% } %>
                 <% if (_p.whatsapp_group_link) { %>
-                <a href="<%- _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="welcome-btn" style="background:#25D366;color:#fff;">
+                <a href="<%= _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="welcome-btn" style="background:#25D366;color:#fff;">
                     <i class="fab fa-whatsapp"></i> Groupe WhatsApp
                 </a>
                 <% } %>
@@ -576,7 +576,7 @@
             <p class="popup-text">Restez connecté et ne manquez aucune opportunité d'investissement !</p>
             <div class="community-buttons">
                 <% if (_p.telegram_link) { %>
-                <a href="<%- _p.telegram_link %>" target="_blank" rel="noopener" class="community-btn">
+                <a href="<%= _p.telegram_link %>" target="_blank" rel="noopener" class="community-btn">
                     <i class="fab fa-telegram" style="color:#2AABEE"></i>
                     <div class="community-btn-text">
                         <h4>Canal Telegram officiel</h4>
@@ -585,7 +585,7 @@
                 </a>
                 <% } %>
                 <% if (_p.whatsapp_group_link) { %>
-                <a href="<%- _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="community-btn">
+                <a href="<%= _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="community-btn">
                     <i class="fab fa-whatsapp" style="color:#25D366"></i>
                     <div class="community-btn-text">
                         <h4>Groupe WhatsApp</h4>

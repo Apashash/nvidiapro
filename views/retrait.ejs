@@ -221,8 +221,8 @@
             <div class="form-group">
                 <label class="form-label">Montant à retirer (FCFA)</label>
                 <input type="number" id="inp-montant" class="form-input"
-                       min="1200" max="<%= solde %>" step="100"
-                       placeholder="Minimum 1 200 FCFA" inputmode="numeric">
+                       min="<%= parseInt(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200) %>" max="<%= solde %>" step="100"
+                       placeholder="Minimum <%= parseInt(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200).toLocaleString('fr-FR') %> FCFA" inputmode="numeric">
             </div>
 
             <button class="btn-submit" id="btn-retrait" <%= !retraits_disponibles ? 'disabled' : '' %>>

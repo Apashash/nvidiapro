@@ -78,20 +78,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "Vous devez avoir au moins un plan d'investissement actif pour effectuer un retrait." });
     }
 
-    // 4. Max withdrawals per 24h
-    const maxParJour = parseInt(params.retrait_max_par_jour ?? 1);
-    const [[recents]] = await db.query(
-      "SELECT COUNT(*)::int as nb FROM retraits WHERE user_id = ? AND statut IN ('en_attente', 'valide') AND date_demande >= NOW() - INTERVAL '24 hours'",
-      [user_id]
-    );
-    if (Number(recents.nb) >= maxParJour) {
-      return res.json({
-        success: false,
-        message: `Vous avez atteint la limite de ${maxParJour} retrait(s) autorisé(s) par 24 heures.`,
-      });
-    }
-
-    // 5. Form validation
+    // 4. Form validation
     const montant   = parseFloat(req.body.montant);
     const numero    = (req.body.numero   || '').trim();
     const nom       = (req.body.nom      || '').trim();
@@ -102,7 +89,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
       return res.json({ success: false, message: 'Veuillez remplir tous les champs.' });
     }
 
-    // 6. Minimum amount from params
+    // 5. Minimum amount from params
     const retraitMin = parseFloat(params.retrait_minimum ?? 1200);
     if (montant < retraitMin) {
       return res.json({
@@ -111,19 +98,28 @@ router.post('/retrait', requireAuth, async (req, res) => {
       });
     }
 
-    // 7. Balance check
-    const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
-    const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
-    if (montant > solde) {
-      return res.json({ success: false, message: 'Solde insuffisant.' });
-    }
-
+    const maxParJour = parseInt(params.retrait_max_par_jour ?? 1);
     const methode = `${operateur} (${pays})`;
 
-    // 8. Atomic debit + insert retrait
+    // 6. Atomic transaction: check daily limit + debit balance + insert retrait
     const conn = await db.getConnection();
     try {
       await conn.beginTransaction();
+
+      // Re-check daily limit inside transaction (prevents concurrent over-limit withdrawals)
+      const [[recents]] = await conn.query(
+        "SELECT COUNT(*)::int as nb FROM retraits WHERE user_id = ? AND statut IN ('en_attente', 'valide') AND date_demande >= NOW() - INTERVAL '24 hours'",
+        [user_id]
+      );
+      if (Number(recents.nb) >= maxParJour) {
+        await conn.rollback();
+        return res.json({
+          success: false,
+          message: `Vous avez atteint la limite de ${maxParJour} retrait(s) autorisé(s) par 24 heures.`,
+        });
+      }
+
+      // Atomic balance debit — only succeeds if balance is sufficient
       const [upd] = await conn.query(
         'UPDATE soldes SET solde = solde - ? WHERE user_id = ? AND solde >= ?',
         [montant, user_id, montant]
@@ -132,6 +128,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
         await conn.rollback();
         return res.json({ success: false, message: 'Solde insuffisant.' });
       }
+
       await conn.query(
         "INSERT INTO retraits (user_id, montant, methode, numero_compte, statut) VALUES (?, ?, ?, ?, 'en_attente')",
         [user_id, montant, methode, numero]

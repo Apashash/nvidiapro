@@ -244,6 +244,11 @@ router.get('/adminxyz/parametres', requireAdminAuth, async (req, res) => {
 router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
   const { cle, valeur } = req.body;
   if (!cle) return res.json({ success: false, message: 'Clé manquante' });
+  // Validate URLs — link params must start with http(s):// or be empty
+  const linkKeys = ['whatsapp_link', 'telegram_link', 'whatsapp_group_link'];
+  if (linkKeys.includes(cle) && valeur && !/^https?:\/\//i.test(valeur)) {
+    return res.json({ success: false, message: 'Le lien doit commencer par https://' });
+  }
   try {
     await db.query('INSERT INTO app_parametres (cle, valeur) VALUES (?,?) ON CONFLICT (cle) DO UPDATE SET valeur=?', [cle, valeur, valeur]);
     invalidateCache();
@@ -410,7 +415,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query('DELETE FROM depots WHERE user_id=?', [id]);
         await db.query('DELETE FROM retraits WHERE user_id=?', [id]);
         await db.query('DELETE FROM soldes WHERE user_id=?', [id]);
-        await db.query('DELETE FROM filleuls WHERE user_id=? OR parrain_id=?', [id, id]);
+        await db.query('DELETE FROM filleuls WHERE user_id=? OR filleul_id=?', [id, id]);
         await db.query('DELETE FROM connexions_journalieres WHERE user_id=?', [id]);
         await db.query('DELETE FROM codes_utilises WHERE user_id=?', [id]);
         await db.query('DELETE FROM vip WHERE user_id=?', [id]);

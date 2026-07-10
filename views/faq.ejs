@@ -205,7 +205,7 @@
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
             <div class="faq-answer">
-                Allez dans <strong>Dépôt</strong>, choisissez votre pays et opérateur Mobile Money, entrez le montant (minimum 3 500 FCFA), votre numéro et email. Confirmez le paiement sur votre téléphone. Le crédit est automatique dès validation.<br><br>
+                Allez dans <strong>Dépôt</strong>, choisissez votre pays et opérateur Mobile Money, entrez le montant (minimum <strong><%= parseInt(locals.appParams && appParams.depot_minimum ? appParams.depot_minimum : 200).toLocaleString('fr-FR') %> FCFA</strong>), votre numéro et confirmez le paiement sur votre téléphone. Le crédit est automatique dès validation.<br><br>
                 Pays supportés : Cameroun, Côte d'Ivoire, Sénégal, Bénin, Burkina Faso, Mali, Togo.
             </div>
         </div>
@@ -216,12 +216,12 @@
                 <i class="fas fa-chevron-down faq-arrow"></i>
             </div>
             <div class="faq-answer">
-                Les retraits sont disponibles du <strong>lundi au samedi de 9h à 19h GMT</strong>.<br><br>
-                • Retrait minimum : <strong>1 500 FCFA</strong><br>
-                • Retrait maximum : <strong>500 000 FCFA</strong><br>
-                • Frais de retrait : <strong>10%</strong><br>
-                • Un seul retrait toutes les 24 heures<br>
-                • Vous devez avoir un plan actif et un dépôt validé
+                <% const _faq = locals.appParams || {}; %>
+                Les retraits sont disponibles les jours : <strong><%= _faq.retrait_jours || 'Lun,Mar,Mer,Jeu,Ven,Sam' %></strong>, de <strong><%= _faq.retrait_heure_debut || 9 %>h à <%= _faq.retrait_heure_fin || 19 %>h GMT</strong>.<br><br>
+                • Retrait minimum : <strong><%= parseInt(_faq.retrait_minimum || 1200).toLocaleString('fr-FR') %> FCFA</strong><br>
+                • Maximum <strong><%= _faq.retrait_max_par_jour || 1 %></strong> retrait(s) par 24 heures<br>
+                • Traitement sous 24h<br>
+                • Vous devez avoir un plan d'investissement actif
             </div>
         </div>
 
@@ -246,15 +246,15 @@
                 <div style="margin-top:10px;">
                     <div class="commission-row">
                         <span class="level">🥇 Commission directe (Niveau 1)</span>
-                        <span class="pct">10%</span>
+                        <span class="pct"><%= parseFloat(locals.appParams && appParams.commission_niveau1 ? appParams.commission_niveau1 : 20) %>%</span>
                     </div>
                     <div class="commission-row">
                         <span class="level">🥈 Niveau 2</span>
-                        <span class="pct">3%</span>
+                        <span class="pct"><%= parseFloat(locals.appParams && appParams.commission_niveau2 ? appParams.commission_niveau2 : 10) %>%</span>
                     </div>
                     <div class="commission-row">
                         <span class="level">🥉 Niveau 3</span>
-                        <span class="pct">1%</span>
+                        <span class="pct"><%= parseFloat(locals.appParams && appParams.commission_niveau3 ? appParams.commission_niveau3 : 5) %>%</span>
                     </div>
                 </div>
                 <br>Des récompenses complémentaires sont prévues pour les ambassadeurs atteignant les objectifs définis.
@@ -293,7 +293,7 @@
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
             <% if (locals.appParams && appParams.telegram_link) { %>
-            <a href="<%- appParams.telegram_link %>" target="_blank" rel="noopener"
+            <a href="<%= appParams.telegram_link %>" target="_blank" rel="noopener"
                style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #F0E0C8;
                       border-radius:14px;padding:14px 16px;text-decoration:none;
                       box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s;"
@@ -310,7 +310,7 @@
             <% } %>
 
             <% if (locals.appParams && appParams.whatsapp_group_link) { %>
-            <a href="<%- appParams.whatsapp_group_link %>" target="_blank" rel="noopener"
+            <a href="<%= appParams.whatsapp_group_link %>" target="_blank" rel="noopener"
                style="display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #F0E0C8;
                       border-radius:14px;padding:14px 16px;text-decoration:none;
                       box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:transform 0.2s;"
