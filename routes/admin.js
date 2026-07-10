@@ -249,6 +249,14 @@ router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
   if (linkKeys.includes(cle) && valeur && !/^https?:\/\//i.test(valeur)) {
     return res.json({ success: false, message: 'Le lien doit commencer par https://' });
   }
+  // Validate numeric params — must be a finite, non-negative number within a sane bound
+  const numericKeys = ['welcome_bonus', 'depot_minimum', 'retrait_minimum', 'retrait_max_par_jour'];
+  if (numericKeys.includes(cle)) {
+    const n = Number(valeur);
+    if (!Number.isFinite(n) || n < 0 || n > 10000000) {
+      return res.json({ success: false, message: 'Valeur numérique invalide' });
+    }
+  }
   try {
     await db.query('INSERT INTO app_parametres (cle, valeur) VALUES (?,?) ON CONFLICT (cle) DO UPDATE SET valeur=?', [cle, valeur, valeur]);
     invalidateCache();

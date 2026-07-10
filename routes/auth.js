@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const { getParams } = require('../services/params');
 
 const paysEligibles = {
   '+229': 'Bénin',
@@ -115,7 +116,10 @@ router.post('/inscription1', async (req, res) => {
       );
       const user_id = result.insertId;
 
-      await conn.query('INSERT INTO soldes (user_id, solde, solde_precedent) VALUES (?, 250, 250)', [user_id]);
+      const { welcome_bonus } = await getParams();
+      const parsedBonus = Number(welcome_bonus);
+      const bonusAmount = (welcome_bonus !== undefined && Number.isFinite(parsedBonus) && parsedBonus >= 0) ? parsedBonus : 250;
+      await conn.query('INSERT INTO soldes (user_id, solde, solde_precedent) VALUES (?, ?, ?)', [user_id, bonusAmount, bonusAmount]);
       await conn.query('INSERT INTO vip (user_id, niveau, pourcentage, invitations_requises, invitations_actuelles) VALUES (?, 0, 0, 3, 0)', [user_id]).catch(() => {});
       await conn.query('INSERT INTO filleuls (user_id) VALUES (?)', [user_id]).catch(() => {});
       await conn.query('INSERT INTO connexions_journalieres (user_id) VALUES (?)', [user_id]).catch(() => {});

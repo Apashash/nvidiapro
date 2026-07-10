@@ -874,6 +874,20 @@
     </div>
   </div>
 
+  <!-- Bonus de bienvenue -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#FFF7ED"><i class="fas fa-gift" style="color:#E8931A"></i></div>
+      <div class="param-head-text">
+        <h3>Bonus de bienvenue</h3>
+        <p>Montant crédité automatiquement à l'inscription (FCFA)</p>
+      </div>
+    </div>
+    <label class="param-label">Montant du bonus (FCFA)</label>
+    <input type="number" class="param-input" id="welcomeBonus" value="<%= (params.welcome_bonus !== undefined && params.welcome_bonus !== null && params.welcome_bonus !== '') ? params.welcome_bonus : 250 %>" min="0" placeholder="Entrer le bonus de bienvenue">
+    <button class="btn-save" onclick="saveParam('welcome_bonus', document.getElementById('welcomeBonus').value)"><i class="fas fa-save"></i> Enregistrer</button>
+  </div>
+
   <!-- Dépôt minimum -->
   <div class="param-card">
     <div class="param-head">

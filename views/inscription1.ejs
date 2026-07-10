@@ -130,7 +130,7 @@
             <div class="referral-notice"><i class="fas fa-user-friends"></i> Vous êtes invité par un ambassadeur Altiora Capital Africa</div>
         <% } %>
 
-        <div class="bonus-notice"><i class="fas fa-gift"></i> Bonus de bienvenue : 250 FCFA offerts !</div>
+        <div class="bonus-notice"><i class="fas fa-gift"></i> Bonus de bienvenue : <%= (locals.appParams && appParams.welcome_bonus !== undefined && appParams.welcome_bonus !== null && appParams.welcome_bonus !== '') ? appParams.welcome_bonus : 250 %> FCFA offerts !</div>
 
         <div class="form-title">Rejoignez Altiora</div>
 
