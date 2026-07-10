@@ -371,6 +371,13 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         return res.json({ success: true });
       }
 
+      case 'toggle_plan_lock': {
+        const [[pl]] = await db.query('SELECT bloque FROM planinvestissement WHERE id=?', [id]);
+        if (!pl) return res.json({ success: false, message: 'Plan non trouvé' });
+        await db.query('UPDATE planinvestissement SET bloque=? WHERE id=?', [!pl.bloque, id]);
+        return res.json({ success: true, bloque: !pl.bloque });
+      }
+
       case 'delete_plan': {
         const [[activeCount]] = await db.query("SELECT COUNT(*) as cnt FROM commandes WHERE plan_id=? AND statut='actif'", [id]);
         if (parseInt(activeCount.cnt) > 0) return res.json({ success: false, message: 'Ce plan a des investissements actifs' });

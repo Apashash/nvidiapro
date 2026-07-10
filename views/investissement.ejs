@@ -78,6 +78,25 @@
             transition:transform 0.2s; font-family:'Poppins',sans-serif;
         }
         .btn-invest:hover { transform:translateY(-2px); }
+        .btn-invest:disabled { cursor:not-allowed; }
+
+        /* Locked plan */
+        .plan-card.locked { position:relative; }
+        .plan-card.locked .plan-image-wrap::after {
+            content:'Bientôt disponible'; position:absolute; inset:0;
+            background:rgba(20,15,8,0.62); color:#fff; font-weight:800; font-size:15px;
+            display:flex; align-items:center; justify-content:center; text-align:center;
+            letter-spacing:0.3px;
+        }
+        .plan-card.locked .btn-invest {
+            filter:blur(1.5px); opacity:0.65; position:relative;
+        }
+        .plan-card.locked .btn-invest-lock {
+            position:absolute; right:24px; top:50%; transform:translateY(-50%);
+            background:#dc2626; color:#fff; width:22px; height:22px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:11px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.3); pointer-events:none;
+        }
 
         /* Empty state */
         .empty-state { text-align:center; padding:60px 20px; }
@@ -197,7 +216,7 @@
             <div class="plans-list">
                 <% if (plans && plans.length > 0) { %>
                     <% plans.forEach(function(plan, idx) { %>
-                    <div class="plan-card">
+                    <div class="plan-card<%= plan.bloque ? ' locked' : '' %>">
                         <div class="plan-image-wrap">
                             <img src="/images/altiora-logo-banner.jpeg" alt="<%= plan.nom %>">
                             <div class="plan-duration-badge"><%= plan.duree_jours %> Jours</div>
@@ -216,6 +235,12 @@
                             </div>
                             <div class="plan-footer">
                                 <div class="plan-price">Prix : <strong><%= plan.prix.toLocaleString() %> FCFA</strong></div>
+                                <% if (plan.bloque) { %>
+                                <button class="btn-invest btn-invest-locked" type="button" onclick="showPlanLockedMsg()">
+                                    Investir
+                                </button>
+                                <span class="btn-invest-lock"><i class="fas fa-lock"></i></span>
+                                <% } else { %>
                                 <button class="btn-invest"
                                     data-plan-id="<%= plan.id %>"
                                     data-nom="<%= plan.nom %>"
@@ -225,6 +250,7 @@
                                     data-gain-total="<%= plan.revenu_total %>">
                                     Investir
                                 </button>
+                                <% } %>
                             </div>
                         </div>
                     </div>
@@ -331,6 +357,18 @@
     </div>
 </div>
 
+<!-- Plan locked -->
+<div class="floater-overlay" id="planLockedFloater">
+    <div class="floater-box">
+        <div class="floater-icon"><i class="fas fa-lock" style="color:#c8820a;"></i></div>
+        <div class="floater-title">Plan non disponible</div>
+        <div class="floater-msg">Ce plan n'est pas encore disponible, il sera bientôt disponible sur le marché ! Profitez des plans actifs actuellement.</div>
+        <div class="floater-btns">
+            <button class="floater-btn floater-primary" onclick="document.getElementById('planLockedFloater').style.display='none'">J'ai compris</button>
+        </div>
+    </div>
+</div>
+
 <!-- Insufficient Balance -->
 <div class="floater-overlay" id="insufficientBalanceFloater">
     <div class="floater-box">
@@ -399,7 +437,7 @@ if (document.querySelector('.countdown-box')) {
     setInterval(updateOrderTimers, 1000);
 }
 
-document.querySelectorAll('.btn-invest').forEach(btn => {
+document.querySelectorAll('.btn-invest:not(.btn-invest-locked)').forEach(btn => {
     btn.addEventListener('click', function() {
         currentPlan = {
             id: this.dataset.planId, nom: this.dataset.nom,
@@ -422,6 +460,10 @@ function ouvrirPopup(plan) {
 }
 
 function fermerPopup() { document.getElementById('investPopup').style.display = 'none'; }
+
+function showPlanLockedMsg() {
+    document.getElementById('planLockedFloater').style.display = 'flex';
+}
 
 document.getElementById('confirmerInvestBtn').addEventListener('click', function() {
     if (!currentPlan) return;

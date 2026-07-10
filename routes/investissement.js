@@ -11,7 +11,7 @@ router.get('/investissement', requireAuth, async (req, res) => {
 
     const menu_actif = ['vip', 'commande'].includes(req.query.menu) ? req.query.menu : 'vip';
 
-    const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY id ASC');
+    const [plans] = await db.query('SELECT *, COALESCE(bloque, false) as bloque FROM planinvestissement ORDER BY id ASC');
     const plans_corriges = [];
     const seenIds = new Set();
     for (const plan of plans) {
@@ -60,6 +60,7 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
   try {
     const [[plan]] = await db.query('SELECT * FROM planinvestissement WHERE id = ?', [plan_id]);
     if (!plan) return res.json({ success: false, message: 'Plan introuvable' });
+    if (plan.bloque) return res.json({ success: false, message: "Ce plan n'est pas encore disponible, il sera bientôt disponible dans le marché ! Profitez des plans actifs actuellement." });
     const montant = parseFloat(plan.prix);
 
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);

@@ -58,7 +58,8 @@ CREATE TABLE IF NOT EXISTS planinvestissement (
   duree_jours INTEGER,
   rendement_journalier NUMERIC(8,4),
   image_url VARCHAR(500),
-  description TEXT
+  description TEXT,
+  bloque BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS commandes (
@@ -189,6 +190,7 @@ async function setup() {
     const alterations = [
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false`,
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS retrait_bloque BOOLEAN DEFAULT false`,
+      `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS bloque BOOLEAN DEFAULT false`,
     ];
     for (const sql of alterations) await client.query(sql);
     console.log('✓ Schema ready (17 tables)');

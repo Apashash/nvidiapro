@@ -437,14 +437,20 @@
     const gain = (parseFloat(p.prix) * parseFloat(p.rendement_journalier) / 100);
     const color = planColors[i % planColors.length];
   %>
-  <div class="plan-card" style="border-left:4px solid <%= color %>">
+  <div class="plan-card" style="border-left:4px solid <%= color %><% if (p.bloque) { %>;opacity:0.75<% } %>">
     <div class="plan-body">
-      <div class="plan-name" style="color:<%= color %>"><%- p.nom %></div>
+      <div class="plan-name" style="color:<%= color %>"><%- p.nom %> <% if (p.bloque) { %><span style="font-size:0.68rem;background:#FEF2F2;color:#dc2626;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle"><i class="fas fa-lock"></i> Bloqué</span><% } %></div>
       <div class="plan-meta">Prix : <strong><%= parseFloat(p.prix).toLocaleString('fr-FR') %> FCFA</strong> &nbsp; Durée : <strong><%= p.duree_jours %>j</strong></div>
       <div class="plan-rend" style="color:<%= color %>">Rend. : <%= parseFloat(p.rendement_journalier).toFixed(2) %>%/j</div>
       <div class="plan-gain">+<%= gain.toLocaleString('fr-FR',{maximumFractionDigits:0}) %> FCFA/jour</div>
     </div>
     <div class="card-actions">
+      <button class="icon-btn <%= p.bloque ? 'icon-btn-del' : 'icon-btn-edit' %>"
+        data-pid="<%= p.id %>"
+        title="<%= p.bloque ? 'Débloquer ce plan' : 'Bloquer ce plan' %>"
+        onclick="togglePlanLockBtn(this)">
+        <i class="fas <%= p.bloque ? 'fa-lock' : 'fa-lock-open' %>"></i>
+      </button>
       <button class="icon-btn icon-btn-edit"
         data-pid="<%= p.id %>"
         data-nom="<%- (p.nom||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
@@ -1271,6 +1277,14 @@ async function addPlan() {
   const r = await fetch('/adminxyz/action', { method:'POST', body });
   const d = await r.json();
   if (d.success) { closeModal('addPlanModal'); toast('✓ Plan ajouté', 'ok'); setTimeout(() => location.reload(), 900); }
+  else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+function togglePlanLockBtn(btn) { togglePlanLock(btn.dataset.pid); }
+async function togglePlanLock(id) {
+  if (!confirm('Changer le statut (bloqué/débloqué) de ce plan ?')) return;
+  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'toggle_plan_lock', id }) });
+  const d = await r.json();
+  if (d.success) { toast(d.bloque ? '✓ Plan bloqué' : '✓ Plan débloqué', 'ok'); setTimeout(() => location.reload(), 900); }
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 function deletePlanBtn(btn) { deletePlan(btn.dataset.pid, btn.dataset.nom); }
