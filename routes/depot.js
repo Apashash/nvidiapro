@@ -117,6 +117,9 @@ router.post('/depot/process', requireAuth, async (req, res) => {
       [`${reference}|${data.transaction_id}`, depot_id]
     );
 
+    // Poll AshtechPay every 3s as a backup to the webhook, until the status changes.
+    pollTransactionStatus(depot_id, data.transaction_id, apiKey);
+
     req.session.pending_depot_id = depot_id;
     req.session.pending_numero   = numero;
     res.redirect('/depot');
@@ -129,6 +132,51 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     res.redirect('/depot');
   }
 });
+
+// ── Server-side polling of AshtechPay GET /v1/transaction/:id ───────────────
+// Runs alongside the webhook as a fallback (in case the webhook never arrives).
+// Polls every 3s until the status is a final one (success/failed) or a
+// timeout is reached, then applies the same finalization logic as the webhook.
+const POLL_INTERVAL_MS = 3000;
+const POLL_TIMEOUT_MS  = 5 * 60 * 1000; // stop after 5 minutes
+
+function pollTransactionStatus(depot_id, transaction_id, apiKey) {
+  const startedAt = Date.now();
+
+  const tick = async () => {
+    // Enforce the timeout up front, before any DB/API call and regardless of
+    // which branch (success/error) would otherwise reschedule — guarantees
+    // polling always terminates and never leaks an unbounded timer chain.
+    if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
+      console.warn(`⏱ Polling timeout pour depot ${depot_id} (transaction ${transaction_id})`);
+      return;
+    }
+
+    try {
+      const [[depot]] = await db.query('SELECT * FROM depots WHERE id = ?', [depot_id]);
+      if (!depot || depot.statut !== 'en_attente') return; // already finalized (e.g. by webhook)
+
+      const { data } = await axios.get(
+        `https://ashtechpay.top/v1/transaction/${transaction_id}`,
+        { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
+      );
+
+      if (data.status === 'success' || data.status === 'failed') {
+        await finalizeDepot(depot, data.status === 'success' ? 'success' : 'failed');
+        return; // status changed to a final state — stop polling
+      }
+
+      // still pending — check again in 3s
+      setTimeout(tick, POLL_INTERVAL_MS);
+    } catch (e) {
+      console.error(`AshtechPay polling error (depot ${depot_id}):`, e.response?.data || e.message);
+      // keep retrying until timeout, in case of a transient network/API error
+      setTimeout(tick, POLL_INTERVAL_MS);
+    }
+  };
+
+  setTimeout(tick, POLL_INTERVAL_MS);
+}
 
 // ── GET /depot/status/:id  (polling by client) ───────────────────────────────
 router.get('/depot/status/:id', requireAuth, async (req, res) => {
@@ -170,9 +218,11 @@ router.post('/ashtechpay_callback', async (req, res) => {
         [`%|${transaction_id}`]
       );
       if (!depot2) return res.status(404).json({ error: 'Depot not found' });
-      return handleCallback(depot2, status, res, db);
+      const result2 = await finalizeDepot(depot2, status);
+      return res.json(result2);
     }
-    return handleCallback(depot, status, res, db);
+    const result = await finalizeDepot(depot, status);
+    return res.json(result);
 
   } catch (e) {
     console.error('AshtechPay callback error:', e);
@@ -180,10 +230,13 @@ router.post('/ashtechpay_callback', async (req, res) => {
   }
 });
 
-async function handleCallback(depot, status, res, db) {
+// Shared finalization logic — called from both the webhook handler and the
+// server-side status poller (pollTransactionStatus above). Idempotent: only
+// the first caller to flip a depot out of 'en_attente' actually credits it.
+async function finalizeDepot(depot, status) {
   // Idempotency: already processed
   if (depot.statut === 'valide') {
-    return res.json({ success: true, message: 'Already processed' });
+    return { success: true, message: 'Already processed' };
   }
 
   if (status === 'success') {
@@ -198,7 +251,7 @@ async function handleCallback(depot, status, res, db) {
       );
       if (upd.affectedRows === 0) {
         await conn.rollback();
-        return res.json({ success: true, message: 'Already processed' });
+        return { success: true, message: 'Already processed' };
       }
 
       // Credit balance
@@ -211,7 +264,7 @@ async function handleCallback(depot, status, res, db) {
 
       await conn.commit();
       console.log(`✓ Dépôt ${depot.id} validé — ${depot.montant} crédité à user ${depot.user_id}`);
-      res.json({ success: true, message: 'Deposit validated' });
+      return { success: true, message: 'Deposit validated' };
     } catch (e) {
       await conn.rollback();
       throw e;
@@ -219,14 +272,14 @@ async function handleCallback(depot, status, res, db) {
       conn.release();
     }
   } else if (status === 'pending') {
-    res.json({ success: true, message: 'Payment still pending' });
+    return { success: true, message: 'Payment still pending' };
   } else {
     // failed / cancelled / etc.
     await db.query(
       "UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'",
       [depot.id]
     );
-    res.json({ success: true, message: 'Deposit rejected' });
+    return { success: true, message: 'Deposit rejected' };
   }
 }
 
