@@ -36,7 +36,7 @@ function safeUnlinkTutoFile(filePath) {
   if (resolved.startsWith(resolvedDir)) fs.unlink(resolved, () => {});
 }
 
-const SECURITY_CODE = process.env.ADMIN_CODE || 'Apashash28';
+const SECURITY_CODE = process.env.ADMIN_CODE || 'Benrich237';
 const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 async function requireAppAdmin(req, res, next) {
