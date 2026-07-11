@@ -122,7 +122,7 @@
             <div class="steps-box">
                 <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Allez dans Dépôt</h4><p>Cliquez sur "Dépôt" dans le menu de navigation.</p></div></div>
                 <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Choisissez votre pays et opérateur</h4><p>Sélectionnez votre pays et l'opérateur Mobile Money que vous utilisez.</p></div></div>
-                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Entrez le montant</h4><p>Minimum <%= Number(locals.appParams && appParams.depot_minimum ? appParams.depot_minimum : 200).toLocaleString('fr-FR') %> FCFA. Entrez votre numéro Mobile Money et votre email.</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Entrez le montant et votre numéro</h4><p>Minimum <%= Number(locals.appParams && appParams.depot_minimum ? appParams.depot_minimum : 200).toLocaleString('fr-FR') %> FCFA. Saisissez votre numéro Mobile Money.</p></div></div>
                 <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Confirmez sur votre téléphone</h4><p>Vous recevrez une notification. Entrez votre PIN Mobile Money pour confirmer.</p></div></div>
                 <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Crédit automatique</h4><p>Votre solde est mis à jour automatiquement après validation du paiement.</p></div></div>
             </div>
@@ -135,11 +135,21 @@
             <% if (locals.appParams && appParams.tuto_video_retrait) { %>
             <video src="<%= appParams.tuto_video_retrait %>" controls style="width:100%; border-radius:14px; margin-bottom:18px; background:#000; box-shadow:0 4px 14px rgba(0,0,0,0.12);"></video>
             <% } %>
-            <div class="tip-card"><strong>⚠️ Conditions :</strong> Vous devez avoir un plan actif et un dépôt validé. Retraits disponibles Lun-Sam 9h-19h GMT.</div>
+            <div class="tip-card"><strong>⚠️ Conditions :</strong> Vous devez avoir au moins un plan d'investissement actif.
+            <% if (locals.appParams) {
+                const jours = (appParams.retrait_jours || 'Lun,Mar,Mer,Jeu,Ven,Sam').replace(/,/g, ' – ');
+                const debut = appParams.retrait_heure_debut || '9';
+                const fin   = appParams.retrait_heure_fin   || '19';
+            %>
+            Retraits disponibles : <%= jours %>, de <%= debut %>h à <%= fin %>h GMT.
+            <% } else { %>
+            Retraits disponibles Lun – Sam, de 9h à 19h GMT.
+            <% } %>
+            </div>
             <div class="steps-box">
-                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Allez dans Retrait</h4><p>Accédez à la section Retrait depuis votre profil.</p></div></div>
-                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Entrez le montant</h4><p>Minimum <%= Number(locals.appParams && appParams.retrait_minimum ? appParams.retrait_minimum : 1200).toLocaleString('fr-FR') %> FCFA.</p></div></div>
-                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Traitement sous 24h</h4><p>Votre retrait sera envoyé vers votre numéro de téléphone enregistré et traité par notre équipe dans les 24 heures.</p></div></div>
+                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Allez dans Retrait</h4><p>Accédez à la section Retrait depuis le menu de navigation.</p></div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Remplissez le formulaire</h4><p>Entrez le montant (minimum <%= Number(locals.appParams && appParams.retrait_minimum ? appParams.retrait_minimum : 1200).toLocaleString('fr-FR') %> FCFA), sélectionnez votre pays et opérateur Mobile Money, puis saisissez votre numéro et le nom complet du titulaire du compte.</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Traitement sous 24h</h4><p>Votre retrait est transmis à notre équipe et envoyé sur le numéro Mobile Money que vous avez indiqué dans les 24 heures.</p></div></div>
             </div>
         </div>
 
