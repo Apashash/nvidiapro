@@ -400,6 +400,13 @@ router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
       return res.json({ success: false, message: 'Valeur numérique invalide' });
     }
   }
+  // Fee percentage — separate bound (0–100)
+  if (cle === 'retrait_frais_pourcentage') {
+    const n = Number(valeur);
+    if (!Number.isFinite(n) || n < 0 || n > 100) {
+      return res.json({ success: false, message: 'Le pourcentage doit être compris entre 0 et 100' });
+    }
+  }
   try {
     await db.query('INSERT INTO app_parametres (cle, valeur) VALUES (?,?) ON CONFLICT (cle) DO UPDATE SET valeur=?', [cle, valeur, valeur]);
     invalidateCache();

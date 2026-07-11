@@ -225,6 +225,20 @@
                        placeholder="Minimum <%= parseInt(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200).toLocaleString('fr-FR') %> FCFA" inputmode="numeric">
             </div>
 
+            <% if (locals.fraisPourcentage > 0) { %>
+            <div class="info-card" id="fee-summary" style="display:none;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span>Montant demandé</span><strong id="fee-montant">—</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#C0392B;">
+                    <span>Frais de retrait (<span id="fee-pct"><%= fraisPourcentage %></span>%)</span><strong id="fee-frais">—</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px dashed #E8931A;padding-top:6px;">
+                    <span>Vous recevrez</span><strong id="fee-net">—</strong>
+                </div>
+            </div>
+            <% } %>
+
             <button class="btn-submit" id="btn-retrait" <%= !retraits_disponibles ? 'disabled' : '' %>>
                 <i class="fas fa-paper-plane"></i> Demander le retrait
             </button>
@@ -262,6 +276,26 @@ const operateursByPays = {
     'Gabon':             ['Airtel Money', 'Moov Money'],
     'Congo Brazzaville': ['Airtel Money', 'MTN Mobile Money'],
 };
+
+const fraisPourcentage = <%= locals.fraisPourcentage || 0 %>;
+const feeSummary   = document.getElementById('fee-summary');
+const inpMontant   = document.getElementById('inp-montant');
+
+function updateFeeSummary() {
+    if (!feeSummary) return;
+    const montant = parseFloat(inpMontant.value);
+    if (!montant || montant <= 0) {
+        feeSummary.style.display = 'none';
+        return;
+    }
+    const frais = Math.round((montant * fraisPourcentage / 100) * 100) / 100;
+    const net = montant - frais;
+    document.getElementById('fee-montant').textContent = montant.toLocaleString('fr-FR') + ' FCFA';
+    document.getElementById('fee-frais').textContent = '- ' + frais.toLocaleString('fr-FR') + ' FCFA';
+    document.getElementById('fee-net').textContent = net.toLocaleString('fr-FR') + ' FCFA';
+    feeSummary.style.display = 'block';
+}
+if (inpMontant) inpMontant.addEventListener('input', updateFeeSummary);
 
 const selPays      = document.getElementById('sel-pays');
 const selOp        = document.getElementById('sel-operateur');
@@ -324,7 +358,10 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
         }
 
         if (data.success) {
-            document.getElementById('pop-montant').textContent   = parseInt(montant).toLocaleString('fr-FR') + ' FCFA';
+            const netLabel = (typeof data.frais === 'number' && data.frais > 0)
+                ? `${parseInt(montant).toLocaleString('fr-FR')} FCFA (frais ${data.frais.toLocaleString('fr-FR')} FCFA, net ${data.montantNet.toLocaleString('fr-FR')} FCFA)`
+                : parseInt(montant).toLocaleString('fr-FR') + ' FCFA';
+            document.getElementById('pop-montant').textContent   = netLabel;
             document.getElementById('pop-operateur').textContent = operateur;
             document.getElementById('pop-numero').textContent    = indicatif + numero;
             document.getElementById('pop-nom').textContent       = nom;

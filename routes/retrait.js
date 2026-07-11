@@ -68,7 +68,8 @@ router.get('/retrait', requireAuth, async (req, res) => {
     const message = req.session.retrait_message || null;
     delete req.session.retrait_message;
 
-    res.render('retrait', { user, solde, retraits_disponibles, suspendu, schedule, params, message });
+    const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
+    res.render('retrait', { user, solde, retraits_disponibles, suspendu, schedule, params, fraisPourcentage, message });
   } catch (e) {
     console.error(e);
     res.redirect('/');
@@ -122,7 +123,15 @@ router.post('/retrait', requireAuth, async (req, res) => {
     }
 
     const maxParJour = parseInt(params.retrait_max_par_jour ?? 1);
-    const methode = `${operateur} (${pays})`;
+
+    // Withdrawal fee — percentage kept by the platform, deducted from the payout
+    const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
+    const frais = Math.round((montant * fraisPourcentage / 100) * 100) / 100;
+    const montantNet = montant - frais;
+
+    const methode = fraisPourcentage > 0
+      ? `${operateur} (${pays}) — frais ${fraisPourcentage}% : ${frais.toLocaleString('fr-FR')} FCFA, net : ${montantNet.toLocaleString('fr-FR')} FCFA`
+      : `${operateur} (${pays})`;
 
     // 6. Atomic transaction: check daily limit + debit balance + insert retrait
     const conn = await db.getConnection();
@@ -159,7 +168,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
       await conn.commit();
     } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
 
-    res.json({ success: true });
+    res.json({ success: true, frais, montantNet });
   } catch (e) {
     console.error(e);
     res.json({ success: false, message: 'Erreur serveur: ' + e.message });

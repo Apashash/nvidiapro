@@ -1116,6 +1116,20 @@
     <button class="btn-save" onclick="saveParam('retrait_minimum', document.getElementById('retraitMin').value)"><i class="fas fa-save"></i> Enregistrer</button>
   </div>
 
+  <!-- Frais de retrait -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#FEF2F2"><i class="fas fa-percent" style="color:#DC2626"></i></div>
+      <div class="param-head-text">
+        <h3>Frais de retrait</h3>
+        <p>Pourcentage prélevé sur chaque retrait</p>
+      </div>
+    </div>
+    <label class="param-label">Frais (%)</label>
+    <input type="number" class="param-input" id="retraitFrais" value="<%= params.retrait_frais_pourcentage || 0 %>" min="0" max="100" step="0.1" placeholder="Ex : 5">
+    <button class="btn-save" onclick="saveParam('retrait_frais_pourcentage', document.getElementById('retraitFrais').value)"><i class="fas fa-save"></i> Enregistrer</button>
+  </div>
+
   <!-- Liens service client -->
   <div class="param-card">
     <div class="param-head">
