@@ -193,9 +193,9 @@
             <% if (locals.appParams && appParams.tuto_video_astuces) { %>
             <video src="<%= appParams.tuto_video_astuces %>" controls style="width:100%; border-radius:14px; margin-bottom:18px; background:#000; box-shadow:0 4px 14px rgba(0,0,0,0.12);"></video>
             <% } %>
-            <div class="tip-card"><strong>💡 Parrainage :</strong> Invitez des amis et gagnez 20% sur chaque investissement qu'ils font. C'est la méthode la plus rapide pour augmenter vos gains !</div>
+            <div class="tip-card"><strong>💡 Parrainage :</strong> Invitez des amis et gagnez <%= locals.appParams && appParams.commission_niveau1 ? appParams.commission_niveau1 : 20 %>% sur chaque investissement qu'ils font. C'est la méthode la plus rapide pour augmenter vos gains !</div>
             <div class="tip-card"><strong>🎰 Machine à sous :</strong> Jouez gratuitement toutes les 48 heures pour gagner jusqu'à 2 000 FCFA sans rien dépenser !</div>
-            <div class="tip-card"><strong>👑 Niveaux VIP :</strong> Plus vous avez de filleuls actifs, plus votre niveau VIP est élevé et plus vous gagnez de salaire journalier.</div>
+            <div class="tip-card"><strong>👑 Niveaux VIP :</strong> Plus vous avez de filleuls actifs, plus votre niveau VIP est élevé. Chaque palier VIP atteint vous donne droit à un bonus unique à réclamer.</div>
             <div class="tip-card"><strong>📊 Réinvestir :</strong> Utilisez vos gains quotidiens pour acheter de nouveaux plans et augmenter votre revenu passif progressivement.</div>
         </div>
     </div>
