@@ -87,6 +87,11 @@
             box-shadow:0 6px 22px rgba(196,125,30,0.22);
         }
         .palier-card.locked { opacity:0.65; }
+        .palier-card.paid {
+            border-color:#16A34A;
+            background:linear-gradient(135deg,#F3FBF5,#EAFBEF);
+            box-shadow:0 4px 16px rgba(22,163,74,0.14);
+        }
 
         /* Top row: badge + salary */
         .palier-top {
@@ -105,6 +110,10 @@
             background:linear-gradient(135deg,#D4921F,#B07018);
             color:#fff; border-color:transparent;
         }
+        .palier-card.paid .palier-num {
+            background:linear-gradient(135deg,#16A34A,#15803D);
+            color:#fff; border-color:transparent;
+        }
         .palier-label { font-size:14px; font-weight:700; color:#3D2B1F; }
         .palier-card.actuel .palier-label { color:#C47D1E; }
         .palier-sublabel { font-size:11px; color:#A87D50; margin-top:1px; }
@@ -114,6 +123,7 @@
             white-space:nowrap;
         }
         .palier-card.locked .palier-salary { color:#B0926A; }
+        .palier-card.paid .palier-salary { color:#15803D; }
 
         /* Progress bar */
         .palier-prog-row {
@@ -138,6 +148,7 @@
             display:flex; align-items:center; gap:5px;
         }
         .palier-status.done    { color:#16A34A; }
+        .palier-status.paid    { color:#15803D; }
         .palier-status.current { color:#C47D1E; }
         .palier-status.locked  { color:#A87D50; }
 
@@ -212,7 +223,7 @@
     <div class="salary-card">
         <div class="vip-badge">NIVEAU VIP <%= niveau_actuel %></div>
         <div class="salary-amount"><%= new Intl.NumberFormat('fr-FR').format(salaire_actuel) %> FCFA</div>
-        <div class="salary-period">Versement Journalier</div>
+        <div class="salary-period">Versement unique à l'atteinte du palier</div>
     </div>
 
     <div class="content">
@@ -235,6 +246,10 @@
             <div class="alert-box alert-warning"><i class="fas fa-info-circle"></i>
                 Atteignez le niveau VIP 1 en invitant <strong><%= filleuls_requis %></strong> filleuls actifs pour débloquer votre salaire.
             </div>
+        <% } else if (deja_reclame) { %>
+            <div class="alert-box alert-warning"><i class="fas fa-info-circle"></i>
+                Vous avez déjà reçu le salaire du palier VIP <%= niveau_actuel %>. Chaque palier n'est payé qu'une seule fois — progressez au niveau suivant pour débloquer un nouveau salaire.
+            </div>
         <% } %>
 
         <!-- Collect button -->
@@ -243,7 +258,7 @@
                 <%= (!seuil_atteint || deja_reclame || niveau_actuel === 0) ? 'disabled' : '' %>>
                 <i class="fas fa-coins"></i>
                 <% if (deja_reclame) { %>
-                    Déjà réclamé aujourd'hui
+                    Salaire déjà reçu pour ce palier
                 <% } else if (!seuil_atteint) { %>
                     Débloquez votre salaire
                 <% } else { %>
@@ -259,12 +274,13 @@
             </div>
 
             <% paliers.forEach(function(p) {
-                const req     = parseInt(p.filleuls_requis) || 1;
-                const filled  = Math.min(filleuls_actifs, req);
-                const pct     = Math.round(filled / req * 100);
-                const done    = filleuls_actifs >= req;
-                const isCur   = p.niveau == niveau_actuel;
-                const cardCls = done ? 'unlocked' : (isCur ? 'actuel' : 'locked');
+                const req      = parseInt(p.filleuls_requis) || 1;
+                const filled   = Math.min(filleuls_actifs, req);
+                const pct      = Math.round(filled / req * 100);
+                const done     = filleuls_actifs >= req;
+                const isCur    = p.niveau == niveau_actuel;
+                const isPaid   = niveaux_reclames.includes(p.niveau);
+                const cardCls  = isPaid ? 'paid' : (done ? 'unlocked' : (isCur ? 'actuel' : 'locked'));
                 // Dots: show actual filleuls up to req, then empty slots
                 const dotsFilleuls = filleuls_directs.slice(0, req);
                 const emptySlots   = Math.max(0, req - filleuls_directs.length);
@@ -280,7 +296,7 @@
                             <div class="palier-sublabel"><i class="fas fa-users" style="font-size:9px"></i> <%= req %> filleul(s) actif(s) requis</div>
                         </div>
                     </div>
-                    <div class="palier-salary"><%= new Intl.NumberFormat('fr-FR').format(parseFloat(p.montant_cadeau)) %> FCFA/j</div>
+                    <div class="palier-salary"><%= new Intl.NumberFormat('fr-FR').format(parseFloat(p.montant_cadeau)) %> FCFA</div>
                 </div>
 
                 <!-- Progress bar -->
@@ -293,7 +309,9 @@
                 </div>
 
                 <!-- Status -->
-                <% if (done) { %>
+                <% if (isPaid) { %>
+                <div class="palier-status paid"><i class="fas fa-check-double"></i> Salaire déjà versé (une seule fois par palier)</div>
+                <% } else if (done) { %>
                 <div class="palier-status done"><i class="fas fa-check-circle"></i> Débloqué — salaire disponible !</div>
                 <% } else if (isCur) { %>
                 <div class="palier-status current"><i class="fas fa-clock"></i> En cours — encore <%= req - filleuls_actifs %> filleul(s)</div>
@@ -358,7 +376,7 @@ document.addEventListener('gesturestart', e => e.preventDefault());
             <div class="popup-icon"><i class="fas fa-coins"></i></div>
             <div class="popup-msg">
                 Félicitations ! <strong><%= new Intl.NumberFormat('fr-FR').format(successMontant) %> FCFA</strong>
-                ont été versés dans votre portefeuille.<br><br>Revenez demain pour votre prochain versement.
+                ont été versés dans votre portefeuille.<br><br>Ce palier est maintenant soldé — invitez plus de filleuls actifs pour débloquer le prochain palier VIP et son salaire.
             </div>
             <button class="popup-btn" onclick="closeSuccess()"><i class="fas fa-check"></i> Super, merci !</button>
         </div>

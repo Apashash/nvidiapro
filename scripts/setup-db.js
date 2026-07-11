@@ -209,6 +209,8 @@ async function setup() {
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false`,
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS retrait_bloque BOOLEAN DEFAULT false`,
       `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS bloque BOOLEAN DEFAULT false`,
+      `ALTER TABLE historique_revenus ADD COLUMN IF NOT EXISTS niveau INTEGER`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS historique_revenus_salaire_niveau_uidx ON historique_revenus(user_id, niveau) WHERE type='salaire'`,
       `CREATE UNIQUE INDEX IF NOT EXISTS codes_utilises_user_code_uidx ON codes_utilises (user_id, code)`,
     ];
     for (const sql of alterations) await client.query(sql);

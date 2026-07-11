@@ -36,12 +36,12 @@ router.get('/salaire', requireAuth, async (req, res) => {
     const filleuls_actifs = filleuls_directs.filter(f => f.actif).length;
     const seuil_atteint = niveau_actuel > 0 && filleuls_actifs >= filleuls_requis;
 
-    // 5. Déjà réclamé aujourd'hui ?
-    const [[claimed]] = await db.query(`
-      SELECT COUNT(*)::int as nb FROM historique_revenus
-      WHERE user_id = ? AND type = 'salaire'
-        AND date_paiement >= CURRENT_DATE`, [user_id]);
-    const deja_reclame = (claimed.nb || 0) > 0;
+    // 5. Paliers déjà réclamés (une seule fois dans la vie, par niveau)
+    const [claimedRows] = await db.query(`
+      SELECT DISTINCT niveau FROM historique_revenus
+      WHERE user_id = ? AND type = 'salaire' AND niveau IS NOT NULL`, [user_id]);
+    const niveaux_reclames = claimedRows.map(r => r.niveau);
+    const deja_reclame = niveaux_reclames.includes(niveau_actuel);
 
     const message_erreur = req.session.salaire_error || null;
     const salaire_success = req.session.salaire_success || null;
@@ -51,7 +51,7 @@ router.get('/salaire', requireAuth, async (req, res) => {
     res.render('salaire', {
       user, niveau_actuel, salaire_actuel, paliers,
       palier_actuel, filleuls_requis, filleuls_directs,
-      filleuls_actifs, seuil_atteint, deja_reclame, message_erreur, salaire_success,
+      filleuls_actifs, seuil_atteint, deja_reclame, niveaux_reclames, message_erreur, salaire_success,
     });
   } catch (e) {
     console.error('GET /salaire error:', e);
@@ -99,12 +99,13 @@ router.post('/salaire', requireAuth, async (req, res) => {
       return res.redirect('/salaire');
     }
 
-    // Déjà réclamé aujourd'hui ?
+    // Déjà réclamé pour ce palier ? (le salaire de chaque palier VIP n'est versé
+    // qu'une seule fois dans la vie du compte, pas quotidiennement)
     const [[claimed]] = await db.query(`
       SELECT COUNT(*)::int as nb FROM historique_revenus
-      WHERE user_id = ? AND type = 'salaire' AND date_paiement >= CURRENT_DATE`, [user_id]);
+      WHERE user_id = ? AND type = 'salaire' AND niveau = ?`, [user_id, niveau_actuel]);
     if ((claimed.nb || 0) > 0) {
-      req.session.salaire_error = 'Vous avez déjà réclamé votre salaire aujourd\'hui. Revenez demain !';
+      req.session.salaire_error = 'Vous avez déjà reçu le salaire de ce palier VIP. Il n\'est versé qu\'une seule fois par palier.';
       return res.redirect('/salaire');
     }
 
@@ -115,8 +116,8 @@ router.post('/salaire', requireAuth, async (req, res) => {
       await conn.query(
         'UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [montant, user_id]);
       await conn.query(
-        `INSERT INTO historique_revenus (user_id, montant, type, date_paiement)
-         VALUES (?, ?, 'salaire', NOW())`, [user_id, montant]);
+        `INSERT INTO historique_revenus (user_id, montant, type, niveau, date_paiement)
+         VALUES (?, ?, 'salaire', ?, NOW())`, [user_id, montant, niveau_actuel]);
       await conn.commit();
     } catch (e) {
       await conn.rollback();
