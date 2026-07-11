@@ -15,6 +15,16 @@ router.get('/faq', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/tuto', requireAuth, (req, res) => res.render('tuto'));
+router.get('/tuto', requireAuth, async (req, res) => {
+  try {
+    const [plans] = await db.query(
+      'SELECT prix, rendement_journalier FROM planinvestissement ORDER BY prix ASC'
+    );
+    res.render('tuto', { plans });
+  } catch (e) {
+    console.error(e);
+    res.render('tuto', { plans: [] });
+  }
+});
 
 module.exports = router;
