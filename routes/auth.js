@@ -4,18 +4,18 @@ const db = require('../config/db');
 const { getParams } = require('../services/params');
 
 const paysEligibles = {
-  '+229': 'Bénin',
-  '+226': 'Burkina Faso',
   '+237': 'Cameroun',
-  '+221': 'Sénégal',
-  '+225': "Côte d'Ivoire",
-  '+223': 'Mali',
   '+228': 'Togo',
+  '+229': 'Bénin',
+  '+225': "Côte d'Ivoire",
+  '+226': 'Burkina Faso',
+  '+241': 'Gabon',
+  '+242': 'Congo Brazzaville',
 };
 
 const isoMap = {
-  BJ: '+229', BF: '+226', CM: '+237',
-  CG: '+242', CI: '+225', ML: '+223', TG: '+228',
+  CM: '+237', TG: '+228', BJ: '+229',
+  CI: '+225', BF: '+226', GA: '+241', CG: '+242',
 };
 
 // GET /connexion

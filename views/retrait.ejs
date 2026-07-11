@@ -177,13 +177,13 @@
                 <div class="select-wrap">
                     <select id="sel-pays" class="form-select" required>
                         <option value="">-- Sélectionnez votre pays --</option>
-                        <option value="Cameroun"     data-code="+237" <%= user.pays === 'Cameroun'      ? 'selected' : '' %>>🇨🇲 Cameroun (+237)</option>
-                        <option value="Côte d'Ivoire" data-code="+225" <%= user.pays === "Côte d'Ivoire" ? 'selected' : '' %>>🇨🇮 Côte d'Ivoire (+225)</option>
-                        <option value="Sénégal"      data-code="+221" <%= user.pays === 'Sénégal'       ? 'selected' : '' %>>🇸🇳 Sénégal (+221)</option>
-                        <option value="Burkina Faso" data-code="+226" <%= user.pays === 'Burkina Faso'  ? 'selected' : '' %>>🇧🇫 Burkina Faso (+226)</option>
-                        <option value="Bénin"        data-code="+229" <%= user.pays === 'Bénin'         ? 'selected' : '' %>>🇧🇯 Bénin (+229)</option>
-                        <option value="Mali"         data-code="+223" <%= user.pays === 'Mali'          ? 'selected' : '' %>>🇲🇱 Mali (+223)</option>
-                        <option value="Togo"         data-code="+228" <%= user.pays === 'Togo'          ? 'selected' : '' %>>🇹🇬 Togo (+228)</option>
+                        <option value="Cameroun"          data-code="+237" <%= user.pays === 'Cameroun'          ? 'selected' : '' %>>🇨🇲 Cameroun (+237)</option>
+                        <option value="Togo"              data-code="+228" <%= user.pays === 'Togo'              ? 'selected' : '' %>>🇹🇬 Togo (+228)</option>
+                        <option value="Bénin"             data-code="+229" <%= user.pays === 'Bénin'             ? 'selected' : '' %>>🇧🇯 Bénin (+229)</option>
+                        <option value="Côte d'Ivoire"      data-code="+225" <%= user.pays === "Côte d'Ivoire"      ? 'selected' : '' %>>🇨🇮 Côte d'Ivoire (+225)</option>
+                        <option value="Burkina Faso"       data-code="+226" <%= user.pays === 'Burkina Faso'       ? 'selected' : '' %>>🇧🇫 Burkina Faso (+226)</option>
+                        <option value="Gabon"              data-code="+241" <%= user.pays === 'Gabon'              ? 'selected' : '' %>>🇬🇦 Gabon (+241)</option>
+                        <option value="Congo Brazzaville"  data-code="+242" <%= user.pays === 'Congo Brazzaville'  ? 'selected' : '' %>>🇨🇬 Congo Brazzaville (+242)</option>
                     </select>
                 </div>
             </div>
@@ -254,13 +254,13 @@
 
 <script>
 const operateursByPays = {
-    'Cameroun':      ['MTN Mobile Money', 'Orange Money'],
-    "Côte d'Ivoire": ['Orange Money', 'MTN Mobile Money', 'Moov Money', 'Wave'],
-    'Sénégal':       ['Orange Money', 'Free Money', 'Wave', 'Expresso'],
-    'Burkina Faso':  ['Orange Money', 'Moov Money'],
-    'Bénin':         ['MTN Mobile Money', 'Moov Money'],
-    'Mali':          ['Orange Money', 'Moov Money'],
-    'Togo':          ['Flooz (Moov)', 'T-Money'],
+    'Cameroun':          ['MTN Mobile Money', 'Orange Money'],
+    'Togo':              ['Flooz (Moov)', 'T-Money'],
+    'Bénin':             ['MTN Mobile Money', 'Moov Money'],
+    "Côte d'Ivoire":     ['Orange Money', 'MTN Mobile Money', 'Moov Money', 'Wave'],
+    'Burkina Faso':      ['Orange Money', 'Moov Money'],
+    'Gabon':             ['Airtel Money', 'Moov Money'],
+    'Congo Brazzaville': ['Airtel Money', 'MTN Mobile Money'],
 };
 
 const selPays      = document.getElementById('sel-pays');

@@ -8,19 +8,13 @@ const { getParams } = require('../services/params');
 // Countries & operators from AshtechPay /v1/countries
 // Stored locally to avoid an extra API call on every page load
 const ashtechCountries = [
-  { code: 'BJ', name: 'Bénin',          currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
-  { code: 'BF', name: 'Burkina Faso',    currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
-  { code: 'CM', name: 'Cameroun',        currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
-  { code: 'CF', name: 'Centrafrique',    currency: 'XAF', operators: ['Orange Money'] },
-  { code: 'CG', name: 'Congo',           currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
-  { code: 'CI', name: "Côte d'Ivoire",   currency: 'XOF', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
-  { code: 'GA', name: 'Gabon',           currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
-  { code: 'ML', name: 'Mali',            currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
-  { code: 'NE', name: 'Niger',           currency: 'XOF', operators: ['Orange Money', 'Airtel Money'] },
-  { code: 'CD', name: 'RD Congo',        currency: 'CDF', operators: ['Airtel Money', 'Orange Money', 'Vodacom M-Pesa'] },
-  { code: 'SN', name: 'Sénégal',         currency: 'XOF', operators: ['Wave', 'Orange Money', 'Free Money'] },
-  { code: 'TD', name: 'Tchad',           currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
-  { code: 'TG', name: 'Togo',            currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
+  { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
+  { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
+  { code: 'BJ', name: 'Bénin',             currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
+  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOF', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
+  { code: 'BF', name: 'Burkina Faso',      currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
+  { code: 'GA', name: 'Gabon',             currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
+  { code: 'CG', name: 'Congo Brazzaville', currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
 ];
 
 // ── GET /depot ───────────────────────────────────────────────────────────────
