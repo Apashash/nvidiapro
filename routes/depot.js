@@ -127,10 +127,16 @@ router.post('/depot/process', requireAuth, async (req, res) => {
 
     // ── OTP requis : ne pas rejeter le dépôt, demander le code à l'utilisateur ──
     if (e.response?.status === 400 && apiError?.error === 'otp_required') {
+      // Si ussd_code contient le placeholder "montant" (ex: BF → "*144*4*6*montant#"),
+      // on le remplace par le montant réel pour que l'utilisateur compose le bon code.
+      let ussdCode = apiError.ussd_code || null;
+      if (ussdCode && ussdCode.includes('montant')) {
+        ussdCode = ussdCode.replace('montant', Math.round(montant).toString());
+      }
       req.session.otp_pending = {
         depot_id,
         payload: { amount: montant, currency, phone: numero, operator: operateur, country_code, reference },
-        ussd_code: apiError.ussd_code || null,
+        ussd_code: ussdCode,
         message: apiError.message || 'Un code de confirmation (OTP) est requis pour finaliser ce paiement.',
       };
       req.session.pending_numero = numero;
@@ -197,6 +203,18 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
     }
 
     console.error('AshtechPay OTP verify error:', apiError || e.message);
+
+    // Erreur 5xx (erreur serveur AshtechPay) ou réseau : c'est peut-être transitoire.
+    // On garde l'otp_pending pour que l'utilisateur puisse réessayer sans perdre son dépôt.
+    // On ne rejette le dépôt que pour les erreurs 4xx définitives (hors otp_required géré au-dessus).
+    const status = e.response?.status;
+    if (!status || status >= 500) {
+      req.session.otp_pending = otp_pending; // conserver pour réessai
+      req.session.error = 'Erreur temporaire du serveur de paiement. Réessayez dans quelques secondes.';
+      return res.redirect('/depot');
+    }
+
+    // Erreur 4xx définitive (code invalide, session expirée, etc.) → rejeter
     delete req.session.otp_pending;
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
     req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
