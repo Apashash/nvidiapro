@@ -506,7 +506,7 @@
       <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
         <div class="avatar"><%= (u.nom||'?')[0].toUpperCase() %></div>
         <div style="min-width:0">
-          <div class="user-name"><%- u.nom %><% if (u.is_admin) { %> <span style="font-size:0.7rem;background:#EEF2FF;color:#4f46e5;padding:2px 7px;border-radius:10px;font-weight:700">Admin</span><% } %></div>
+          <div class="user-name"><%- u.nom %><% if (u.is_admin) { %> <span style="font-size:0.7rem;background:#EEF2FF;color:#4f46e5;padding:2px 7px;border-radius:10px;font-weight:700">Admin</span><% } %><% if (u.niveau_vip > 0) { %> <span style="font-size:0.7rem;background:#DCFCE7;color:#15803d;padding:2px 7px;border-radius:10px;font-weight:700">VIP actif</span><% } %></div>
           <div class="user-sub"><%- u.telephone %> · <%- u.pays || '—' %></div>
           <div class="user-balance"><%= parseFloat(u.solde||0).toLocaleString('fr-FR') %> FCFA</div>
           <div class="ref-row">
