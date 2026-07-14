@@ -141,6 +141,37 @@
             background:linear-gradient(90deg,#D4921F,#B07018);
             transition:width 0.5s ease;
         }
+        .ppc-wave-btn {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            background:linear-gradient(135deg,#1DA1F2,#0D7FC7); color:#fff;
+            border-radius:12px; padding:12px; margin-top:12px; text-decoration:none;
+            font-size:14px; font-weight:700;
+        }
+
+        /* ── OTP card ── */
+        .otp-card {
+            background:#fff; border-radius:18px; padding:22px 18px;
+            margin-bottom:14px; box-shadow:0 4px 16px rgba(196,125,30,0.10);
+            border:2px solid #D4921F;
+        }
+        .otp-card h3 { font-size:16px; font-weight:700; color:#3D2B1F; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+        .otp-card h3 i { color:#C47D1E; }
+        .otp-instructions { font-size:13px; color:#7D5A38; line-height:1.5; margin-bottom:14px; }
+        .otp-ussd-code {
+            display:inline-block; background:#FEF3DA; color:#A0631A; border:1px solid #F5D78A;
+            border-radius:8px; font-size:15px; font-weight:800; padding:6px 12px; letter-spacing:0.5px; margin-top:6px;
+        }
+        .otp-input {
+            width:100%; background:#FBF5EC; border:1.5px solid #E8D5B0;
+            border-radius:12px; padding:14px 15px; color:#3D2B1F; font-size:20px;
+            letter-spacing:4px; text-align:center; font-weight:700;
+            font-family:'Poppins',sans-serif; outline:none; margin-bottom:14px;
+        }
+        .otp-input:focus { border-color:#C47D1E; box-shadow:0 0 0 3px rgba(196,125,30,0.12); }
+        .otp-cancel-link {
+            display:block; text-align:center; font-size:12px; color:#B09070;
+            margin-top:12px; text-decoration:underline;
+        }
     </style>
 </head>
 <body>
@@ -173,6 +204,27 @@
             <div class="alert-box alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
         <% } %>
 
+        <% if (locals.otp_pending) { %>
+        <div class="otp-card">
+            <h3><i class="fas fa-shield-alt"></i> Code de confirmation requis</h3>
+            <div class="otp-instructions">
+                <%= otp_pending.message %>
+                <% if (otp_pending.ussd_code) { %>
+                    <br>Composez ce code sur votre téléphone pour recevoir votre OTP :
+                    <br><span class="otp-ussd-code"><%= otp_pending.ussd_code %></span>
+                <% } else { %>
+                    <br>Un SMS contenant le code vient d'être envoyé au <strong><%= otp_pending.payload.phone %></strong>.
+                <% } %>
+            </div>
+            <form method="POST" action="/depot/otp/verify">
+                <input type="text" name="otp" class="otp-input" placeholder="••••••" inputmode="numeric"
+                       pattern="[0-9]{4,8}" minlength="4" maxlength="8" autocomplete="one-time-code" required autofocus>
+                <button type="submit" class="btn-submit"><i class="fas fa-check"></i> Valider le code OTP</button>
+            </form>
+            <a href="/depot/otp/cancel" class="otp-cancel-link">Annuler ce dépôt</a>
+        </div>
+        <% } %>
+
         <% if (locals.pending_depot_id) { %>
         <div class="payment-pending-card" id="paymentStatusCard">
             <div class="ppc-header">
@@ -184,6 +236,11 @@
                 <span>Confirmez sur votre téléphone</span>
                 <strong><%= pending_numero %></strong>
             </div>
+            <% if (locals.pending_wave_url) { %>
+                <a href="<%= pending_wave_url %>" target="_blank" rel="noopener" class="ppc-wave-btn">
+                    <i class="fas fa-external-link-alt"></i> Payer avec Wave
+                </a>
+            <% } %>
             <div class="ppc-note" id="ppcNote">
                 <i class="fas fa-clock"></i> Votre solde sera crédité automatiquement dès confirmation.
             </div>
@@ -191,6 +248,7 @@
         </div>
         <% } %>
 
+        <% if (!locals.otp_pending) { %>
         <div class="form-card" id="formCard">
             <form id="depotForm" method="POST" action="/depot/process">
 
@@ -248,6 +306,7 @@
             </div>
 
         </div>
+        <% } %>
 
     </div>
 </div>

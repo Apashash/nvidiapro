@@ -6,16 +6,25 @@ const axios = require('axios');
 const { getParams } = require('../services/params');
 
 // Countries & operators from AshtechPay /v1/countries
-// Stored locally to avoid an extra API call on every page load
+// Stored locally to avoid an extra API call on every page load.
+// `currency` must match the plain ISO code AshtechPay expects in /v1/collect
+// (XAF, XOF, GNF, CDF…) — NOT the per-country display suffixes (XOFC, XAFG…)
+// shown on the docs page, which are cosmetic only.
 const ashtechCountries = [
   { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
-  { code: 'TG', name: 'Togo',              currency: 'XOFT', operators: ['Flooz (Moov)', 'T-Money'] },
-  { code: 'BJ', name: 'Bénin',             currency: 'XOFB', operators: ['Moov Money', 'MTN Mobile Money'] },
-  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOFC', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
-  { code: 'BF', name: 'Burkina Faso',      currency: 'XOFF', operators: ['Moov Money', 'Orange Money'] },
+  { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
+  { code: 'BJ', name: 'Bénin',             currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
+  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOF', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
+  { code: 'BF', name: 'Burkina Faso',      currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
   { code: 'GA', name: 'Gabon',             currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
   { code: 'CG', name: 'Congo Brazzaville', currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
 ];
+
+// Operators that AshtechPay may ask an OTP for, per the docs' "OTP requis" table.
+// Used only to decide whether to show a short "un code peut vous être demandé"
+// hint up front — the actual otp_required signal always comes from the API
+// response, so this list is informational, not authoritative.
+const otpProneOperators = new Set(['Orange Money', 'Wave']);
 
 // ── GET /depot ───────────────────────────────────────────────────────────────
 router.get('/depot', requireAuth, async (req, res) => {
@@ -26,12 +35,18 @@ router.get('/depot', requireAuth, async (req, res) => {
     const failed  = req.query.failed === '1' ? 'Paiement échoué. Veuillez réessayer.' : null;
     const pending_depot_id = req.session.pending_depot_id || null;
     const pending_numero   = req.session.pending_numero   || null;
+    const pending_wave_url = req.session.pending_wave_url || null;
+    const otp_pending      = req.session.otp_pending      || null;
     delete req.session.error;
     delete req.session.pending_depot_id;
     delete req.session.pending_numero;
+    delete req.session.pending_wave_url;
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
-    res.render('depot', { user, countries: ashtechCountries, error, failed, depotMin, pending_depot_id, pending_numero });
+    res.render('depot', {
+      user, countries: ashtechCountries, error, failed, depotMin,
+      pending_depot_id, pending_numero, pending_wave_url, otp_pending,
+    });
   } catch (e) {
     console.error('GET /depot error:', e);
     res.redirect('/');
@@ -95,37 +110,132 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     const apiKey = process.env.ASHTECHPAY_API_KEY;
     if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
 
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host     = req.headers['x-forwarded-host']  || req.headers.host;
-    const callback_url = `${protocol}://${host}/ashtechpay_callback`;
+    const notify_url = buildNotifyUrl(req);
+    const payload = { amount: montant, currency, phone: numero, operator: operateur, country_code, reference, notify_url };
 
     const { data } = await axios.post(
       'https://ashtechpay.top/v1/collect',
-      { amount: montant, currency, phone: numero, operator: operateur, country_code, reference, callback_url },
+      payload,
       { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
     );
 
-    // Store AshtechPay transaction_id alongside our reference
-    await db.query(
-      "UPDATE depots SET numero_transaction = ? WHERE id = ?",
-      [`${reference}|${data.transaction_id}`, depot_id]
-    );
-
-    // Poll AshtechPay every 3s as a backup to the webhook, until the status changes.
-    pollTransactionStatus(depot_id, data.transaction_id, apiKey);
-
-    req.session.pending_depot_id = depot_id;
-    req.session.pending_numero   = numero;
+    await onCollectAccepted(req, depot_id, data, apiKey);
     res.redirect('/depot');
 
   } catch (e) {
-    console.error('AshtechPay collect error:', e.response?.data || e.message);
-    // Mark deposit as rejected if API call failed
+    const apiError = e.response?.data;
+
+    // ── OTP requis : ne pas rejeter le dépôt, demander le code à l'utilisateur ──
+    if (e.response?.status === 400 && apiError?.error === 'otp_required') {
+      req.session.otp_pending = {
+        depot_id,
+        payload: { amount: montant, currency, phone: numero, operator: operateur, country_code, reference },
+        ussd_code: apiError.ussd_code || null,
+        message: apiError.message || 'Un code de confirmation (OTP) est requis pour finaliser ce paiement.',
+      };
+      req.session.pending_numero = numero;
+      return res.redirect('/depot');
+    }
+
+    console.error('AshtechPay collect error:', apiError || e.message);
+    // Mark deposit as rejected if API call failed for any other reason
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
-    req.session.error = e.response?.data?.message || 'Erreur de connexion au serveur de paiement';
+    req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
     res.redirect('/depot');
   }
 });
+
+// ── POST /depot/otp/verify — soumission du code OTP pour les opérateurs
+// (Orange Money, principalement) qui l'exigent avant de confirmer la collecte.
+router.post('/depot/otp/verify', requireAuth, async (req, res) => {
+  const otp_pending = req.session.otp_pending;
+  const otp = (req.body.otp || '').trim();
+
+  if (!otp_pending) {
+    req.session.error = 'Aucun paiement en attente de code OTP.';
+    return res.redirect('/depot');
+  }
+  if (!/^[0-9]{4,8}$/.test(otp)) {
+    req.session.error = 'Code OTP invalide (4 à 8 chiffres).';
+    return res.redirect('/depot');
+  }
+
+  const { depot_id, payload } = otp_pending;
+
+  try {
+    const apiKey = process.env.ASHTECHPAY_API_KEY;
+    if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
+
+    const notify_url = buildNotifyUrl(req);
+    const { data } = await axios.post(
+      'https://ashtechpay.top/v1/collect',
+      { ...payload, otp, notify_url },
+      { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
+    );
+
+    delete req.session.otp_pending;
+    await onCollectAccepted(req, depot_id, data, apiKey);
+    res.redirect('/depot');
+
+  } catch (e) {
+    const apiError = e.response?.data;
+
+    // Code invalide/expiré : on redemande l'OTP plutôt que de rejeter le dépôt.
+    if (e.response?.status === 400 && apiError?.error === 'otp_required') {
+      req.session.otp_pending = {
+        ...otp_pending,
+        ussd_code: apiError.ussd_code || otp_pending.ussd_code,
+        message: apiError.message || 'Code OTP invalide ou expiré. Veuillez réessayer.',
+      };
+      req.session.error = apiError.message || 'Code OTP invalide ou expiré. Veuillez réessayer.';
+      return res.redirect('/depot');
+    }
+
+    console.error('AshtechPay OTP verify error:', apiError || e.message);
+    delete req.session.otp_pending;
+    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
+    req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
+    res.redirect('/depot');
+  }
+});
+
+// ── GET /depot/otp/cancel — abandonne un paiement en attente d'OTP ───────────
+router.get('/depot/otp/cancel', requireAuth, async (req, res) => {
+  const otp_pending = req.session.otp_pending;
+  delete req.session.otp_pending;
+  if (otp_pending?.depot_id) {
+    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [otp_pending.depot_id]);
+  }
+  res.redirect('/depot');
+});
+
+function buildNotifyUrl(req) {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host     = req.headers['x-forwarded-host']  || req.headers.host;
+  return `${protocol}://${host}/ashtechpay_callback`;
+}
+
+// Shared handling for any AshtechPay /v1/collect call that came back 202 —
+// whether that happened on the first try (USSD push / Wave) or after
+// resubmitting with an `otp`. Stores the transaction id, kicks off the
+// server-side poller, and sets what the pending-payment card needs to render.
+async function onCollectAccepted(req, depot_id, data, apiKey) {
+  const [[depot]] = await db.query('SELECT numero_transaction FROM depots WHERE id = ?', [depot_id]);
+  const reference = (depot?.numero_transaction || '').split('|')[0];
+
+  await db.query(
+    "UPDATE depots SET numero_transaction = ? WHERE id = ?",
+    [`${reference}|${data.transaction_id}`, depot_id]
+  );
+
+  // Poll AshtechPay every 3s as a backup to the webhook, until the status changes.
+  pollTransactionStatus(depot_id, data.transaction_id, apiKey);
+
+  req.session.pending_depot_id = depot_id;
+  req.session.pending_numero   = data.phone || req.session.pending_numero || null;
+  // Wave doesn't push a USSD prompt — the client must open a link to confirm.
+  req.session.pending_wave_url = data.flow === 'wave' ? data.wave_url : null;
+}
 
 // ── Server-side polling of AshtechPay GET /v1/transaction/:id ───────────────
 // Runs alongside the webhook as a fallback (in case the webhook never arrives).
