@@ -9,10 +9,10 @@ const { getParams } = require('../services/params');
 // Stored locally to avoid an extra API call on every page load
 const ashtechCountries = [
   { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
-  { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
-  { code: 'BJ', name: 'Bénin',             currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
-  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOF', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
-  { code: 'BF', name: 'Burkina Faso',      currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
+  { code: 'TG', name: 'Togo',              currency: 'XOFT', operators: ['Flooz (Moov)', 'T-Money'] },
+  { code: 'BJ', name: 'Bénin',             currency: 'XOFB', operators: ['Moov Money', 'MTN Mobile Money'] },
+  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOFC', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
+  { code: 'BF', name: 'Burkina Faso',      currency: 'XOFF', operators: ['Moov Money', 'Orange Money'] },
   { code: 'GA', name: 'Gabon',             currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
   { code: 'CG', name: 'Congo Brazzaville', currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
 ];
