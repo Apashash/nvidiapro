@@ -167,9 +167,14 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
     if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
 
     const notify_url = buildNotifyUrl(req);
+    // Le retry OTP NE doit PAS inclure reference — la doc AshtechPay montre
+    // que le retry doit contenir uniquement amount/currency/phone/operator/country_code/otp/notify_url.
+    // Inclure reference fait traiter la requête comme un NOUVEAU paiement, ce qui
+    // provoque une erreur interne côté AshtechPay (conflit de reference déjà existante).
+    const { reference: _omit, ...retryPayload } = payload;
     const { data } = await axios.post(
       'https://ashtechpay.top/v1/collect',
-      { ...payload, otp, notify_url },
+      { ...retryPayload, otp, notify_url },
       { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
     );
 
@@ -265,8 +270,12 @@ function pollTransactionStatus(depot_id, transaction_id, apiKey) {
         { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
       );
 
-      if (data.status === 'success' || data.status === 'failed') {
-        await finalizeDepot(depot, data.status === 'success' ? 'success' : 'failed');
+      // AshtechPay /v1/transaction/:id peut retourner "success" ou "completed" pour les
+      // paiements réussis selon la version de l'API. On accepte les deux.
+      const isSuccess = data.status === 'success' || data.status === 'completed';
+      const isFailed  = data.status === 'failed'  || data.status === 'rejected' || data.status === 'cancelled';
+      if (isSuccess || isFailed) {
+        await finalizeDepot(depot, isSuccess ? 'success' : 'failed');
         return; // status changed to a final state — stop polling
       }
 
@@ -305,9 +314,12 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
             `https://ashtechpay.top/v1/transaction/${transaction_id}`,
             { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
           );
-          if (data.status === 'success' || data.status === 'failed') {
-            await finalizeDepot(depot, data.status);
-            depot.statut = data.status === 'success' ? 'valide' : 'rejete';
+          // Accept both "success"/"completed" for success, "failed"/"rejected"/"cancelled" for failure
+      const isSuccessLive = data.status === 'success' || data.status === 'completed';
+      const isFailedLive  = data.status === 'failed'  || data.status === 'rejected' || data.status === 'cancelled';
+      if (isSuccessLive || isFailedLive) {
+            await finalizeDepot(depot, isSuccessLive ? 'success' : 'failed');
+            depot.statut = isSuccessLive ? 'valide' : 'rejete';
           }
         } catch (e) {
           // Live check failed (network/API) — fall back to the last known DB status
@@ -324,12 +336,33 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
 
 // ── POST /ashtechpay_callback  (webhook) ─────────────────────────────────────
 // AshtechPay calls this URL when a transaction is completed/failed.
-// Payload: { transaction_id, reference, status, amount, credited_amount, currency, ... }
+// Docs webhook payload:
+//   { event: "payment.completed"|"payment.failed", transaction_id, reference,
+//     status: "completed"|"failed", amount (net), total_amount (brut), currency, ... }
+// Note: status field is "completed" (not "success") — map accordingly.
 router.post('/ashtechpay_callback', async (req, res) => {
-  const { transaction_id, reference, status, amount } = req.body || {};
+  const { event, transaction_id, reference, status } = req.body || {};
+
+  // Always respond 200 first (as recommended by docs) so AshtechPay stops retrying
+  res.status(200).json({ received: true });
 
   if (!reference && !transaction_id) {
-    return res.status(400).json({ error: 'Missing reference' });
+    console.warn('AshtechPay callback: missing reference and transaction_id');
+    return;
+  }
+
+  // Normalize event-based and status-based signals to our internal "success"/"failed"
+  // The webhook sends status: "completed" for success, "failed" for failure.
+  // event field: "payment.completed" or "payment.failed" is also available.
+  let normalizedStatus;
+  if (event === 'payment.completed' || status === 'completed' || status === 'success') {
+    normalizedStatus = 'success';
+  } else if (event === 'payment.failed' || status === 'failed' || status === 'rejected' || status === 'cancelled') {
+    normalizedStatus = 'failed';
+  } else {
+    // Unknown / pending — ignore, let polling handle it
+    console.log(`AshtechPay callback: unhandled event="${event}" status="${status}" — ignoring`);
+    return;
   }
 
   try {
@@ -345,16 +378,17 @@ router.post('/ashtechpay_callback', async (req, res) => {
         `SELECT * FROM depots WHERE numero_transaction LIKE ? LIMIT 1`,
         [`%|${transaction_id}`]
       );
-      if (!depot2) return res.status(404).json({ error: 'Depot not found' });
-      const result2 = await finalizeDepot(depot2, status);
-      return res.json(result2);
+      if (!depot2) {
+        console.warn(`AshtechPay callback: depot not found for reference="${reference}" tx="${transaction_id}"`);
+        return;
+      }
+      await finalizeDepot(depot2, normalizedStatus);
+      return;
     }
-    const result = await finalizeDepot(depot, status);
-    return res.json(result);
+    await finalizeDepot(depot, normalizedStatus);
 
   } catch (e) {
     console.error('AshtechPay callback error:', e);
-    res.status(500).json({ error: 'Internal error' });
   }
 });
 
