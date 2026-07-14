@@ -91,6 +91,7 @@
         <% if (transactions && transactions.length > 0) { %>
         <div class="tx-card">
             <ul class="tx-list">
+                <% const revenuSourceLabels = { paiement_journalier: 'Investissement', parrainage: 'Parrainage', bonus: 'Machine à sous', cadeau: 'Machine à sous', salaire: 'Salaire VIP' }; %>
                 <% transactions.forEach(tx => { %>
                 <li class="tx-item" style="flex-wrap:wrap;gap:4px;">
                     <div class="tx-left" style="flex:1;min-width:0;">
@@ -98,7 +99,12 @@
                             <i class="fas <%= tx.type === 'depot' ? 'fa-arrow-down' : tx.type === 'retrait' ? 'fa-arrow-up' : 'fa-coins' %>"></i>
                         </div>
                         <div style="min-width:0;">
-                            <div class="tx-type"><%= tx.type === 'depot' ? 'Dépôt' : tx.type === 'retrait' ? 'Retrait' : 'Revenu' %></div>
+                            <div class="tx-type">
+                                <%= tx.type === 'depot' ? 'Dépôt' : tx.type === 'retrait' ? 'Retrait' : 'Revenu' %>
+                                <% if (tx.type === 'revenu') { %>
+                                <span style="font-size:11px;font-weight:600;color:#A87D50;text-transform:none;">— <%= revenuSourceLabels[tx.source] || tx.source || 'Autre' %></span>
+                                <% } %>
+                            </div>
                             <div class="tx-date"><%= tx.date ? new Date(tx.date).toLocaleString('fr-FR') : '' %></div>
                             <div class="tx-statut <%= tx.statut %>">
                                 <%= tx.statut === 'valide' ? '✓ Validé' : tx.statut === 'en_attente' ? '⏳ En attente' : '✗ Rejeté' %>

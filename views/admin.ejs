@@ -496,17 +496,30 @@
 
   <div class="search-box">
     <i class="fas fa-search"></i>
-    <input type="text" id="userSearch" placeholder="Rechercher par nom ou numéro..." oninput="filterCards('userList', this.value)">
+    <input type="text" id="userSearch" placeholder="Rechercher par nom ou numéro..." oninput="filterUsers()">
+  </div>
+
+  <div style="display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap">
+    <select id="userPlanFilter" onchange="filterUsers()" style="padding:8px 12px;border-radius:10px;border:1px solid #E8D5B0;font-size:13px;font-weight:600;color:#3D2B1F;background:#fff">
+      <option value="">Tous les plans</option>
+      <option value="actif">Plan actif</option>
+      <option value="sans_investissement">Sans investissement</option>
+    </select>
+    <select id="userSoldeFilter" onchange="filterUsers()" style="padding:8px 12px;border-radius:10px;border:1px solid #E8D5B0;font-size:13px;font-weight:600;color:#3D2B1F;background:#fff">
+      <option value="">Tous les soldes</option>
+      <option value="avec_solde">Avec solde</option>
+      <option value="sans_solde">Sans solde</option>
+    </select>
   </div>
 
   <div id="userList">
   <% users.forEach(u => { %>
-  <div class="card" data-search="<%= (u.nom+' '+u.telephone+' '+(u.pays||'')+' '+(u.code_parrainage||'')).toLowerCase() %>">
+  <div class="card" data-search="<%= (u.nom+' '+u.telephone+' '+(u.pays||'')+' '+(u.code_parrainage||'')).toLowerCase() %>" data-commandes="<%= u.nb_commandes %>" data-solde="<%= u.solde %>">
     <div class="card-row">
       <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
         <div class="avatar"><%= (u.nom||'?')[0].toUpperCase() %></div>
         <div style="min-width:0">
-          <div class="user-name"><%- u.nom %><% if (u.is_admin) { %> <span style="font-size:0.7rem;background:#EEF2FF;color:#4f46e5;padding:2px 7px;border-radius:10px;font-weight:700">Admin</span><% } %><% if (u.niveau_vip > 0) { %> <span style="font-size:0.7rem;background:#DCFCE7;color:#15803d;padding:2px 7px;border-radius:10px;font-weight:700">VIP actif</span><% } %></div>
+          <div class="user-name"><%- u.nom %><% if (u.is_admin) { %> <span style="font-size:0.7rem;background:#EEF2FF;color:#4f46e5;padding:2px 7px;border-radius:10px;font-weight:700">Admin</span><% } %><% if (u.nb_commandes > 0) { %> <span style="font-size:0.7rem;background:#DCFCE7;color:#15803d;padding:2px 7px;border-radius:10px;font-weight:700">Plan actif</span><% } %><% if (u.niveau_vip > 0) { %> <span style="font-size:0.7rem;background:#FEF3C7;color:#92400e;padding:2px 7px;border-radius:10px;font-weight:700">VIP niveau <%= u.niveau_vip %></span><% } %></div>
           <div class="user-sub"><%- u.telephone %> · <%- u.pays || '—' %></div>
           <div class="user-balance"><%= parseFloat(u.solde||0).toLocaleString('fr-FR') %> FCFA</div>
           <div class="ref-row">
@@ -522,6 +535,7 @@
   </div>
   <% }); %>
   </div>
+  <div id="userListEmpty" class="empty" style="display:none">Aucun utilisateur ne correspond aux filtres</div>
   <% if (!users.length) { %><div class="empty">Aucun utilisateur</div><% } %>
 
 <%# ══════════════════ DÉPÔTS ══════════════════ %>
@@ -1455,6 +1469,33 @@ function filterCards(listId, q) {
     const search = card.dataset.search || card.textContent.toLowerCase();
     card.style.display = search.includes(q) ? '' : 'none';
   });
+}
+
+// ── User list filter (search text + plan + solde) ────────────────────────
+function filterUsers() {
+  const q = (document.getElementById('userSearch')?.value || '').toLowerCase();
+  const planVal = document.getElementById('userPlanFilter')?.value || '';
+  const soldeVal = document.getElementById('userSoldeFilter')?.value || '';
+  let visibleCount = 0;
+  document.querySelectorAll('#userList .card').forEach(card => {
+    const search = card.dataset.search || card.textContent.toLowerCase();
+    const nbCommandes = parseInt(card.dataset.commandes || '0', 10);
+    const solde = parseFloat(card.dataset.solde || '0');
+
+    const matchSearch = !q || search.includes(q);
+    const matchPlan = !planVal
+      || (planVal === 'actif' && nbCommandes > 0)
+      || (planVal === 'sans_investissement' && nbCommandes === 0);
+    const matchSolde = !soldeVal
+      || (soldeVal === 'avec_solde' && solde > 0)
+      || (soldeVal === 'sans_solde' && solde <= 0);
+
+    const visible = matchSearch && matchPlan && matchSolde;
+    card.style.display = visible ? '' : 'none';
+    if (visible) visibleCount++;
+  });
+  const emptyEl = document.getElementById('userListEmpty');
+  if (emptyEl) emptyEl.style.display = visibleCount === 0 ? '' : 'none';
 }
 
 // ── Transaction filter ──────────────────────────────────────────────────
