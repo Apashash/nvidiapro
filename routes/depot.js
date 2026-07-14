@@ -133,9 +133,14 @@ router.post('/depot/process', requireAuth, async (req, res) => {
       if (ussdCode && ussdCode.includes('montant')) {
         ussdCode = ussdCode.replace('montant', Math.round(montant).toString());
       }
+      // AshtechPay renvoie un `reference` dans la réponse 400 otp_required (ex: "DEP-A1B2C3D4") —
+      // ce reference généré par AshtechPay (PAS le nôtre) est OBLIGATOIRE pour l'étape 2 (retry OTP).
+      // Sans lui, l'API renvoie 502 server_error ; avec un mauvais reference, elle renvoie
+      // désormais 400 missing_reference. Il ne faut donc PAS l'omettre au retry.
+      const otpReference = apiError.reference || reference;
       req.session.otp_pending = {
         depot_id,
-        payload: { amount: montant, currency, phone: numero, operator: operateur, country_code, reference },
+        payload: { amount: montant, currency, phone: numero, operator: operateur, country_code, reference: otpReference },
         ussd_code: ussdCode,
         message: apiError.message || 'Un code de confirmation (OTP) est requis pour finaliser ce paiement.',
       };
@@ -173,14 +178,12 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
     if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
 
     const notify_url = buildNotifyUrl(req);
-    // Le retry OTP NE doit PAS inclure reference — la doc AshtechPay montre
-    // que le retry doit contenir uniquement amount/currency/phone/operator/country_code/otp/notify_url.
-    // Inclure reference fait traiter la requête comme un NOUVEAU paiement, ce qui
-    // provoque une erreur interne côté AshtechPay (conflit de reference déjà existante).
-    const { reference: _omit, ...retryPayload } = payload;
+    // Le retry OTP DOIT inclure le `reference` renvoyé par AshtechPay dans la réponse 400
+    // otp_required de l'étape 1 (stocké dans payload.reference — PAS notre propre référence
+    // interne). Sans lui, AshtechPay renvoie 502 server_error / 400 missing_reference.
     const { data } = await axios.post(
       'https://ashtechpay.top/v1/collect',
-      { ...retryPayload, otp, notify_url },
+      { ...payload, otp, notify_url },
       { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
     );
 
