@@ -105,12 +105,21 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     return res.redirect('/depot');
   }
 
-  // ── Call AshtechPay /v1/collect ─────────────────────────────────────────────
+  const notify_url = buildNotifyUrl(req);
+  await initiateCollect(req, res, {
+    depot_id, montant, currency, numero, operateur, country_code, reference, notify_url,
+  });
+});
+
+// Shared "step 1" /v1/collect call — used both for the initial deposit
+// submission and to restart a fresh OTP session when AshtechPay reports
+// otp_expired/missing_reference on the confirmation step (per docs: "relancez
+// la requête sans otp pour initier une nouvelle session").
+async function initiateCollect(req, res, { depot_id, montant, currency, numero, operateur, country_code, reference, notify_url }) {
   try {
     const apiKey = process.env.ASHTECHPAY_API_KEY;
     if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
 
-    const notify_url = buildNotifyUrl(req);
     const payload = { amount: montant, currency, phone: numero, operator: operateur, country_code, reference, notify_url };
 
     const { data } = await axios.post(
@@ -139,7 +148,7 @@ router.post('/depot/process', requireAuth, async (req, res) => {
       // désormais 400 missing_reference. Il ne faut donc PAS l'omettre au retry.
       const otpReference = apiError.reference || reference;
       req.session.otp_pending = {
-        depot_id,
+        depot_id, notify_url,
         payload: { amount: montant, currency, phone: numero, operator: operateur, country_code, reference: otpReference },
         ussd_code: ussdCode,
         message: apiError.message || 'Un code de confirmation (OTP) est requis pour finaliser ce paiement.',
@@ -154,7 +163,7 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
     res.redirect('/depot');
   }
-});
+}
 
 // ── POST /depot/otp/verify — soumission du code OTP pour les opérateurs
 // (Orange Money, principalement) qui l'exigent avant de confirmer la collecte.
@@ -172,12 +181,12 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
   }
 
   const { depot_id, payload } = otp_pending;
+  const notify_url = otp_pending.notify_url || buildNotifyUrl(req);
 
   try {
     const apiKey = process.env.ASHTECHPAY_API_KEY;
     if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
 
-    const notify_url = buildNotifyUrl(req);
     // Le retry OTP DOIT inclure le `reference` renvoyé par AshtechPay dans la réponse 400
     // otp_required de l'étape 1 (stocké dans payload.reference — PAS notre propre référence
     // interne). Sans lui, AshtechPay renvoie 502 server_error / 400 missing_reference.
@@ -203,6 +212,21 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
       };
       req.session.error = apiError.message || 'Code OTP invalide ou expiré. Veuillez réessayer.';
       return res.redirect('/depot');
+    }
+
+    // Session OTP expirée (>15 min) ou introuvable, ou reference manquant/invalide :
+    // la doc recommande de relancer l'appel SANS otp/reference pour démarrer une
+    // nouvelle session OTP, plutôt que de rejeter le dépôt.
+    if (e.response?.status === 400 && (apiError?.error === 'otp_expired' || apiError?.error === 'missing_reference')) {
+      delete req.session.otp_pending;
+      req.session.error = apiError.error === 'otp_expired'
+        ? "Le code a expiré. Un nouveau code vous a été envoyé, veuillez réessayer."
+        : "La session de confirmation a été perdue. Un nouveau code vous a été envoyé, veuillez réessayer.";
+      return initiateCollect(req, res, {
+        depot_id, montant: payload.amount, currency: payload.currency, numero: payload.phone,
+        operateur: payload.operator, country_code: payload.country_code,
+        reference: `DEP_${req.session.user_id}_${Date.now()}`, notify_url,
+      });
     }
 
     console.error('AshtechPay OTP verify error:', apiError || e.message);
