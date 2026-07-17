@@ -159,7 +159,7 @@ async function initiateCollect(req, res, { depot_id, montant, currency, numero, 
       return res.redirect('/depot');
     }
 
-    console.error('AshtechPay collect error:', apiError || e.message);
+    console.error(`AshtechPay collect error [HTTP ${e.response?.status}] country=${country_code} operator=${operateur} currency=${currency}:`, JSON.stringify(apiError) || e.message);
     // Mark deposit as rejected if API call failed for any other reason
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
     req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
