@@ -184,6 +184,8 @@
                         <option value="Burkina Faso"       data-code="+226" <%= user.pays === 'Burkina Faso'       ? 'selected' : '' %>>🇧🇫 Burkina Faso (+226)</option>
                         <option value="Gabon"              data-code="+241" <%= user.pays === 'Gabon'              ? 'selected' : '' %>>🇬🇦 Gabon (+241)</option>
                         <option value="Congo Brazzaville"  data-code="+242" <%= user.pays === 'Congo Brazzaville'  ? 'selected' : '' %>>🇨🇬 Congo Brazzaville (+242)</option>
+                        <option value="Niger"              data-code="+227" <%= user.pays === 'Niger'              ? 'selected' : '' %>>🇳🇪 Niger (+227)</option>
+                        <option value="Mali"               data-code="+223" <%= user.pays === 'Mali'               ? 'selected' : '' %>>🇲🇱 Mali (+223)</option>
                     </select>
                 </div>
             </div>
@@ -275,6 +277,8 @@ const operateursByPays = {
     'Burkina Faso':      ['Orange Money', 'Moov Money'],
     'Gabon':             ['Airtel Money', 'Moov Money'],
     'Congo Brazzaville': ['Airtel Money', 'MTN Mobile Money'],
+    'Niger':             ['Airtel Money', 'Moov Money'],
+    'Mali':              ['Orange Money', 'Moov Money'],
 };
 
 const fraisPourcentage = <%= locals.fraisPourcentage || 0 %>;

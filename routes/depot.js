@@ -18,6 +18,8 @@ const ashtechCountries = [
   { code: 'BF', name: 'Burkina Faso',      currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
   { code: 'GA', name: 'Gabon',             currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
   { code: 'CG', name: 'Congo Brazzaville', currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
+  { code: 'NE', name: 'Niger',            currency: 'XOF', operators: ['Airtel Money', 'Moov Money'] },
+  { code: 'ML', name: 'Mali',             currency: 'XOF', operators: ['Orange Money', 'Moov Money'] },
 ];
 
 // Operators that AshtechPay may ask an OTP for, per the docs' "OTP requis" table.
