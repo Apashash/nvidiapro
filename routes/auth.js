@@ -11,11 +11,14 @@ const paysEligibles = {
   '+226': 'Burkina Faso',
   '+241': 'Gabon',
   '+242': 'Congo Brazzaville',
+  '+227': 'Niger',
+  '+223': 'Mali',
 };
 
 const isoMap = {
   CM: '+237', TG: '+228', BJ: '+229',
   CI: '+225', BF: '+226', GA: '+241', CG: '+242',
+  NE: '+227', ML: '+223',
 };
 
 // GET /connexion
