@@ -384,7 +384,7 @@ function renderPage(level) {
 
   listEl.innerHTML = slice.map(f => {
     const initial = (f.nom || '?').charAt(0).toUpperCase();
-    const active  = f.has_active ? true : false;
+    const active  = Number(f.has_active) > 0;
     return `<div class="filleul-item">
       <div class="fil-avatar">${initial}</div>
       <div class="fil-info">
