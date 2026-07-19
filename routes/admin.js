@@ -199,7 +199,7 @@ router.get('/adminxyz/utilisateurs', requireAdminAuth, async (req, res) => {
       FROM utilisateurs u
       LEFT JOIN soldes s ON u.id=s.user_id
       LEFT JOIN vip v ON u.id=v.user_id
-      ORDER BY u.id DESC LIMIT 300`);
+      ORDER BY u.id DESC`);
     res.render('admin', { currentPage: 'utilisateurs', pageTitle: 'Utilisateurs', users });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
@@ -650,6 +650,31 @@ router.get('/adminxyz/utilisateurs/:id/transactions', requireAdminAuth, async (r
     const [depots]       = await db.query('SELECT * FROM depots WHERE user_id=? ORDER BY date_depot DESC LIMIT 50', [req.params.id]);
     const [retraits]     = await db.query('SELECT * FROM retraits WHERE user_id=? ORDER BY date_demande DESC LIMIT 50', [req.params.id]);
     res.render('admin_user', { user, section: 'transactions', pageTitle: 'Historique des transactions', backUrl: `/adminxyz/utilisateurs/${user.id}`, transactions, depots, retraits });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+// ── Filleuls d'un utilisateur ──────────────────────────────────────────────────
+router.get('/adminxyz/utilisateurs/:id/filleuls', requireAdminAuth, async (req, res) => {
+  try {
+    const user = await getUserById(req.params.id);
+    if (!user) return res.redirect('/adminxyz/utilisateurs');
+    const [filleuls] = await db.query(`
+      SELECT u.id, u.nom, u.telephone, u.pays, u.date_inscription, u.is_banned,
+             COALESCE(s.solde,0) as solde,
+             COALESCE(v.niveau,0) as niveau_vip,
+             (SELECT COUNT(*) FROM commandes c WHERE c.user_id=u.id AND c.statut='actif') as nb_commandes,
+             (SELECT COUNT(*) FROM utilisateurs f WHERE f.parrain_id=u.id) as nb_filleuls
+      FROM utilisateurs u
+      LEFT JOIN soldes s ON u.id=s.user_id
+      LEFT JOIN vip v ON u.id=v.user_id
+      WHERE u.parrain_id=?
+      ORDER BY u.date_inscription DESC`, [req.params.id]);
+    res.render('admin_user', {
+      user, filleuls, section: 'filleuls',
+      pageTitle: `Filleuls de ${user.nom}`,
+      backUrl: `/adminxyz/utilisateurs/${user.id}`,
+      transactions: [], depots: [], retraits: [],
+    });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 

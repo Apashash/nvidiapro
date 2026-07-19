@@ -525,6 +525,11 @@
           <div class="ref-row">
             <span class="ref-code"><%= u.code_parrainage || '—' %></span>
             <button class="copy-btn" onclick="copyText('<%- u.code_parrainage || "" %>')"><i class="fas fa-copy"></i> Copier</button>
+            <% if (u.nb_filleuls > 0) { %>
+            <a href="/adminxyz/utilisateurs/<%= u.id %>/filleuls" style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;background:#FFF7ED;color:#EA580C;padding:3px 8px;border-radius:8px;text-decoration:none;border:1px solid #fed7aa">
+              <i class="fas fa-user-friends"></i> <%= u.nb_filleuls %> filleul<%= u.nb_filleuls > 1 ? 's' : '' %>
+            </a>
+            <% } %>
           </div>
         </div>
       </div>
@@ -535,6 +540,14 @@
   </div>
   <% }); %>
   </div>
+
+  <!-- Pagination -->
+  <div id="userPagination" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0 8px;flex-wrap:wrap">
+    <button id="userPrevBtn" onclick="userChangePage(-1)" style="padding:8px 18px;border-radius:10px;border:1px solid #E8D5B0;background:#fff;font-weight:700;color:#3D2B1F;cursor:pointer;font-size:0.88rem"><i class="fas fa-chevron-left"></i> Préc.</button>
+    <span id="userPageInfo" style="font-size:0.88rem;font-weight:600;color:#888"></span>
+    <button id="userNextBtn" onclick="userChangePage(1)" style="padding:8px 18px;border-radius:10px;border:1px solid #E8D5B0;background:#fff;font-weight:700;color:#3D2B1F;cursor:pointer;font-size:0.88rem">Suiv. <i class="fas fa-chevron-right"></i></button>
+  </div>
+
   <div id="userListEmpty" class="empty" style="display:none">Aucun utilisateur ne correspond aux filtres</div>
   <% if (!users.length) { %><div class="empty">Aucun utilisateur</div><% } %>
 
@@ -1471,17 +1484,21 @@ function filterCards(listId, q) {
   });
 }
 
-// ── User list filter (search text + plan + solde) ────────────────────────
+// ── User list filter + pagination (50 par page) ──────────────────────────
+const USER_PAGE_SIZE = 50;
+let userCurrentPage = 1;
+let userFilteredCards = [];
+
 function filterUsers() {
   const q = (document.getElementById('userSearch')?.value || '').toLowerCase();
   const planVal = document.getElementById('userPlanFilter')?.value || '';
   const soldeVal = document.getElementById('userSoldeFilter')?.value || '';
-  let visibleCount = 0;
-  document.querySelectorAll('#userList .card').forEach(card => {
+
+  const allCards = Array.from(document.querySelectorAll('#userList .card'));
+  userFilteredCards = allCards.filter(card => {
     const search = card.dataset.search || card.textContent.toLowerCase();
     const nbCommandes = parseInt(card.dataset.commandes || '0', 10);
     const solde = parseFloat(card.dataset.solde || '0');
-
     const matchSearch = !q || search.includes(q);
     const matchPlan = !planVal
       || (planVal === 'actif' && nbCommandes > 0)
@@ -1489,14 +1506,55 @@ function filterUsers() {
     const matchSolde = !soldeVal
       || (soldeVal === 'avec_solde' && solde > 0)
       || (soldeVal === 'sans_solde' && solde <= 0);
-
-    const visible = matchSearch && matchPlan && matchSolde;
-    card.style.display = visible ? '' : 'none';
-    if (visible) visibleCount++;
+    return matchSearch && matchPlan && matchSolde;
   });
-  const emptyEl = document.getElementById('userListEmpty');
-  if (emptyEl) emptyEl.style.display = visibleCount === 0 ? '' : 'none';
+
+  userCurrentPage = 1;
+  renderUserPage();
 }
+
+function renderUserPage() {
+  const allCards = Array.from(document.querySelectorAll('#userList .card'));
+  const total = userFilteredCards.length;
+  const totalPages = Math.max(1, Math.ceil(total / USER_PAGE_SIZE));
+  if (userCurrentPage > totalPages) userCurrentPage = totalPages;
+
+  const start = (userCurrentPage - 1) * USER_PAGE_SIZE;
+  const end = start + USER_PAGE_SIZE;
+  const pageSet = new Set(userFilteredCards.slice(start, end));
+  const filteredSet = new Set(userFilteredCards);
+
+  allCards.forEach(card => {
+    card.style.display = pageSet.has(card) ? '' : 'none';
+  });
+
+  // Pagination controls
+  const pag = document.getElementById('userPagination');
+  const info = document.getElementById('userPageInfo');
+  const prev = document.getElementById('userPrevBtn');
+  const next = document.getElementById('userNextBtn');
+  if (pag) pag.style.display = total > USER_PAGE_SIZE ? 'flex' : 'none';
+  if (info) info.textContent = `Page ${userCurrentPage} / ${totalPages}  (${total} utilisateurs)`;
+  if (prev) prev.disabled = userCurrentPage <= 1;
+  if (next) next.disabled = userCurrentPage >= totalPages;
+
+  const emptyEl = document.getElementById('userListEmpty');
+  if (emptyEl) emptyEl.style.display = total === 0 ? '' : 'none';
+}
+
+function userChangePage(delta) {
+  const totalPages = Math.max(1, Math.ceil(userFilteredCards.length / USER_PAGE_SIZE));
+  userCurrentPage = Math.min(totalPages, Math.max(1, userCurrentPage + delta));
+  renderUserPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init user pagination on page load
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('userList')) {
+    filterUsers();
+  }
+});
 
 // ── Transaction filter ──────────────────────────────────────────────────
 function filterTx() {

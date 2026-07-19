@@ -176,6 +176,11 @@
       <span class="action-label">Historique des transactions</span>
       <i class="fas fa-chevron-right action-chevron"></i>
     </a>
+    <a href="/adminxyz/utilisateurs/<%= user.id %>/filleuls" class="action-item">
+      <div class="action-icon" style="background:#FFF7ED"><i class="fas fa-user-friends" style="color:#EA580C"></i></div>
+      <span class="action-label">Filleuls invités <% if (user.nb_filleuls > 0) { %><span style="font-size:0.75rem;background:#FED7AA;color:#EA580C;padding:1px 7px;border-radius:10px;margin-left:4px"><%= user.nb_filleuls %></span><% } %></span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </a>
     <button class="action-item" onclick="doToggleAdmin()">
       <div class="action-icon" style="background:#EEF2FF"><i class="fas fa-user-shield" style="color:#6366f1"></i></div>
       <span class="action-label"><%= user.is_admin ? 'Retirer administrateur' : 'Nommer administrateur' %></span>
@@ -247,6 +252,58 @@
     <label>Nouveau mot de passe</label>
     <input type="password" id="newPassword" placeholder="Nouveau mot de passe">
     <button class="btn-primary" onclick="savePassword()"><i class="fas fa-lock"></i> Changer le mot de passe</button>
+  </div>
+
+<% } else if (section === 'filleuls') { %>
+
+  <div class="page-card">
+    <h3><i class="fas fa-user-friends" style="color:#EA580C"></i> Filleuls invités (<%= filleuls.length %>)</h3>
+    <% const nbActifs = filleuls.filter(f => f.nb_commandes > 0).length; %>
+    <% if (filleuls.length > 0) { %>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;background:#FFF7ED;color:#EA580C;border:1px solid #fed7aa">
+        <i class="fas fa-users"></i> <%= filleuls.length %> total
+      </span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;background:#F0FDF4;color:#16a34a;border:1px solid #bbf7d0">
+        <i class="fas fa-check-circle"></i> <%= nbActifs %> actif<%= nbActifs !== 1 ? 's' : '' %>
+      </span>
+      <span style="padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;background:#F5F5F0;color:#888;border:1px solid #e8e8e8">
+        <i class="fas fa-clock"></i> <%= filleuls.length - nbActifs %> sans plan
+      </span>
+    </div>
+    <% } %>
+
+    <% if (!filleuls.length) { %>
+    <div class="empty">Aucun filleul pour cet utilisateur</div>
+    <% } %>
+
+    <% filleuls.forEach(f => { %>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F5F5F0">
+      <div style="width:40px;height:40px;border-radius:12px;background:<%= f.nb_commandes > 0 ? '#F0FDF4' : '#F5F5F0' %>;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:<%= f.nb_commandes > 0 ? '#16a34a' : '#888' %>;flex-shrink:0">
+        <%= (f.nom||'?')[0].toUpperCase() %>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.9rem;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <%- f.nom %>
+          <% if (f.nb_commandes > 0) { %>
+          <span style="font-size:0.68rem;background:#DCFCE7;color:#15803d;padding:2px 7px;border-radius:10px;font-weight:700">Plan actif</span>
+          <% } else { %>
+          <span style="font-size:0.68rem;background:#F5F5F0;color:#aaa;padding:2px 7px;border-radius:10px;font-weight:700">Sans plan</span>
+          <% } %>
+          <% if (f.is_banned) { %><span style="font-size:0.68rem;background:#FEF2F2;color:#dc2626;padding:2px 7px;border-radius:10px;font-weight:700">Banni</span><% } %>
+        </div>
+        <div style="font-size:0.78rem;color:#888;margin-top:2px"><%- f.telephone %> · <%- f.pays || '—' %></div>
+        <div style="font-size:0.78rem;color:#888;margin-top:1px">
+          Solde : <strong style="color:#E8931A"><%= parseFloat(f.solde||0).toLocaleString('fr-FR') %> FCFA</strong>
+          <% if (f.nb_filleuls > 0) { %> · <span style="color:#EA580C"><i class="fas fa-user-friends"></i> <%= f.nb_filleuls %> filleul<%= f.nb_filleuls > 1 ? 's' : '' %></span><% } %>
+          · Inscrit le <%= f.date_inscription ? new Date(f.date_inscription).toLocaleDateString('fr-FR') : '—' %>
+        </div>
+      </div>
+      <a href="/adminxyz/utilisateurs/<%= f.id %>" style="width:34px;height:34px;border-radius:10px;background:#F5F5F0;display:flex;align-items:center;justify-content:center;text-decoration:none;color:#888;flex-shrink:0">
+        <i class="fas fa-chevron-right" style="font-size:0.8rem"></i>
+      </a>
+    </div>
+    <% }); %>
   </div>
 
 <% } else if (section === 'transactions') { %>
