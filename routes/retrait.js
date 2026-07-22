@@ -63,13 +63,14 @@ router.get('/retrait', requireAuth, async (req, res) => {
 
     const suspendu = (params.retraits_actifs === '0');
     const schedule = buildScheduleStatus(params);
-    const retraits_disponibles = !suspendu && schedule.disponible;
+    const retrait_bloque = !!(user && user.retrait_bloque);
+    const retraits_disponibles = !suspendu && !retrait_bloque && schedule.disponible;
 
     const message = req.session.retrait_message || null;
     delete req.session.retrait_message;
 
     const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
-    res.render('retrait', { user, solde, retraits_disponibles, suspendu, schedule, params, fraisPourcentage, message });
+    res.render('retrait', { user, solde, retraits_disponibles, suspendu, retrait_bloque, schedule, params, fraisPourcentage, message });
   } catch (e) {
     console.error(e);
     res.redirect('/');
@@ -82,12 +83,18 @@ router.post('/retrait', requireAuth, async (req, res) => {
   try {
     const params = await getParams();
 
-    // 1. Withdrawal suspended by admin?
+    // 1. Retrait bloqué individuellement par l'admin ?
+    const [[userCheck]] = await db.query('SELECT retrait_bloque FROM utilisateurs WHERE id = ?', [user_id]);
+    if (userCheck && userCheck.retrait_bloque) {
+      return res.json({ success: false, blocked: true, message: 'Votre retrait est bloqué. Pour le débloquer, achetez un nouveau plan VIP ou invitez une personne à investir.' });
+    }
+
+    // 2. Withdrawal suspended by admin?
     if (params.retraits_actifs === '0') {
       return res.json({ success: false, message: 'Le retrait est indisponible pour le moment, veuillez réessayer plus tard.' });
     }
 
-    // 2. Schedule check
+    // 3. Schedule check
     const schedule = buildScheduleStatus(params);
     if (!schedule.disponible) {
       return res.json({ success: false, message: schedule.message });

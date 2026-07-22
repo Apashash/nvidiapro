@@ -150,7 +150,24 @@
 
         <div id="notif-zone"></div>
 
-        <% if (locals.suspendu) { %>
+        <% if (locals.retrait_bloque) { %>
+        <div style="background:#FFF0EE;border:1.5px solid #F5A9A0;border-radius:14px;padding:18px 16px;margin-bottom:14px;text-align:center;">
+            <div style="font-size:2rem;margin-bottom:8px;">🔒</div>
+            <div style="font-size:15px;font-weight:700;color:#C0392B;margin-bottom:8px;">Retrait bloqué</div>
+            <div style="font-size:13px;color:#7D2B1F;line-height:1.6;margin-bottom:16px;">
+                Pour débloquer votre retrait, vous devez :<br>
+                <strong>acheter un nouveau plan VIP</strong> ou <strong>inviter une personne à investir</strong>.
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                <a href="/investissement" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#D4921F,#B07018);color:#fff;text-decoration:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(196,125,30,0.35);">
+                    <i class="fas fa-star"></i> Acheter un plan VIP
+                </a>
+                <a href="/equipe" style="display:inline-flex;align-items:center;gap:7px;background:#fff;color:#C47D1E;border:1.5px solid #D4921F;text-decoration:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;">
+                    <i class="fas fa-user-plus"></i> Inviter quelqu'un
+                </a>
+            </div>
+        </div>
+        <% } else if (locals.suspendu) { %>
         <div class="warning-card" style="background:#FFF0EE;border-color:#F5A9A0;color:#C0392B;">
             <i class="fas fa-ban"></i>
             <span>Le retrait est <strong>indisponible pour le moment</strong>, veuillez réessayer plus tard.</span>
