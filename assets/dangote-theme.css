@@ -1066,6 +1066,42 @@ label,
   border-color: rgba(20, 16, 95, 0.2) !important;
 }
 
+/* Slot machine symbols and controls */
+.slot-reels {
+  background: #f7f7f8 !important;
+  border-color: var(--brand-navy) !important;
+}
+
+.symbol {
+  background: #fff !important;
+  border-bottom-color: var(--brand-border) !important;
+}
+
+.symbol img {
+  background: #fff !important;
+}
+
+.slot-label {
+  color: var(--brand-navy) !important;
+}
+
+.spin-btn {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 20px rgba(214, 0, 0, 0.25) !important;
+}
+
+.spin-btn:disabled {
+  background: #e7e7eb !important;
+  color: var(--brand-muted) !important;
+}
+
+#timer-display {
+  background: #f4f3ff !important;
+  color: var(--brand-navy) !important;
+  border-color: var(--brand-border) !important;
+}
+
 .popup-detail,
 .balance-strip,
 .result-card,

@@ -53,6 +53,10 @@
             height:120px; font-size:50px; font-weight:bold; color:#3D2B1F;
             background:#FBF5EC; border-bottom:1px solid #F0E0C8;
         }
+        .symbol img {
+            width:88px; height:88px; object-fit:contain;
+            display:block; border-radius:8px;
+        }
         .symbol i { font-size:48px; color:#C47D1E; }
         .payline {
             position:absolute; top:50%; left:0; width:100%; height:3px;
@@ -98,38 +102,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <script>
         const SYMBOLS = [
-            '<i class="fas fa-gem"></i>',
-            '<i class="fas fa-lemon"></i>',
-            '<i class="fas fa-star"></i>',
-            '<i class="fas fa-bell"></i>',
-            '<i class="fas fa-dollar-sign"></i>',
-            '<span>BAR</span>',
-            '<span style="color:#C47D1E;">7</span>',
-            '<i class="fas fa-coins"></i>',
+            { src: '/images/slot-dangote-3x.jpeg', alt: 'Dangote 3X' },
+            { src: '/images/slot-dangote-group.jpg', alt: 'Dangote Group' },
+            { src: '/images/slot-dangote-logo.png', alt: 'Dangote' },
         ];
         const SYMBOL_HEIGHT = 120;
 
-        function buildReel(reelElement) {
+        function symbolMarkup(symbolIndex) {
+            const symbol = SYMBOLS[symbolIndex];
+            return `<img src="${symbol.src}" alt="${symbol.alt}">`;
+        }
+
+        function buildReel(reelElement, finalSymbolIndex = null) {
             const inner = reelElement.querySelector('.reel-inner');
             inner.innerHTML = '';
-            const totalSymbols = 20;
+            const totalSymbols = 24;
             for (let i = 0; i < totalSymbols; i++) {
-                const randomIndex = Math.floor(Math.random() * SYMBOLS.length);
+                const randomIndex = finalSymbolIndex !== null && i === 20
+                    ? finalSymbolIndex
+                    : Math.floor(Math.random() * SYMBOLS.length);
                 const symbolDiv = document.createElement('div');
                 symbolDiv.className = 'symbol';
-                symbolDiv.innerHTML = SYMBOLS[randomIndex];
+                symbolDiv.innerHTML = symbolMarkup(randomIndex);
                 inner.appendChild(symbolDiv);
             }
+            gsap.set(inner, { y: 0 });
         }
 
         function spinReel(reelIndex, symbolIndex, spinDuration, delay) {
             const reel = document.querySelectorAll('.reel-inner')[reelIndex];
-            const stopSymbolIndex = 16;
+            const stopSymbolIndex = 20;
             const finalPosition = stopSymbolIndex * SYMBOL_HEIGHT;
             return new Promise(resolve => {
-                const randomOffset = (Math.random() * (SYMBOL_HEIGHT/2)) - (SYMBOL_HEIGHT/4);
+                gsap.killTweensOf(reel);
+                gsap.set(reel, { y: 0 });
+                buildReel(document.querySelectorAll('.reel')[reelIndex], symbolIndex);
                 gsap.to(reel, {
-                    y: -finalPosition + randomOffset,
+                    y: -finalPosition,
                     duration: spinDuration,
                     ease: `power${reelIndex + 2}.out`,
                     delay: delay,
@@ -144,14 +153,16 @@
             spinButton.textContent = 'SPINNING...';
             const reels = document.querySelectorAll('.reel-inner');
             reels.forEach(reel => {
-                gsap.to(reel, { y: -19 * SYMBOL_HEIGHT, duration: 0.5, ease: "linear", repeat: -1 });
+                gsap.killTweensOf(reel);
+                gsap.set(reel, { y: 0 });
+                gsap.to(reel, { y: -23 * SYMBOL_HEIGHT, duration: 0.7, ease: "none", repeat: -1 });
             });
             try {
                 const response = await fetch('/spin_roue', { method: 'POST' });
                 const data = await response.json();
                 if (data.status === 'success') {
                     const winnings = data.gains;
-                    let comboSymbolIndex = winnings >= 1500 ? 6 : (winnings > 25 ? 7 : (winnings === 25 ? 3 : -1));
+                    let comboSymbolIndex = winnings >= 1500 ? 0 : (winnings > 25 ? 1 : (winnings === 25 ? 2 : -1));
                     let promises = [];
                     let baseDuration = 3.0;
                     for (let i = 0; i < reels.length; i++) {
