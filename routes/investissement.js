@@ -10,6 +10,8 @@ const {
   highestRate,
 } = require('../services/investmentStrategy');
 
+const MAX_PURCHASES_PER_PLAN = 3;
+
 router.get('/investissement', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   try {
@@ -47,6 +49,14 @@ router.get('/investissement', requireAuth, async (req, res) => {
       ORDER BY c.date_creation DESC
     `, [user_id]);
 
+    const [purchaseCountsRows] = await db.query(
+      'SELECT plan_id, COUNT(*)::int as total FROM commandes WHERE user_id = ? GROUP BY plan_id',
+      [user_id]
+    );
+    const achatsParPlan = Object.fromEntries(
+      purchaseCountsRows.map((row) => [row.plan_id, Number(row.total) || 0])
+    );
+
     const commandes = [];
     for (const cmd of commandesRows) {
       const [[lp]] = await db.query(
@@ -62,7 +72,14 @@ router.get('/investissement', requireAuth, async (req, res) => {
       });
     }
 
-    res.render('investissement', { solde, menu_actif, plans: plans_corriges, commandes });
+    res.render('investissement', {
+      solde,
+      menu_actif,
+      plans: plans_corriges,
+      commandes,
+      achatsParPlan,
+      maxAchatsParPlan: MAX_PURCHASES_PER_PLAN,
+    });
   } catch (e) {
     console.error(e);
     res.redirect('/');
@@ -117,6 +134,31 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
     const conn = await db.getConnection();
     try {
       await conn.beginTransaction();
+
+      // Lock the balance row so two simultaneous purchases cannot both pass
+      // the balance and three-purchases-per-plan checks.
+      const [[lockedBalance]] = await conn.query(
+        'SELECT solde FROM soldes WHERE user_id = ? FOR UPDATE',
+        [user_id]
+      );
+      const soldeVerifie = lockedBalance ? parseFloat(lockedBalance.solde) : 0;
+      if (soldeVerifie < montant) {
+        await conn.rollback();
+        return res.json({ success: false, message: 'Solde insuffisant' });
+      }
+
+      const [[purchaseCount]] = await conn.query(
+        'SELECT COUNT(*)::int as total FROM commandes WHERE user_id = ? AND plan_id = ?',
+        [user_id, plan_id]
+      );
+      if (Number(purchaseCount.total) >= MAX_PURCHASES_PER_PLAN) {
+        await conn.rollback();
+        return res.json({
+          success: false,
+          limit_reached: true,
+          message: `Ce plan peut être acheté au maximum ${MAX_PURCHASES_PER_PLAN} fois.`,
+        });
+      }
 
       await conn.query(
         "INSERT INTO commandes (user_id, plan_id, montant, gain_journalier, nombre_actions, date_debut, date_fin) VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 hours', NOW() + INTERVAL '7 hours' + (? || ' days')::INTERVAL)",
