@@ -299,7 +299,7 @@ const operateursByPays = {
 };
 
 const fraisPourcentage = <%= locals.fraisPourcentage || 0 %>;
-const retraitDisponible = <%= retraits_disponibles ? 'true' : 'false' %>;
+const retraitDisponible = <%= locals.schedule && schedule.disponible ? 'true' : 'false' %>;
 const retraitMinimum = <%= parseFloat(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200) %>;
 const scheduleMessage = <%- JSON.stringify(locals.schedule && schedule.message ? schedule.message : 'Les retraits ne sont pas disponibles en ce moment.') %>;
 const feeSummary   = document.getElementById('fee-summary');
