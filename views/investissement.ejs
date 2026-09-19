@@ -182,6 +182,11 @@
         .share-count-help {
             font-size:11px; color:#A87D50; margin-top:7px; line-height:1.45;
         }
+        .popup-balance-warning {
+            display:none; margin-top:8px; padding:8px 10px; border-radius:8px;
+            background:#FFF0EE; border:1px solid #F5A9A0; color:#C0392B;
+            font-size:11px; line-height:1.45;
+        }
 
         /* Insufficient balance */
         .floater-overlay {
@@ -349,6 +354,7 @@
                 <label for="popup-actions">Nombre d'actions</label>
                 <input id="popup-actions" type="number" min="10" step="1" value="10" inputmode="numeric">
                 <div class="share-count-help" id="popup-actions-help"></div>
+                <div class="popup-balance-warning" id="popup-balance-warning"></div>
             </div>
             <div class="popup-grid">
                 <div class="popup-stat">
@@ -491,9 +497,7 @@ document.querySelectorAll('.btn-invest:not(.btn-invest-locked)').forEach(btn => 
             showAlert('Ce plan peut être acheté au maximum 3 fois.', 'error');
             return;
         }
-        if (soldeClient < currentPlan.prix) {
-            document.getElementById('insufficientBalanceFloater').style.display = 'flex';
-        } else { ouvrirPopup(currentPlan); }
+        ouvrirPopup(currentPlan);
     });
 });
 
@@ -531,7 +535,18 @@ function updatePurchaseSummary() {
         gainTotal.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
     document.getElementById('popup-actions-help').textContent =
         `${actions} action(s) · ${currentPlan.prixAction.toLocaleString('fr-FR')} FCFA/action · taux ${taux}%/jour · ${currentPlan.achatsRestants} achat(s) restant(s)`;
-    document.getElementById('confirmerInvestBtn').disabled = montant > soldeClient;
+    const balanceWarning = document.getElementById('popup-balance-warning');
+    const confirmButton = document.getElementById('confirmerInvestBtn');
+    if (montant > soldeClient) {
+        balanceWarning.textContent =
+            `Votre solde est de ${soldeClient.toLocaleString('fr-FR')} FCFA. Rechargez au moins ${montant.toLocaleString('fr-FR')} FCFA pour confirmer.`;
+        balanceWarning.style.display = 'block';
+        confirmButton.disabled = true;
+    } else {
+        balanceWarning.textContent = '';
+        balanceWarning.style.display = 'none';
+        confirmButton.disabled = false;
+    }
 }
 
 document.getElementById('popup-actions').addEventListener('input', updatePurchaseSummary);
