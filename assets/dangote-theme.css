@@ -209,6 +209,53 @@ body a {
   box-shadow: 0 5px 18px rgba(20, 16, 95, 0.07) !important;
 }
 
+.balance-hero {
+  background: var(--brand-navy) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 6px 20px rgba(20, 16, 95, 0.24) !important;
+}
+
+.balance-hero .lbl,
+.balance-hero .amt,
+.balance-hero .cur {
+  color: #fff !important;
+}
+
+.warning-card {
+  background: #f4f3ff !important;
+  border-color: rgba(20, 16, 95, 0.18) !important;
+  color: var(--brand-navy) !important;
+}
+
+.warning-card strong {
+  color: var(--brand-red) !important;
+}
+
+.notif.error {
+  background: #fff1f1 !important;
+  border-color: #f3b2b2 !important;
+  color: #a70000 !important;
+}
+
+.notif.success {
+  background: #effaf3 !important;
+  border-color: #a7dfba !important;
+  color: #176b36 !important;
+}
+
+.select-wrap::after {
+  color: var(--brand-red) !important;
+}
+
+.popup-icon {
+  background: var(--brand-red) !important;
+}
+
+.popup-ok {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+}
+
 .balance-card,
 .stats-row,
 .ref-box,
