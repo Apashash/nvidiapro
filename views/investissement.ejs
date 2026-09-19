@@ -502,20 +502,7 @@ if (document.querySelector('.countdown-box')) {
 
 document.querySelectorAll('.btn-invest:not(.btn-invest-locked)').forEach(btn => {
     btn.addEventListener('click', function() {
-        currentPlan = {
-            id: this.dataset.planId, nom: this.dataset.nom,
-            prix: parseFloat(this.dataset.prix),
-            prixAction: parseFloat(this.dataset.prixAction),
-            actionsMinimum: parseInt(this.dataset.actionsMinimum, 10),
-            strategie: JSON.parse(this.dataset.strategie),
-            duree: parseInt(this.dataset.duree, 10),
-            achatsRestants: parseInt(this.dataset.achatsRestants, 10)
-        };
-        if (currentPlan.achatsRestants <= 0) {
-            showAlert('Ce plan peut être acheté au maximum 3 fois.', 'error');
-            return;
-        }
-        ouvrirPopup(currentPlan);
+        window.location.href = `/investissement/action/${encodeURIComponent(this.dataset.planId)}`;
     });
 });
 

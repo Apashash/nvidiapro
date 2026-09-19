@@ -86,6 +86,47 @@ router.get('/investissement', requireAuth, async (req, res) => {
   }
 });
 
+router.get('/investissement/action/:id', requireAuth, async (req, res) => {
+  const user_id = req.session.user_id;
+  const plan_id = parseInt(req.params.id, 10);
+
+  try {
+    const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
+    const [[plan]] = await db.query(
+      'SELECT * FROM planinvestissement WHERE id = ? AND prix_action IS NOT NULL',
+      [plan_id]
+    );
+
+    if (!plan || plan.bloque) return res.redirect('/investissement');
+
+    const [[purchaseCount]] = await db.query(
+      'SELECT COUNT(*)::int as total FROM commandes WHERE user_id = ? AND plan_id = ?',
+      [user_id, plan_id]
+    );
+    const achatsEffectues = Number(purchaseCount?.total) || 0;
+    const actionsMinimum = Math.max(1, parseInt(plan.actions_minimum, 10) || 1);
+    const prixAction = parseFloat(plan.prix_action);
+
+    plan.prix_action = prixAction;
+    plan.actions_minimum = actionsMinimum;
+    plan.prix = Math.round(prixAction * actionsMinimum * 100) / 100;
+    plan.strategie = parseStrategy(plan.strategie_json);
+    plan.taux_minimum = lowestRate(plan.strategie);
+    plan.taux_maximum = highestRate(plan.strategie);
+
+    res.render('investissement-action', {
+      plan,
+      solde: soldeRow ? parseFloat(soldeRow.solde) : 0,
+      achatsEffectues,
+      achatsRestants: Math.max(0, MAX_PURCHASES_PER_PLAN - achatsEffectues),
+      maxAchatsParPlan: MAX_PURCHASES_PER_PLAN,
+    });
+  } catch (e) {
+    console.error(e);
+    res.redirect('/investissement');
+  }
+});
+
 router.post('/acheter-action', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   const plan_id = parseInt(req.body.plan_id);

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investir — <%= plan.nom %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { box-sizing:border-box; margin:0; padding:0; font-family:'Poppins','Segoe UI',sans-serif; }
+        body { min-height:100vh; background:#F5EFE6; color:#271F5B; padding-bottom:95px; }
+        .container { max-width:520px; margin:0 auto; }
+        .page-header {
+            background:linear-gradient(135deg,#14105F,#211987);
+            border-top:5px solid #D60000; color:#fff; padding:18px 18px 20px;
+        }
+        .back-row { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+        .back-btn {
+            width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+            border-radius:50%; background:rgba(255,255,255,.16); color:#fff;
+            text-decoration:none; font-size:16px;
+        }
+        .back-row span { font-size:13px; font-weight:600; opacity:.88; }
+        .plan-heading { display:flex; align-items:center; gap:13px; }
+        .plan-heading img { width:58px; height:58px; object-fit:cover; border-radius:12px; background:#fff; }
+        .plan-heading h1 { font-size:20px; line-height:1.2; }
+        .plan-heading p { margin-top:5px; font-size:12px; opacity:.8; }
+        main { padding:18px 16px; }
+        .intro-card, .form-card, .notice-card {
+            background:#fff; border-radius:18px; box-shadow:0 4px 16px rgba(20,16,95,.10);
+        }
+        .intro-card { padding:15px; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px; }
+        .intro-item { background:#FBF5EC; border-radius:11px; padding:11px; }
+        .intro-value { color:#D60000; font-weight:800; font-size:17px; }
+        .intro-label { color:#8A7A6B; font-size:11px; margin-top:2px; }
+        .form-card { padding:18px; }
+        .card-title { color:#14105F; font-weight:800; font-size:17px; margin-bottom:14px; }
+        .mode-switch { display:flex; gap:8px; margin-bottom:14px; }
+        .mode-btn {
+            flex:1; border:1px solid #E5D8C8; border-radius:10px; padding:11px 8px;
+            color:#6D5C4B; background:#fff; font-size:12px; font-weight:700; cursor:pointer;
+        }
+        .mode-btn.active { background:#D60000; border-color:#D60000; color:#fff; }
+        label { display:block; font-size:13px; color:#14105F; font-weight:700; margin-bottom:7px; }
+        input {
+            width:100%; border:1px solid #D7C7B5; border-radius:10px; padding:13px 14px;
+            color:#2D2A24; font-size:18px; outline:none; background:#fff;
+        }
+        input:focus { border-color:#D60000; box-shadow:0 0 0 3px rgba(214,0,0,.10); }
+        .help { color:#9A8067; font-size:11px; line-height:1.5; margin-top:8px; }
+        .warning {
+            display:none; margin-top:11px; padding:10px 12px; border-radius:9px;
+            background:#FFF0EE; border:1px solid #F2B0A8; color:#B63A30; font-size:12px; line-height:1.45;
+        }
+        .summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+        .summary-item { border:1px solid #E8DED3; padding:13px 10px; text-align:center; background:#fff; }
+        .summary-value { color:#D60000; font-size:18px; font-weight:800; line-height:1.35; }
+        .summary-label { color:#514B45; font-size:12px; margin-top:4px; }
+        .confirm {
+            width:100%; margin-top:16px; border:0; border-radius:10px; padding:14px;
+            background:#D60000; color:#fff; font-size:15px; font-weight:800; cursor:pointer;
+        }
+        .confirm:disabled { opacity:.5; cursor:not-allowed; }
+        .notice-card { margin-top:15px; padding:14px; color:#6D5C4B; font-size:12px; line-height:1.55; }
+        .notice-card strong { color:#14105F; }
+        .success { display:none; text-align:center; padding:18px; }
+        .success i { color:#16803C; font-size:35px; margin-bottom:8px; }
+        .success h2 { color:#14105F; font-size:18px; margin-bottom:5px; }
+        .success p { color:#6D5C4B; font-size:13px; }
+        @media (max-width:360px) {
+            .plan-heading h1 { font-size:17px; }
+            .summary-value { font-size:16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="page-header">
+        <div class="back-row">
+            <a class="back-btn" href="/investissement" aria-label="Retour aux plans"><i class="fas fa-arrow-left"></i></a>
+            <span>Retour aux plans d'investissement</span>
+        </div>
+        <div class="plan-heading">
+            <img src="<%= plan.image_url || '/images/dangote-logo.png' %>" alt="<%= plan.nom %>">
+            <div>
+                <h1><%= plan.nom %></h1>
+                <p><%= plan.duree_jours %> jours · <%= achatsRestants %> achat(s) restant(s)</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="intro-card">
+            <div class="intro-item">
+                <div class="intro-value"><%= plan.prix_action.toLocaleString('fr-FR') %> FCFA</div>
+                <div class="intro-label">Prix par action</div>
+            </div>
+            <div class="intro-item">
+                <div class="intro-value"><%= plan.taux_minimum %>–<%= plan.taux_maximum %>%</div>
+                <div class="intro-label">Gain quotidien possible</div>
+            </div>
+        </div>
+
+        <section class="form-card" id="purchaseCard">
+            <div class="card-title">Préparer votre investissement</div>
+            <div class="mode-switch">
+                <button type="button" class="mode-btn active" data-mode="actions">Nombre d'actions</button>
+                <button type="button" class="mode-btn" data-mode="amount">Montant FCFA</button>
+            </div>
+
+            <div id="actionsField">
+                <label for="actionsInput">Nombre d'actions</label>
+                <input id="actionsInput" type="number" min="<%= plan.actions_minimum %>" step="0.1" value="<%= plan.actions_minimum %>" inputmode="decimal">
+            </div>
+            <div id="amountField" style="display:none;">
+                <label for="amountInput">Montant souhaité en FCFA</label>
+                <input id="amountInput" type="number" min="0" step="0.01" value="<%= (plan.prix).toFixed(2) %>" inputmode="decimal">
+            </div>
+
+            <div class="help" id="helpText"></div>
+            <div class="warning" id="warningText"></div>
+
+            <div class="summary">
+                <div class="summary-item"><div class="summary-value" id="summaryAmount">0 FCFA</div><div class="summary-label">Montant de départ</div></div>
+                <div class="summary-item"><div class="summary-value" id="summaryDaily">0 FCFA</div><div class="summary-label">Gain quotidien</div></div>
+                <div class="summary-item"><div class="summary-value" id="summaryDuration"><%= plan.duree_jours %> jours</div><div class="summary-label">Durée totale</div></div>
+                <div class="summary-item"><div class="summary-value" id="summaryTotal">0 FCFA</div><div class="summary-label">Gain total</div></div>
+            </div>
+            <button type="button" class="confirm" id="confirmButton">Confirmer l'achat</button>
+        </section>
+
+        <div class="notice-card">
+            <strong>À savoir :</strong> le minimum est de <%= plan.actions_minimum %> actions. Votre solde actuel est de <%= solde.toLocaleString('fr-FR') %> FCFA. Vous pouvez effectuer au maximum <%= maxAchatsParPlan %> achats sur ce plan.
+        </div>
+
+        <div class="success notice-card" id="successCard">
+            <i class="fas fa-circle-check"></i>
+            <h2>Achat effectué avec succès</h2>
+            <p id="successText"></p>
+            <a href="/investissement?menu=commande" class="confirm" style="display:block;text-decoration:none;margin-top:14px;">Voir mes commandes</a>
+        </div>
+    </main>
+</div>
+<%- include('partials/menu', { page: 'investissement' }) %>
+
+<script>
+const plan = <%- JSON.stringify({
+    id: plan.id,
+    nom: plan.nom,
+    prixAction: plan.prix_action,
+    actionsMinimum: plan.actions_minimum,
+    duree: plan.duree_jours,
+    achatsRestants,
+    strategie: plan.strategie
+}) %>;
+const solde = <%= solde %>;
+let mode = 'actions';
+
+function decimal(value) {
+    const normalized = String(value ?? '').trim().replace(',', '.');
+    return normalized ? Number(normalized) : NaN;
+}
+function roundActions(value) { return Math.round(value * 10000) / 10000; }
+function money(value) {
+    return Number(value).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+}
+function rateForAmount(amount) {
+    const tier = plan.strategie.find(item => amount >= Number(item.min) && (item.max == null || amount <= Number(item.max)));
+    return tier ? Number(tier.rate) : Number(plan.strategie[plan.strategie.length - 1].rate);
+}
+function switchMode(nextMode) {
+    mode = nextMode;
+    document.querySelectorAll('.mode-btn').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
+    document.getElementById('actionsField').style.display = mode === 'actions' ? 'block' : 'none';
+    document.getElementById('amountField').style.display = mode === 'amount' ? 'block' : 'none';
+    updateSummary();
+}
+function updateSummary() {
+    const actionsInput = document.getElementById('actionsInput');
+    const amountInput = document.getElementById('amountInput');
+    const raw = (mode === 'actions' ? actionsInput : amountInput).value.trim();
+    const warning = document.getElementById('warningText');
+    const button = document.getElementById('confirmButton');
+    if (!raw) {
+        document.getElementById('helpText').textContent = mode === 'amount'
+            ? 'Saisissez un montant en FCFA.'
+            : `Saisissez au moins ${plan.actionsMinimum} actions.`;
+        warning.style.display = 'none'; button.disabled = true; return;
+    }
+
+    let actions = mode === 'actions' ? decimal(raw) : roundActions(decimal(raw) / plan.prixAction);
+    let amount = mode === 'actions' ? decimal(raw) * plan.prixAction : decimal(raw);
+    if (!Number.isFinite(actions) || !Number.isFinite(amount) || actions <= 0 || amount <= 0) {
+        document.getElementById('helpText').textContent = 'Saisissez une valeur valide.';
+        warning.style.display = 'none'; button.disabled = true; return;
+    }
+    actions = roundActions(actions);
+    amount = Math.round(amount * 100) / 100;
+    if (mode === 'amount') actionsInput.value = actions;
+    if (mode === 'actions') amountInput.value = amount.toFixed(2);
+
+    const rate = rateForAmount(amount);
+    const daily = amount * rate / 100;
+    document.getElementById('helpText').textContent =
+        `${actions} action(s) · ${plan.prixAction.toLocaleString('fr-FR')} FCFA/action · taux ${rate}%/jour`;
+    document.getElementById('summaryAmount').textContent = money(amount);
+    document.getElementById('summaryDaily').textContent = money(daily);
+    document.getElementById('summaryTotal').textContent = money(daily * plan.duree);
+
+    if (actions < plan.actionsMinimum) {
+        warning.textContent = `Le minimum pour ce plan est de ${plan.actionsMinimum} actions.`;
+        warning.style.display = 'block'; button.disabled = true;
+    } else if (amount > solde) {
+        warning.textContent = `Votre solde est de ${money(solde)}. Rechargez au moins ${money(amount)} pour confirmer.`;
+        warning.style.display = 'block'; button.disabled = true;
+    } else {
+        warning.style.display = 'none'; button.disabled = false;
+    }
+}
+document.querySelectorAll('.mode-btn').forEach(button => button.addEventListener('click', () => switchMode(button.dataset.mode)));
+document.getElementById('actionsInput').addEventListener('input', updateSummary);
+document.getElementById('amountInput').addEventListener('input', updateSummary);
+document.getElementById('confirmButton').addEventListener('click', async function() {
+    const actions = decimal(document.getElementById('actionsInput').value);
+    this.disabled = true; this.textContent = 'Traitement...';
+    try {
+        const response = await fetch('/acheter-action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ plan_id: plan.id, actions })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || 'Erreur lors de l’achat');
+        document.getElementById('purchaseCard').style.display = 'none';
+        document.getElementById('successText').textContent =
+            `${result.nombre_actions} action(s) achetée(s) pour ${money(result.montant)}.`;
+        document.getElementById('successCard').style.display = 'block';
+    } catch (error) {
+        document.getElementById('warningText').textContent = error.message || 'Erreur de connexion.';
+        document.getElementById('warningText').style.display = 'block';
+        this.disabled = false; this.textContent = "Confirmer l'achat";
+    }
+});
+updateSummary();
+</script>
+</body>
+</html>
