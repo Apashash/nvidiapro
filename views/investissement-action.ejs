@@ -52,6 +52,24 @@
             display:none; margin-top:11px; padding:10px 12px; border-radius:9px;
             background:#FFF0EE; border:1px solid #F2B0A8; color:#B63A30; font-size:12px; line-height:1.45;
         }
+        .balance-modal {
+            display:none; position:fixed; inset:0; z-index:10000; padding:20px;
+            align-items:center; justify-content:center; background:rgba(20,16,95,.58);
+        }
+        .balance-modal-card {
+            width:100%; max-width:390px; padding:25px 20px 20px; border-radius:16px;
+            background:#fff; text-align:center; box-shadow:0 12px 35px rgba(0,0,0,.25);
+        }
+        .balance-modal-icon { color:#D60000; font-size:38px; margin-bottom:10px; }
+        .balance-modal-title { color:#14105F; font-size:20px; font-weight:800; margin-bottom:8px; }
+        .balance-modal-message { color:#6D5C4B; font-size:13px; line-height:1.55; margin-bottom:18px; }
+        .modal-actions { display:flex; gap:10px; }
+        .modal-actions button, .modal-actions a {
+            flex:1; border-radius:9px; padding:12px 8px; font-size:13px;
+            font-weight:800; text-decoration:none; cursor:pointer;
+        }
+        .modal-recharge { background:#D60000; color:#fff; border:1px solid #D60000; }
+        .modal-cancel { background:#fff; color:#14105F; border:1px solid #D9D2C9; }
         .summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
         .summary-item { border:1px solid #E8DED3; padding:13px 10px; text-align:center; background:#fff; }
         .summary-value { color:#D60000; font-size:18px; font-weight:800; line-height:1.35; }
@@ -142,6 +160,18 @@
     </main>
 </div>
 <%- include('partials/menu', { page: 'investissement' }) %>
+
+<div class="balance-modal" id="balanceModal" role="dialog" aria-modal="true" aria-labelledby="balanceModalTitle">
+    <div class="balance-modal-card">
+        <div class="balance-modal-icon"><i class="fas fa-coins"></i></div>
+        <div class="balance-modal-title" id="balanceModalTitle">Solde insuffisant</div>
+        <div class="balance-modal-message" id="balanceModalMessage"></div>
+        <div class="modal-actions">
+            <a class="modal-recharge" href="/depot">Recharger</a>
+            <button type="button" class="modal-cancel" id="closeBalanceModal">Annuler</button>
+        </div>
+    </div>
+</div>
 
 <script>
 const plan = <%- JSON.stringify({
