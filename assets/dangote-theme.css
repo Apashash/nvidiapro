@@ -532,7 +532,8 @@ textarea:focus {
 .mini-invest-btn,
 .btn-invest,
 .btn-confirm,
-.floater-primary {
+.floater-primary,
+.btn-register {
   background: var(--brand-red) !important;
   color: #fff !important;
   border: 0 !important;
@@ -543,8 +544,10 @@ textarea:focus {
 .mini-invest-btn:hover,
 .btn-invest:hover,
 .btn-confirm:hover,
-.floater-primary:hover {
+.floater-primary:hover,
+.btn-register:hover {
   background: var(--brand-red-dark) !important;
+  color: #fff !important;
 }
 
 .mini-voir-plus-btn {
