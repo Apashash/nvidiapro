@@ -154,6 +154,7 @@
 
         <% const plansActifs = (typeof plans !== 'undefined' && plans) ? plans : []; %>
         <% const planMin = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) < parseFloat(b.prix) ? a : b) : null; %>
+        <% const planMax = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) > parseFloat(b.prix) ? a : b) : null; %>
         <% const strategyRows = (typeof strategyTiers !== 'undefined' && strategyTiers) ? strategyTiers : [
              { min: 0, max: 6000, rate: 5 },
              { min: 6001, max: 15000, rate: 7 },
