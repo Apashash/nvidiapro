@@ -1,4 +1,4 @@
-# NVIDIA Technologie — Plateforme d'Investissement
+# Groupe Dangote (GD) — Plateforme d'Investissement
 
 ## Overview
 French-language mobile investment platform for West African users (Cameroun, Côte d'Ivoire, Sénégal, etc.).

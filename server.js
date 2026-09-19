@@ -50,6 +50,6 @@ app.use((req, res) => res.status(404).redirect('/'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`NVIDIA Technology server running on port ${PORT}`);
+  console.log(`Groupe Dangote (GD) server running on port ${PORT}`);
   require('./services/autoPayout').startAutoPayoutScheduler();
 });

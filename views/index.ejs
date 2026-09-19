@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Accueil - Altiora Capital Africa</title>
+    <title>Accueil - Groupe Dangote (GD)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -437,8 +437,8 @@
         <div class="logo">
             <div class="logo-icon"><img src="/images/dangote-logo.png" alt="Dangote"></div>
             <div>
-                <div class="logo-text">ALTIORA</div>
-                <div class="logo-subtext">CAPITAL AFRICA</div>
+                <div class="logo-text">GROUPE DANGOTE</div>
+                <div class="logo-subtext">(GD)</div>
             </div>
         </div>
     </div>
@@ -448,9 +448,9 @@
         <div class="photo-slider" id="photoSlider">
             <div class="photo-slides">
                 <div class="photo-slide active">
-                    <img src="/images/slide1.jpeg" class="photo-image" alt="Altiora Capital Africa">
+                    <img src="/images/slide1.jpeg" class="photo-image" alt="Groupe Dangote (GD)">
                     <div class="photo-overlay">
-                        <div class="photo-title">Altiora Capital Africa</div>
+                        <div class="photo-title">Groupe Dangote (GD)</div>
                         <div class="photo-subtitle">Investissez aujourd'hui, bâtir l'avenir de l'Afrique</div>
                     </div>
                 </div>
@@ -462,14 +462,14 @@
                     </div>
                 </div>
                 <div class="photo-slide">
-                    <img src="/images/slide3.jpeg" class="photo-image" alt="Événements Altiora">
+                    <img src="/images/slide3.jpeg" class="photo-image" alt="Événements Groupe Dangote">
                     <div class="photo-overlay">
                         <div class="photo-title">Événements & Formations</div>
                         <div class="photo-subtitle">Ensemble, construisons la richesse de demain</div>
                     </div>
                 </div>
                 <div class="photo-slide">
-                    <img src="/images/slide4.jpeg" class="photo-image" alt="Siège Altiora">
+                    <img src="/images/slide4.jpeg" class="photo-image" alt="Siège Groupe Dangote">
                     <div class="photo-overlay">
                         <div class="photo-title">Notre Siège Social</div>
                         <div class="photo-subtitle">Agriculture · Énergie · Immobilier · Finance</div>
@@ -657,9 +657,9 @@
 <div class="welcome-popup" id="welcomePopup" style="<%= _p.popup_active === '1' ? '' : 'display:none' %>">
     <div class="welcome-content">
         <div class="welcome-header">
-            <h3>Altiora Capital Africa</h3>
+            <h3>Groupe Dangote (GD)</h3>
             <div class="welcome-message">
-                <%= _p.popup_message || 'Bienvenue sur Altiora Capital Africa ! Investissez dans des projets à fort potentiel et générez des revenus quotidiens.' %>
+                <%= _p.popup_message || 'Bienvenue sur Groupe Dangote (GD) ! Investissez dans des projets à fort potentiel et générez des revenus quotidiens.' %>
             </div>
             <button class="welcome-close-top" onclick="closeWelcomePopup()">&times;</button>
         </div>
@@ -730,7 +730,7 @@
             <form id="postForm" enctype="multipart/form-data" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="postMessage">Message</label>
-                    <textarea id="postMessage" name="message" class="form-textarea" placeholder="Partagez votre expérience avec Altiora..." required></textarea>
+                    <textarea id="postMessage" name="message" class="form-textarea" placeholder="Partagez votre expérience avec Groupe Dangote..." required></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="postImage">Image</label>
@@ -859,7 +859,7 @@ let notifIndex = 0;
 function showNotifications() {
     const container = document.getElementById('notificationContainer');
     if (!container || notifications.length === 0) {
-        if (container) container.innerHTML = '<div class="notification-item visible" style="font-size:13px;"><i class="fas fa-bell"></i> Bienvenue sur Altiora Capital Africa !</div>';
+        if (container) container.innerHTML = '<div class="notification-item visible" style="font-size:13px;"><i class="fas fa-bell"></i> Bienvenue sur Groupe Dangote (GD) !</div>';
         return;
     }
     container.innerHTML = '';

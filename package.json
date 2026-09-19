@@ -1,7 +1,7 @@
 {
-  "name": "nvidia-technology",
+  "name": "groupe-dangote-gd",
   "version": "1.0.0",
-  "description": "NVIDIA Technology investment platform - Node.js/Express",
+  "description": "Groupe Dangote (GD) investment platform - Node.js/Express",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

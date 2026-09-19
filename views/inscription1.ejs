@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inscription - Altiora Capital Africa</title>
+    <title>Inscription - Groupe Dangote (GD)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -118,7 +118,7 @@
 <body>
     <div class="hero">
         <div class="hero-logo"><img src="/images/dangote-logo.png" alt="Dangote"></div>
-        <h1>Altiora Capital Africa</h1>
+        <h1>Groupe Dangote (GD)</h1>
         <p>« Ensemble, construisons la richesse de demain. »</p>
     </div>
 
@@ -128,12 +128,12 @@
         <% } %>
 
         <% if (typeof code_parrain !== 'undefined' && code_parrain) { %>
-            <div class="referral-notice"><i class="fas fa-user-friends"></i> Vous êtes invité par un ambassadeur Altiora Capital Africa</div>
+            <div class="referral-notice"><i class="fas fa-user-friends"></i> Vous êtes invité par un ambassadeur Groupe Dangote (GD)</div>
         <% } %>
 
         <div class="bonus-notice"><i class="fas fa-gift"></i> Bonus de bienvenue : <%= (locals.appParams && appParams.welcome_bonus !== undefined && appParams.welcome_bonus !== null && appParams.welcome_bonus !== '') ? appParams.welcome_bonus : 250 %> FCFA offerts !</div>
 
-        <div class="form-title">Rejoignez Altiora</div>
+        <div class="form-title">Rejoignez Groupe Dangote</div>
 
         <form action="/inscription1" method="post" id="signup-form">
             <% if (typeof code_parrain !== 'undefined' && code_parrain) { %>
