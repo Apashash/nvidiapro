@@ -84,6 +84,26 @@ a {
   color: var(--brand-navy);
 }
 
+body a {
+  color: var(--brand-navy) !important;
+}
+
+.login-link {
+  color: var(--brand-muted) !important;
+}
+
+.login-link a,
+.register-link a,
+.otp-cancel-link {
+  color: var(--brand-red) !important;
+}
+
+.login-link a:hover,
+.register-link a:hover,
+.otp-cancel-link:hover {
+  color: var(--brand-red-dark) !important;
+}
+
 .container {
   max-width: 460px !important;
   background: var(--brand-surface);
@@ -963,6 +983,107 @@ label,
   background: var(--brand-red) !important;
   color: #fff !important;
   border-color: var(--brand-red) !important;
+}
+
+/* Remaining feature-specific legacy accents */
+.salary-amount,
+.salary-card h3,
+.palier-card.actuel .palier-label,
+.palier-amount,
+.palier-prog-cnt,
+.palier-status.current,
+.popup-icon,
+.balance-strip span,
+.symbol i,
+.result-icon,
+.result-title,
+.info-card strong,
+.form-card h3,
+.popup-title,
+.choice-icon,
+.choice-title,
+.code-value,
+.gift-value,
+.history-amount,
+.transaction-amount,
+.team-stat-value,
+.commission-value {
+  color: var(--brand-red) !important;
+}
+
+.salary-period,
+.palier-sublabel,
+.palier-prog-lbl,
+.palier-status.locked,
+.popup-msg,
+.slot-label,
+.result-msg,
+.info-card p,
+.popup-detail .key,
+.choice-description,
+.gift-description,
+.history-meta,
+.transaction-meta,
+.team-stat-label,
+.commission-label {
+  color: var(--brand-muted) !important;
+}
+
+.salary-info h3,
+.palier-label,
+.popup-content h3,
+.balance-strip strong,
+.choice-card h3,
+.gift-card h3,
+.history-card h3,
+.transaction-card h3,
+.team-card h3,
+.commission-card h3 {
+  color: var(--brand-navy) !important;
+}
+
+.palier-card.actuel,
+.choice-card.active,
+.salary-card.active {
+  border-color: var(--brand-red) !important;
+}
+
+.palier-card.locked,
+.dot-avatar.inactif,
+.btn-collect:disabled,
+.spin-btn:disabled,
+.btn-submit:disabled {
+  background: #e7e7eb !important;
+  color: var(--brand-muted) !important;
+  border-color: #d5d5da !important;
+}
+
+.amount-tag,
+.ussd-code,
+.otp-ussd-code {
+  background: #f4f3ff !important;
+  color: var(--brand-navy) !important;
+  border-color: rgba(20, 16, 95, 0.2) !important;
+}
+
+.popup-detail,
+.balance-strip,
+.result-card,
+.salary-summary,
+.palier-card,
+.team-stat,
+.commission-row {
+  background: #fff !important;
+  border-color: var(--brand-border) !important;
+}
+
+.btn-back {
+  color: var(--brand-navy) !important;
+}
+
+.page-header .btn-back,
+.topbar .btn-back {
+  color: #fff !important;
 }
 
 .topbar,
