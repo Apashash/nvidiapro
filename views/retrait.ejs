@@ -173,18 +173,7 @@
             <i class="fas fa-ban"></i>
             <span>Le retrait est <strong>indisponible pour le moment</strong>, veuillez réessayer plus tard.</span>
         </div>
-        <% } else if (!retraits_disponibles) { %>
-        <div class="warning-card">
-            <i class="fas fa-clock"></i>
-            <span><%= locals.schedule ? schedule.message : 'Les retraits ne sont pas disponibles en ce moment.' %></span>
-        </div>
         <% } %>
-
-        <div class="info-card">
-            ℹ️ Montant minimum : <strong><%= parseInt(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200).toLocaleString('fr-FR') %> FCFA</strong>
-            — Max <strong><%= locals.params && params.retrait_max_par_jour ? params.retrait_max_par_jour : 1 %></strong> retrait(s) / 24h
-            — Traitement sous 24h.
-        </div>
 
         <div class="form-card">
             <h3><i class="fas fa-arrow-up"></i> Informations de retrait</h3>
@@ -259,10 +248,20 @@
             </div>
             <% } %>
 
-            <button class="btn-submit" id="btn-retrait" <%= !retraits_disponibles ? 'disabled' : '' %>>
+            <button class="btn-submit" id="btn-retrait">
                 <i class="fas fa-paper-plane"></i> Demander le retrait
             </button>
         </div>
+    </div>
+</div>
+
+<!-- Withdrawal rules popup -->
+<div class="popup-overlay" id="withdrawInfoPopup">
+    <div class="popup-box">
+        <div class="popup-icon"><i class="fas fa-info"></i></div>
+        <div class="popup-title" id="withdrawInfoTitle">Retrait indisponible</div>
+        <div class="popup-msg" id="withdrawInfoMessage"></div>
+        <button class="popup-ok" type="button" onclick="closeWithdrawInfo()">Compris</button>
     </div>
 </div>
 
@@ -300,6 +299,9 @@ const operateursByPays = {
 };
 
 const fraisPourcentage = <%= locals.fraisPourcentage || 0 %>;
+const retraitDisponible = <%= retraits_disponibles ? 'true' : 'false' %>;
+const retraitMinimum = <%= parseFloat(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200) %>;
+const scheduleMessage = <%- JSON.stringify(locals.schedule && schedule.message ? schedule.message : 'Les retraits ne sont pas disponibles en ce moment.') %>;
 const feeSummary   = document.getElementById('fee-summary');
 const inpMontant   = document.getElementById('inp-montant');
 
@@ -337,6 +339,20 @@ selPays.addEventListener('change', updateOperateurs);
 // Init on load if country already selected
 if (selPays.value) updateOperateurs();
 
+function showWithdrawInfo(title, message) {
+    document.getElementById('withdrawInfoTitle').textContent = title;
+    document.getElementById('withdrawInfoMessage').textContent = message;
+    document.getElementById('withdrawInfoPopup').classList.add('show');
+}
+
+function closeWithdrawInfo() {
+    document.getElementById('withdrawInfoPopup').classList.remove('show');
+}
+
+document.getElementById('withdrawInfoPopup').addEventListener('click', function (event) {
+    if (event.target === this) closeWithdrawInfo();
+});
+
 document.getElementById('btn-retrait').addEventListener('click', async function () {
     const pays     = selPays.value;
     const operateur= selOp.value;
@@ -348,9 +364,22 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
 
     notifZone.innerHTML = '';
 
+    if (!retraitDisponible) {
+        showWithdrawInfo('Retrait indisponible', scheduleMessage);
+        return;
+    }
+
     if (!pays || !operateur || !numero || !nom || !montant) {
         notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> Veuillez remplir tous les champs.</div>';
         notifZone.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    if (montant < retraitMinimum) {
+        showWithdrawInfo(
+            'Montant minimum non atteint',
+            `Le montant minimum de retrait est de ${retraitMinimum.toLocaleString('fr-FR')} FCFA.`
+        );
         return;
     }
 
@@ -389,8 +418,16 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
             document.getElementById('pop-nom').textContent       = nom;
             document.getElementById('successPopup').classList.add('show');
         } else {
-            notifZone.innerHTML = `<div class="notif error"><i class="fas fa-exclamation-circle"></i> ${data.message}</div>`;
-            notifZone.scrollIntoView({ behavior: 'smooth' });
+            const message = String(data.message || '');
+            if (/disponible|minimum de retrait/i.test(message)) {
+                showWithdrawInfo(
+                    /minimum de retrait/i.test(message) ? 'Montant minimum non atteint' : 'Retrait indisponible',
+                    message
+                );
+            } else {
+                notifZone.innerHTML = `<div class="notif error"><i class="fas fa-exclamation-circle"></i> ${message}</div>`;
+                notifZone.scrollIntoView({ behavior: 'smooth' });
+            }
             this.disabled = false;
             this.innerHTML = '<i class="fas fa-paper-plane"></i> Demander le retrait';
         }
