@@ -247,6 +247,19 @@ body a {
   color: var(--brand-red) !important;
 }
 
+.form-select,
+.phone-row .indicatif-box {
+  background: #fff !important;
+  color: var(--brand-text) !important;
+  border-color: var(--brand-border) !important;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--brand-navy) !important;
+  box-shadow: 0 0 0 3px rgba(20, 16, 95, 0.12) !important;
+}
+
 .popup-icon {
   background: var(--brand-red) !important;
 }
@@ -254,6 +267,27 @@ body a {
 .popup-ok {
   background: var(--brand-red) !important;
   color: #fff !important;
+}
+
+/* Inline declarations from legacy feature templates. */
+[style*="background"][style*="#D4921F"],
+[style*="background"][style*="#B07018"],
+[style*="background"][style*="#C47D1E"],
+[style*="background"][style*="#E8931A"],
+[style*="background"][style*="#EA580C"] {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+  border-color: var(--brand-red) !important;
+}
+
+[style*="background"][style*="#FBF5EC"],
+[style*="background"][style*="#FFFBF0"],
+[style*="background"][style*="#F3ECDE"],
+[style*="background"][style*="#FEF3DA"],
+[style*="background"][style*="#FFF7ED"],
+[style*="background"][style*="#FFF8F0"] {
+  background: #f7f7f8 !important;
+  border-color: var(--brand-border) !important;
 }
 
 .balance-card,
