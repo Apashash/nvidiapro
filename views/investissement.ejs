@@ -521,8 +521,32 @@ function rateForAmount(amount) {
 
 function updatePurchaseSummary() {
     if (!currentPlan) return;
-    const actions = Math.max(currentPlan.actionsMinimum, parseInt(document.getElementById('popup-actions').value, 10) || 0);
-    document.getElementById('popup-actions').value = actions;
+    const actionsInput = document.getElementById('popup-actions');
+    const rawActions = actionsInput.value.trim();
+    const balanceWarning = document.getElementById('popup-balance-warning');
+    const confirmButton = document.getElementById('confirmerInvestBtn');
+
+    // Do not force the minimum while the user is editing. Mobile keyboards
+    // temporarily produce "1" or an empty value when replacing "10" with "30".
+    if (!rawActions) {
+        document.getElementById('popup-actions-help').textContent =
+            `Saisissez au moins ${currentPlan.actionsMinimum} actions`;
+        balanceWarning.textContent = '';
+        balanceWarning.style.display = 'none';
+        confirmButton.disabled = true;
+        return;
+    }
+
+    const actions = parseInt(rawActions, 10);
+    if (!Number.isInteger(actions) || actions < 1) {
+        document.getElementById('popup-actions-help').textContent =
+            `Saisissez un nombre entier d'actions (minimum ${currentPlan.actionsMinimum})`;
+        balanceWarning.textContent = '';
+        balanceWarning.style.display = 'none';
+        confirmButton.disabled = true;
+        return;
+    }
+
     const montant = actions * currentPlan.prixAction;
     const taux = rateForAmount(montant);
     const gainJournalier = montant * taux / 100;
@@ -535,9 +559,13 @@ function updatePurchaseSummary() {
         gainTotal.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
     document.getElementById('popup-actions-help').textContent =
         `${actions} action(s) · ${currentPlan.prixAction.toLocaleString('fr-FR')} FCFA/action · taux ${taux}%/jour · ${currentPlan.achatsRestants} achat(s) restant(s)`;
-    const balanceWarning = document.getElementById('popup-balance-warning');
-    const confirmButton = document.getElementById('confirmerInvestBtn');
-    if (montant > soldeClient) {
+
+    if (actions < currentPlan.actionsMinimum) {
+        balanceWarning.textContent =
+            `Le minimum pour ce plan est de ${currentPlan.actionsMinimum} actions.`;
+        balanceWarning.style.display = 'block';
+        confirmButton.disabled = true;
+    } else if (montant > soldeClient) {
         balanceWarning.textContent =
             `Votre solde est de ${soldeClient.toLocaleString('fr-FR')} FCFA. Rechargez au moins ${montant.toLocaleString('fr-FR')} FCFA pour confirmer.`;
         balanceWarning.style.display = 'block';
