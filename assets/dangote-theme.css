@@ -103,10 +103,21 @@ a {
 }
 
 .header .logo-icon {
-  width: 50px !important;
+  width: 76px !important;
   height: 50px !important;
   border-radius: 4px !important;
   box-shadow: none !important;
+  background: #fff !important;
+}
+
+.header .logo-icon img,
+.hero-logo img,
+.card-logo img,
+.mini-plan-img img,
+.plan-image-wrap img,
+.order-img img {
+  object-fit: contain !important;
+  background: #fff !important;
 }
 
 .header .logo-text {
@@ -332,8 +343,11 @@ textarea:focus {
 }
 
 .hero-logo {
-  border-radius: 3px !important;
-  box-shadow: 0 0 0 5px #fff !important;
+  width: 150px !important;
+  height: 92px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  background: #fff !important;
 }
 
 .hero h1 {
@@ -484,6 +498,11 @@ textarea:focus {
   border: 1px solid var(--brand-border) !important;
   border-radius: 2px !important;
   box-shadow: 0 5px 18px rgba(20, 16, 95, 0.07) !important;
+}
+
+.mini-plan-img,
+.plan-image-wrap {
+  background: #fff !important;
 }
 
 .mini-plan-badge,
