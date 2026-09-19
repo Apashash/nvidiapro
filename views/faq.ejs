@@ -154,7 +154,53 @@
 
         <% const plansActifs = (typeof plans !== 'undefined' && plans) ? plans : []; %>
         <% const planMin = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) < parseFloat(b.prix) ? a : b) : null; %>
-        <% const planMax = plansActifs.length ? plansActifs.reduce((a,b) => parseFloat(a.prix) > parseFloat(b.prix) ? a : b) : null; %>
+        <% const strategyRows = (typeof strategyTiers !== 'undefined' && strategyTiers) ? strategyTiers : [
+             { min: 0, max: 6000, rate: 5 },
+             { min: 6001, max: 15000, rate: 7 },
+             { min: 15001, max: 40000, rate: 10 },
+             { min: 40001, max: 170000, rate: 15 },
+             { min: 170001, max: 10000000, rate: 20 },
+             { min: 10000001, max: null, rate: 20 }
+           ]; %>
+        <% const maxAchats = maxAchatsParPlan || 3; %>
+
+        <div class="faq-card" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span class="q-text">Comment fonctionne un investissement, de A à Z ?</span>
+                <i class="fas fa-chevron-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+                <strong>1. Rechargez votre solde.</strong> Faites un dépôt en FCFA, puis attendez que le montant apparaisse dans votre solde.<br><br>
+                <strong>2. Choisissez une action.</strong> La page Plans affiche les quatre actions disponibles et le prix d'une action.<br><br>
+                <strong>3. Choisissez le nombre d'actions.</strong> Le minimum est de <strong>10 actions par achat</strong>. Le nombre doit être entier.<br><br>
+                <strong>4. Vérifiez le montant de départ.</strong> Le montant est calculé automatiquement : <strong>nombre d'actions × prix d'une action</strong>. Vous ne pouvez pas investir un montant différent du nombre d'actions choisi.<br><br>
+                <strong>5. Vérifiez le taux.</strong> Le taux quotidien dépend du montant total de cet achat, selon le tableau ci-dessous.<br><br>
+                <strong>6. Confirmez.</strong> Le montant est débité du solde et la commande devient active pendant <strong><%= plansActifs[0] ? plansActifs[0].duree_jours : 125 %> jours</strong>.<br><br>
+                <strong>7. Recevez vos gains.</strong> Le gain quotidien enregistré pour cette commande est crédité automatiquement toutes les 24 heures.<br><br>
+                <strong>8. Limite d'achat.</strong> Un même plan peut être acheté au maximum <strong><%= maxAchats %> fois par utilisateur</strong>. La limite est comptée sur toutes les commandes de ce plan, pas seulement les commandes encore actives.
+            </div>
+        </div>
+
+        <div class="faq-card" onclick="toggleFaq(this)">
+            <div class="faq-question">
+                <span class="q-text">Quelles sont les tranches de gain quotidien ?</span>
+                <i class="fas fa-chevron-down faq-arrow"></i>
+            </div>
+            <div class="faq-answer">
+                Le taux est appliqué au <strong>montant total de l'achat</strong>, et non au nombre d'actions séparément.
+                <table class="plans-table">
+                    <tr><th>Montant de l'achat</th><th>Taux / jour</th></tr>
+                    <% strategyRows.forEach(function(tier) { %>
+                    <tr>
+                        <td><%= Number(tier.min).toLocaleString('fr-FR') %> FCFA<%= tier.max != null ? ' à ' + Number(tier.max).toLocaleString('fr-FR') + ' FCFA' : ' et plus' %></td>
+                        <td><strong><%= tier.rate %>%</strong></td>
+                    </tr>
+                    <% }); %>
+                </table>
+                <br>
+                Exemple : un achat de 2 250 FCFA à 5 % produit <strong>112,50 FCFA par jour</strong>. Un achat de 100 000 FCFA tombe dans la tranche 15 % et produit <strong>15 000 FCFA par jour</strong>.
+            </div>
+        </div>
 
         <div class="faq-card" onclick="toggleFaq(this)">
             <div class="faq-question">
@@ -168,7 +214,7 @@
                 <% if (planMax) { %>
                 Le plan maximum est de <strong><%= parseInt(planMax.prix).toLocaleString('fr-FR') %> FCFA</strong> (<%= planMax.nom %>).<br><br>
                 <% } %>
-                Groupe Dangote (GD) propose <strong><%= plansActifs.length %> plan<%= plansActifs.length > 1 ? 's' : '' %> d'investissement</strong> adaptés à tous les profils.
+                Groupe Dangote (GD) propose <strong><%= plansActifs.length %> actions</strong>. Chaque achat commence à 10 actions minimum.
             </div>
         </div>
 
@@ -180,18 +226,19 @@
             <div class="faq-answer">
                 <% if (plansActifs.length > 0) { %>
                 <table class="plans-table">
-                    <tr><th>#</th><th>Plan</th><th>Montant (FCFA)</th><th>Rendement/jr</th><th>Durée</th></tr>
+                    <tr><th>#</th><th>Action</th><th>Prix / action</th><th>Minimum</th><th>Durée</th><th>Limite</th></tr>
                     <% plansActifs.forEach(function(p, i) { %>
                     <tr>
                         <td style="color:#A87D50"><%= String(i+1).padStart(2,'0') %></td>
                         <td class="plan-name"><%= p.nom %></td>
-                        <td><%= parseInt(p.prix).toLocaleString('fr-FR') %></td>
-                        <td><strong><%= parseFloat(p.rendement_journalier).toFixed(1).replace('.',',') %>%</strong></td>
+                        <td><%= parseFloat(p.prix_action).toLocaleString('fr-FR') %> FCFA</td>
+                        <td><%= parseInt(p.actions_minimum || 10) %> actions<br><small><%= parseInt(p.prix).toLocaleString('fr-FR') %> FCFA</small></td>
                         <td><%= p.duree_jours %>j</td>
+                        <td><%= maxAchats %> achats</td>
                     </tr>
                     <% }); %>
                 </table>
-                <br>Les rendements sont basés sur la performance des projets financés.
+                <br>Les prix indiqués sont ceux configurés dans la plateforme. Vérifiez toujours le récapitulatif affiché avant de confirmer un achat.
                 <% } else { %>
                 <em style="color:#A87D50">Aucun plan actif pour le moment.</em>
                 <% } %>

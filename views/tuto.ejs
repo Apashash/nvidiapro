@@ -171,20 +171,34 @@
                 <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Rechargez votre solde</h4><p>Assurez-vous d'avoir assez de FCFA sur votre solde avant de choisir un plan.</p></div></div>
                 <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Allez dans "Action"</h4><p>Cliquez sur l'onglet "Action" dans le menu du bas.</p></div></div>
                 <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Choisissez un plan</h4><p>
-                <% if (locals.plans && plans.length) {
-                    const pMin = Math.min(...plans.map(p => parseFloat(p.prix)));
-                    const pMax = Math.max(...plans.map(p => parseFloat(p.prix)));
-                    const rMin = Math.min(...plans.map(p => parseFloat(p.rendement_journalier)));
-                    const rMax = Math.max(...plans.map(p => parseFloat(p.rendement_journalier)));
-                %>
-                Les plans vont de <%= pMin.toLocaleString('fr-FR') %> à <%= pMax.toLocaleString('fr-FR') %> FCFA avec des rendements de <%= rMin.toFixed(2).replace('.',',') %>% à <%= rMax.toFixed(2).replace('.',',') %>%/jour.
+                <% if (locals.plans && plans.length) { %>
+                Chaque achat porte sur une seule action. Les actions disponibles sont :
+                <br><br>
+                <% plans.forEach(function(p) { %>
+                    • <strong><%= p.nom %></strong> : <%= parseFloat(p.prix_action).toLocaleString('fr-FR') %> FCFA/action,
+                    minimum <%= p.actions_minimum || 10 %> actions
+                    (<%= parseFloat(p.prix).toLocaleString('fr-FR') %> FCFA).<br>
+                <% }); %>
                 <% } else { %>
                 Consultez la section "Action" pour voir les plans disponibles et leurs rendements.
                 <% } %>
                 </p></div></div>
-                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Confirmez l'achat</h4><p>Votre solde est débité immédiatement et votre plan commence.</p></div></div>
-                <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Revenus versés automatiquement</h4><p>Vos gains journaliers sont crédités automatiquement sur votre solde toutes les 24h, sans aucune action de votre part.</p></div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Indiquez le nombre d'actions</h4><p>Appuyez sur "Investir", saisissez un nombre entier d'actions (minimum 10), puis vérifiez le montant de départ calculé automatiquement : nombre d'actions × prix unitaire.</p></div></div>
+                <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Vérifiez le taux de votre tranche</h4><p>
+                    <% const tutoTiers = (typeof strategyTiers !== 'undefined' && strategyTiers) ? strategyTiers : [
+                        { min: 0, max: 6000, rate: 5 }, { min: 6001, max: 15000, rate: 7 },
+                        { min: 15001, max: 40000, rate: 10 }, { min: 40001, max: 170000, rate: 15 },
+                        { min: 170001, max: 10000000, rate: 20 }, { min: 10000001, max: null, rate: 20 }
+                    ]; %>
+                    Le taux quotidien est calculé sur le montant total de l'achat :
+                    <% tutoTiers.forEach(function(tier, index) { %>
+                        <strong><%= Number(tier.min).toLocaleString('fr-FR') %><%= tier.max != null ? ' à ' + Number(tier.max).toLocaleString('fr-FR') : ' et plus' %> FCFA = <%= tier.rate %>%</strong><%= index < tutoTiers.length - 1 ? ' ; ' : '.' %>
+                    <% }); %>
+                </p></div></div>
+                <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Confirmez l'achat</h4><p>Votre solde est débité immédiatement. Le même plan peut être acheté au maximum <strong><%= maxAchatsParPlan || 3 %> fois</strong>.</p></div></div>
+                <div class="step"><div class="step-num">7</div><div class="step-body"><h4>Recevez vos revenus</h4><p>Le gain quotidien enregistré pour votre achat est crédité automatiquement toutes les 24 heures pendant <strong><%= plans && plans[0] ? plans[0].duree_jours : 125 %> jours</strong>.</p></div></div>
             </div>
+            <div class="tip-card"><strong>Exemple :</strong> 10 actions Refinery coûtent 2 250 FCFA. Ce montant est dans la tranche 5 %, donc le gain affiché avant confirmation est de 112,50 FCFA par jour.</div>
         </div>
 
         <!-- Astuces -->
