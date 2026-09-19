@@ -215,14 +215,14 @@ VALUES
    '1 action = 225 FCFA — minimum 10 actions',
    225, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
   ('Dangote Cement — DANGCEM', 4500, 125, 5, '/images/dashboard-hero-3.jpeg',
-   '1 action = 450 FCFA — minimum 10 actions',
-   450, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
-  ('Dangote Sugar — DANGSUGAR', 300, 125, 5, '/images/dashboard-hero-5.jpeg',
-   '1 action = 30 FCFA — minimum 10 actions',
-   30, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
-  ('NASCON', 690, 125, 5, '/images/dashboard-hero-4.jpeg',
-   '1 action = 69 FCFA — minimum 10 actions',
-   69, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]')
+   '1 action = 450 FCFA — minimum 50 actions',
+   450, 50, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
+  ('Dangote Sugar — DANGSUGAR', 60000, 125, 5, '/images/dashboard-hero-5.jpeg',
+   '1 action = 30 FCFA — minimum 2 000 actions',
+   30, 2000, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
+  ('NASCON', 345000, 125, 5, '/images/dashboard-hero-4.jpeg',
+   '1 action = 69 FCFA — minimum 5 000 actions',
+   69, 5000, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]')
 ON CONFLICT (nom) DO NOTHING;
 `;
 
@@ -251,6 +251,33 @@ async function setup() {
     console.log('Seeding investment plans…');
     const res = await client.query(SEED_PLANS);
     const marketRes = await client.query(SEED_MARKET_PLANS);
+    await client.query(`
+      UPDATE planinvestissement
+      SET prix = CASE nom
+        WHEN 'Dangote Refinery — IPO' THEN 2250
+        WHEN 'Dangote Cement — DANGCEM' THEN 22500
+        WHEN 'Dangote Sugar — DANGSUGAR' THEN 60000
+        WHEN 'NASCON' THEN 345000
+      END,
+      actions_minimum = CASE nom
+        WHEN 'Dangote Refinery — IPO' THEN 10
+        WHEN 'Dangote Cement — DANGCEM' THEN 50
+        WHEN 'Dangote Sugar — DANGSUGAR' THEN 2000
+        WHEN 'NASCON' THEN 5000
+      END,
+      description = CASE nom
+        WHEN 'Dangote Refinery — IPO' THEN '1 action = 225 FCFA — minimum 10 actions'
+        WHEN 'Dangote Cement — DANGCEM' THEN '1 action = 450 FCFA — minimum 50 actions'
+        WHEN 'Dangote Sugar — DANGSUGAR' THEN '1 action = 30 FCFA — minimum 2 000 actions'
+        WHEN 'NASCON' THEN '1 action = 69 FCFA — minimum 5 000 actions'
+      END
+      WHERE nom IN (
+        'Dangote Refinery — IPO',
+        'Dangote Cement — DANGCEM',
+        'Dangote Sugar — DANGSUGAR',
+        'NASCON'
+      )
+    `);
     console.log(`✓ Plans seeded (${res.rowCount + marketRes.rowCount} inserted)`);
 
     console.log('\nDatabase setup complete. Run `node server.js` to start the app.');
