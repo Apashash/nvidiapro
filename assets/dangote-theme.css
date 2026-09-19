@@ -10,6 +10,16 @@
   --brand-border: #e4e4e4;
   --brand-text: #202024;
   --brand-muted: #6f6f73;
+  --amber: #d60000;
+  --amber-dark: #b90000;
+  --amber-light: #e12626;
+  --cream: #f4f4f4;
+  --card-bg: #ffffff;
+  --text-dark: #202024;
+  --text-mid: #505058;
+  --text-muted: #6f6f73;
+  --border: #e4e4e4;
+  --light-bg: #f7f7f8;
 }
 
 html {
@@ -399,6 +409,250 @@ textarea:focus {
 .notif-badge,
 .notif-count {
   background: var(--brand-red) !important;
+}
+
+/* Dashboard */
+.premium-card {
+  background: var(--brand-navy) !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  box-shadow: 0 8px 24px rgba(20, 16, 95, 0.24) !important;
+}
+
+.premium-card .balance-label,
+.premium-card .balance-amount,
+.premium-card .revenue-label,
+.premium-card .revenue-amount {
+  color: #fff !important;
+}
+
+.premium-card .revenue-info {
+  border-top-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.premium-card .card-logo {
+  border: 2px solid #fff !important;
+  background: #fff !important;
+}
+
+.h-action-btn {
+  background: #fff !important;
+  color: var(--brand-navy) !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 4px 14px rgba(20, 16, 95, 0.07) !important;
+}
+
+.h-action-btn:hover {
+  background: #f7f7f8 !important;
+  border-color: var(--brand-navy) !important;
+}
+
+.h-action-btn .h-action-icon {
+  color: var(--brand-red) !important;
+  background: transparent !important;
+}
+
+.h-action-btn .h-action-text {
+  color: var(--brand-navy) !important;
+}
+
+.notification-bar {
+  background: #f4f3ff !important;
+  border: 1px solid rgba(20, 16, 95, 0.16) !important;
+  border-radius: 2px !important;
+}
+
+.notification-item,
+.notification-item i,
+.posts-title i,
+.mini-plans-title i {
+  color: var(--brand-navy) !important;
+}
+
+.post-btn,
+.send-btn,
+.file-upload-btn {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+  border-radius: 2px !important;
+}
+
+.post-slider,
+.mini-plan-card {
+  background: #fff !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 5px 18px rgba(20, 16, 95, 0.07) !important;
+}
+
+.mini-plan-badge,
+.plan-duration-badge {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+  border-radius: 2px !important;
+}
+
+.mini-plan-name,
+.plan-name,
+.order-name {
+  color: var(--brand-navy) !important;
+}
+
+.mini-plan-stats,
+.plan-stats,
+.popup-stat,
+.countdown-box {
+  background: #f5f5f7 !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+}
+
+.mini-stat-val,
+.stat-val,
+.popup-stat-val {
+  color: var(--brand-red) !important;
+}
+
+.mini-stat-lbl,
+.stat-lbl,
+.popup-stat-lbl,
+.mini-price-lbl,
+.plan-price,
+.order-amount {
+  color: var(--brand-muted) !important;
+}
+
+.mini-price-val,
+.plan-price strong,
+.order-amount strong {
+  color: var(--brand-text) !important;
+}
+
+.mini-invest-btn,
+.btn-invest,
+.btn-confirm,
+.floater-primary {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.mini-invest-btn:hover,
+.btn-invest:hover,
+.btn-confirm:hover,
+.floater-primary:hover {
+  background: var(--brand-red-dark) !important;
+}
+
+.mini-voir-plus-btn {
+  background: #fff !important;
+  color: var(--brand-navy) !important;
+  border: 2px solid var(--brand-navy) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.photo-indicator.active,
+.post-indicator.active {
+  background: var(--brand-red) !important;
+}
+
+/* Investment plans and purchase dialogs */
+.main-content {
+  background: var(--brand-surface) !important;
+}
+
+.tab-nav {
+  background: #fff !important;
+  border-bottom-color: var(--brand-border) !important;
+}
+
+.tab-btn {
+  color: var(--brand-muted) !important;
+  background: #fff !important;
+  border-radius: 0 !important;
+}
+
+.tab-btn.active {
+  color: var(--brand-navy) !important;
+  border-bottom-color: var(--brand-red) !important;
+  background: #fff !important;
+}
+
+.plan-card,
+.order-card {
+  background: #fff !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 5px 18px rgba(20, 16, 95, 0.08) !important;
+}
+
+.plan-card:hover,
+.order-card:hover {
+  box-shadow: 0 8px 26px rgba(20, 16, 95, 0.13) !important;
+}
+
+.plan-footer {
+  border-top-color: var(--brand-border) !important;
+}
+
+.progress-track {
+  background: #e7e7eb !important;
+}
+
+.progress-fill {
+  background: var(--brand-red) !important;
+}
+
+.popup-box,
+.floater-box {
+  background: #fff !important;
+  border-radius: 2px !important;
+}
+
+.popup-head {
+  background: var(--brand-navy) !important;
+}
+
+.popup-head h3,
+.popup-close-btn {
+  color: #fff !important;
+}
+
+.floater-secondary {
+  background: #f5f5f7 !important;
+  color: var(--brand-navy) !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+}
+
+.floater-title {
+  color: var(--brand-navy) !important;
+}
+
+.floater-msg {
+  color: var(--brand-muted) !important;
+}
+
+/* Catch legacy inline amber declarations used by confirmation states. */
+[style*="#c8820a"],
+[style*="#C47D1E"],
+[style*="#D4921F"],
+[style*="#B07018"] {
+  color: var(--brand-red) !important;
+  border-color: var(--brand-red) !important;
+}
+
+div[style*="background:#c8820a"],
+div[style*="background: #c8820a"],
+div[style*="background:#C47D1E"],
+div[style*="background:#D4921F"],
+div[style*="background:#B07018"] {
+  background: var(--brand-red) !important;
+  color: #fff !important;
 }
 
 @media (min-width: 600px) {
