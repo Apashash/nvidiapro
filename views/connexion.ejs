@@ -139,7 +139,15 @@
     <link rel="stylesheet" href="/assets/dangote-theme.css">
 </head>
 <body>
-    <div class="hero">
+    <div class="hero" data-auth-hero>
+        <div class="hero-slideshow" aria-hidden="true">
+            <img class="hero-slide active" src="/images/dangote-hero-1.jpeg" alt="">
+            <img class="hero-slide" src="/images/dangote-hero-2.jpg" alt="">
+            <img class="hero-slide" src="/images/dangote-hero-3.jpeg" alt="">
+            <img class="hero-slide" src="/images/dangote-hero-4.jpeg" alt="">
+            <img class="hero-slide" src="/images/dangote-hero-5.jpeg" alt="">
+            <img class="hero-slide" src="/images/dangote-hero-6.jpeg" alt="">
+        </div>
         <div class="hero-logo"><img src="/images/dangote-logo.png" alt="Dangote"></div>
         <h1>Groupe Dangote (GD)</h1>
         <p>« Ensemble, construisons la richesse de demain. »</p>
@@ -234,5 +242,6 @@
             else { inp.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; }
         }
     </script>
+    <script src="/assets/auth-hero-slideshow.js"></script>
 </body>
 </html>
