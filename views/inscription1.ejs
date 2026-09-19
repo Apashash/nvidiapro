@@ -40,14 +40,6 @@
             flex-shrink:0; padding:28px 24px calc(40px + env(safe-area-inset-bottom, 0px));
             box-shadow: 0 -8px 32px rgba(196,125,30,0.10);
         }
-        .bonus-notice {
-            background: linear-gradient(135deg, rgba(212,146,31,0.12), rgba(176,112,24,0.08));
-            border: 1px solid rgba(196,125,30,0.25);
-            border-radius:12px; padding:12px 16px; margin-bottom:20px;
-            display:flex; align-items:center; gap:10px;
-            color:#7D5A38; font-size:13px; font-weight:600;
-        }
-        .bonus-notice i { color:#C47D1E; font-size:18px; }
         .referral-notice {
             background: #FBF5EC; border:1px solid #E8D5B0; border-radius:12px;
             padding:11px 14px; margin-bottom:16px; display:flex; align-items:center;
@@ -138,8 +130,6 @@
         <% if (typeof code_parrain !== 'undefined' && code_parrain) { %>
             <div class="referral-notice"><i class="fas fa-user-friends"></i> Vous êtes invité par un ambassadeur Groupe Dangote (GD)</div>
         <% } %>
-
-        <div class="bonus-notice"><i class="fas fa-gift"></i> Bonus de bienvenue : <%= (locals.appParams && appParams.welcome_bonus !== undefined && appParams.welcome_bonus !== null && appParams.welcome_bonus !== '') ? appParams.welcome_bonus : 250 %> FCFA offerts !</div>
 
         <div class="form-title">Rejoignez Groupe Dangote</div>
 
