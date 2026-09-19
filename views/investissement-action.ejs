@@ -241,17 +241,27 @@ function updateSummary() {
         warning.textContent = `Le minimum pour ce plan est de ${plan.actionsMinimum} actions.`;
         warning.style.display = 'block'; button.disabled = true;
     } else if (amount > solde) {
-        warning.textContent = `Votre solde est de ${money(solde)}. Rechargez au moins ${money(amount)} pour confirmer.`;
-        warning.style.display = 'block'; button.disabled = true;
+        // Show the balance message only after the user confirms.
+        warning.textContent = '';
+        warning.style.display = 'none'; button.disabled = false;
     } else {
         warning.style.display = 'none'; button.disabled = false;
     }
 }
+function showBalanceModal(amount) {
+    document.getElementById('balanceModalMessage').textContent =
+        `Votre solde est de ${money(solde)}. Rechargez au moins ${money(amount)} pour confirmer.`;
+    document.getElementById('balanceModal').style.display = 'flex';
+}
 document.querySelectorAll('.mode-btn').forEach(button => button.addEventListener('click', () => switchMode(button.dataset.mode)));
 document.getElementById('actionsInput').addEventListener('input', updateSummary);
 document.getElementById('amountInput').addEventListener('input', updateSummary);
+document.getElementById('closeBalanceModal').addEventListener('click', () => {
+    document.getElementById('balanceModal').style.display = 'none';
+});
 document.getElementById('confirmButton').addEventListener('click', async function() {
     const actions = decimal(document.getElementById('actionsInput').value);
+    const amount = decimal(document.getElementById('summaryAmount').textContent.replace(/[^\d,.-]/g, '').replace(',', '.'));
     this.disabled = true; this.textContent = 'Traitement...';
     try {
         const response = await fetch('/acheter-action', {
@@ -260,7 +270,16 @@ document.getElementById('confirmButton').addEventListener('click', async functio
             body: new URLSearchParams({ plan_id: plan.id, actions })
         });
         const result = await response.json();
-        if (!result.success) throw new Error(result.message || 'Erreur lors de l’achat');
+        if (!result.success) {
+            if (result.message === 'Solde insuffisant') {
+                showBalanceModal(amount);
+            } else {
+                document.getElementById('warningText').textContent = result.message || 'Erreur lors de l’achat';
+                document.getElementById('warningText').style.display = 'block';
+            }
+            this.disabled = false; this.textContent = "Confirmer l'achat";
+            return;
+        }
         document.getElementById('purchaseCard').style.display = 'none';
         document.getElementById('successText').textContent =
             `${result.nombre_actions} action(s) achetée(s) pour ${money(result.montant)}.`;
