@@ -1001,6 +1001,99 @@ label,
   color: #fff !important;
 }
 
+.comm-row {
+  border-top-color: var(--brand-border) !important;
+}
+
+.comm-row span {
+  color: var(--brand-muted) !important;
+}
+
+.comm-row span:first-child {
+  color: var(--brand-text) !important;
+}
+
+.comm-row .pct {
+  color: var(--brand-red) !important;
+}
+
+.vip-card {
+  background: #fff !important;
+  border-color: var(--brand-border) !important;
+}
+
+.vip-title {
+  color: var(--brand-navy) !important;
+}
+
+.vip-prog-bg {
+  background: #e7e7eb !important;
+}
+
+.vip-prog-fill {
+  background: var(--brand-red) !important;
+}
+
+.vip-desc {
+  color: var(--brand-muted) !important;
+}
+
+.vip-desc strong {
+  color: var(--brand-red) !important;
+}
+
+.accordion {
+  box-shadow: 0 5px 18px rgba(20, 16, 95, 0.07) !important;
+}
+
+.acc-head,
+.acc-body {
+  background: #fff !important;
+  border-color: var(--brand-border) !important;
+}
+
+.acc-head:active {
+  background: #f7f7f8 !important;
+}
+
+.acc-icon-wrap,
+.fil-avatar {
+  background: var(--brand-red) !important;
+}
+
+.acc-title,
+.fil-name {
+  color: var(--brand-navy) !important;
+}
+
+.acc-sub,
+.fil-phone,
+.pag-info {
+  color: var(--brand-muted) !important;
+}
+
+.acc-chevron {
+  background: #f4f3ff !important;
+  border-color: var(--brand-border) !important;
+}
+
+.acc-chevron i {
+  color: var(--brand-red) !important;
+}
+
+.filleul-item {
+  background: #f7f7f8 !important;
+  border-color: var(--brand-border) !important;
+}
+
+.pagination {
+  border-top-color: var(--brand-border) !important;
+}
+
+.pag-btn {
+  background: var(--brand-red) !important;
+}
+
 .info-item .label,
 .commission-row .pct,
 .faq-arrow {
