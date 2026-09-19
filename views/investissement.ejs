@@ -182,6 +182,18 @@
         .share-count-help {
             font-size:11px; color:#A87D50; margin-top:7px; line-height:1.45;
         }
+        .purchase-mode {
+            display:flex; gap:8px; margin-bottom:12px;
+        }
+        .purchase-mode-btn {
+            flex:1; padding:9px 8px; border:1px solid #E8D5B0; border-radius:9px;
+            background:#fff; color:#7D5A38; font:600 11px 'Poppins',sans-serif;
+            cursor:pointer;
+        }
+        .purchase-mode-btn.active {
+            background:#14105F; border-color:#14105F; color:#fff;
+        }
+        .purchase-input-label { display:block; }
         .popup-balance-warning {
             display:none; margin-top:8px; padding:8px 10px; border-radius:8px;
             background:#FFF0EE; border:1px solid #F5A9A0; color:#C0392B;
@@ -351,8 +363,13 @@
         </div>
         <div class="popup-body">
             <div class="share-count-box">
-                <label for="popup-actions">Nombre d'actions</label>
+                <div class="purchase-mode">
+                    <button type="button" class="purchase-mode-btn active" data-mode="actions">Nombre d'actions</button>
+                    <button type="button" class="purchase-mode-btn" data-mode="amount">Montant FCFA</button>
+                </div>
+                <label class="purchase-input-label" id="popup-actions-label" for="popup-actions">Nombre d'actions</label>
                 <input id="popup-actions" type="number" min="10" step="0.1" value="10" inputmode="decimal">
+                <input id="popup-amount" type="number" min="0" step="0.01" value="0" inputmode="decimal" style="display:none;">
                 <div class="share-count-help" id="popup-actions-help"></div>
                 <div class="popup-balance-warning" id="popup-balance-warning"></div>
             </div>
@@ -430,6 +447,7 @@
 <style>.hidden { display:none; }</style>
 <script>
 let currentPlan = null;
+let purchaseMode = 'actions';
 const soldeClient = <%= solde %>;
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -506,11 +524,56 @@ function ouvrirPopup(plan) {
     const actionsInput = document.getElementById('popup-actions');
     actionsInput.min = plan.actionsMinimum;
     actionsInput.value = plan.actionsMinimum;
+    document.getElementById('popup-amount').value =
+        (plan.actionsMinimum * plan.prixAction).toFixed(2);
+    setPurchaseMode('actions');
     document.getElementById('popup-actions-help').textContent =
         `1 action = ${plan.prixAction.toLocaleString('fr-FR')} FCFA · minimum ${plan.actionsMinimum} actions · ${plan.achatsRestants} achat(s) restant(s)`;
     updatePurchaseSummary();
     document.getElementById('investPopup').style.display = 'flex';
 }
+
+function parseDecimal(value) {
+    const normalized = String(value ?? '').trim().replace(',', '.');
+    return normalized ? Number(normalized) : NaN;
+}
+
+function roundActions(value) {
+    return Math.round(value * 10000) / 10000;
+}
+
+function setPurchaseMode(mode) {
+    purchaseMode = mode;
+    document.querySelectorAll('.purchase-mode-btn').forEach((button) => {
+        button.classList.toggle('active', button.dataset.mode === mode);
+    });
+    const actionsInput = document.getElementById('popup-actions');
+    const amountInput = document.getElementById('popup-amount');
+    const actionsLabel = document.getElementById('popup-actions-label');
+    if (mode === 'amount') {
+        actionsInput.style.display = 'none';
+        amountInput.style.display = 'block';
+        actionsLabel.textContent = 'Montant souhaité en FCFA';
+        actionsLabel.htmlFor = 'popup-amount';
+    } else {
+        actionsInput.style.display = 'block';
+        amountInput.style.display = 'none';
+        actionsLabel.textContent = "Nombre d'actions";
+        actionsLabel.htmlFor = 'popup-actions';
+    }
+}
+
+document.querySelectorAll('.purchase-mode-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+        const currentAmount = document.getElementById('popup-prix').textContent
+            .replace(/[^\d,.-]/g, '').replace(',', '.');
+        if (button.dataset.mode === 'amount' && currentAmount && currentAmount !== '-') {
+            document.getElementById('popup-amount').value = currentAmount;
+        }
+        setPurchaseMode(button.dataset.mode);
+        updatePurchaseSummary();
+    });
+});
 
 function rateForAmount(amount) {
     const tier = currentPlan.strategie.find(item =>
@@ -522,32 +585,45 @@ function rateForAmount(amount) {
 function updatePurchaseSummary() {
     if (!currentPlan) return;
     const actionsInput = document.getElementById('popup-actions');
-    const rawActions = actionsInput.value.trim();
+    const amountInput = document.getElementById('popup-amount');
+    const rawValue = purchaseMode === 'amount' ? amountInput.value.trim() : actionsInput.value.trim();
     const balanceWarning = document.getElementById('popup-balance-warning');
     const confirmButton = document.getElementById('confirmerInvestBtn');
 
-    // Do not force the minimum while the user is editing. Mobile keyboards
-    // temporarily produce "1" or an empty value when replacing "10" with "30".
-    if (!rawActions) {
+    if (!rawValue) {
         document.getElementById('popup-actions-help').textContent =
-            `Saisissez au moins ${currentPlan.actionsMinimum} actions`;
+            purchaseMode === 'amount'
+                ? 'Saisissez un montant en FCFA'
+                : `Saisissez au moins ${currentPlan.actionsMinimum} actions`;
         balanceWarning.textContent = '';
         balanceWarning.style.display = 'none';
         confirmButton.disabled = true;
         return;
     }
 
-    const actions = parseFloat(rawActions.replace(',', '.'));
-    if (!Number.isFinite(actions) || actions < 1) {
+    let actions;
+    let montant;
+    if (purchaseMode === 'amount') {
+        montant = parseDecimal(rawValue);
+        actions = Number.isFinite(montant) ? roundActions(montant / currentPlan.prixAction) : NaN;
+    } else {
+        actions = parseDecimal(rawValue);
+        montant = Number.isFinite(actions) ? actions * currentPlan.prixAction : NaN;
+    }
+
+    if (!Number.isFinite(actions) || !Number.isFinite(montant) || actions < 1 || montant <= 0) {
         document.getElementById('popup-actions-help').textContent =
-            `Saisissez un nombre d'actions valide (minimum ${currentPlan.actionsMinimum})`;
+            purchaseMode === 'amount'
+                ? 'Saisissez un montant FCFA valide'
+                : `Saisissez un nombre d'actions valide (minimum ${currentPlan.actionsMinimum})`;
         balanceWarning.textContent = '';
         balanceWarning.style.display = 'none';
         confirmButton.disabled = true;
         return;
     }
 
-    const montant = actions * currentPlan.prixAction;
+    actionsInput.value = actions;
+    if (purchaseMode === 'actions') amountInput.value = montant.toFixed(2);
     const taux = rateForAmount(montant);
     const gainJournalier = montant * taux / 100;
     const gainTotal = gainJournalier * currentPlan.duree;
@@ -578,6 +654,7 @@ function updatePurchaseSummary() {
 }
 
 document.getElementById('popup-actions').addEventListener('input', updatePurchaseSummary);
+document.getElementById('popup-amount').addEventListener('input', updatePurchaseSummary);
 
 function fermerPopup() { document.getElementById('investPopup').style.display = 'none'; }
 
