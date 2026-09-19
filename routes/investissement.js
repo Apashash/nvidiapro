@@ -105,18 +105,21 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
     let rendementJournalier;
 
     if (isVariableSharePlan) {
-      const requestedActions = Number(req.body.actions);
+      const rawActions = String(req.body.actions ?? '').trim().replace(',', '.');
+      const requestedActions = Number(rawActions);
       const actionsMinimum = Math.max(1, parseInt(plan.actions_minimum, 10) || 1);
       const prixAction = parseFloat(plan.prix_action);
 
-      if (!Number.isInteger(requestedActions) || requestedActions < actionsMinimum) {
+      if (!/^\d+(?:\.\d{1,4})?$/.test(rawActions)
+          || !Number.isFinite(requestedActions)
+          || requestedActions < actionsMinimum) {
         return res.json({
           success: false,
-          message: `Le minimum est de ${actionsMinimum} actions pour ce plan.`,
+          message: `Saisissez au moins ${actionsMinimum} actions, avec au maximum 4 décimales.`,
         });
       }
 
-      nombreActions = requestedActions;
+      nombreActions = Math.round(requestedActions * 10000) / 10000;
       montant = Math.round(prixAction * nombreActions * 100) / 100;
       rendementJournalier = rateForAmount(montant, plan.strategie_json);
     } else {

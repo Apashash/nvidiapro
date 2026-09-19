@@ -352,7 +352,7 @@
         <div class="popup-body">
             <div class="share-count-box">
                 <label for="popup-actions">Nombre d'actions</label>
-                <input id="popup-actions" type="number" min="10" step="1" value="10" inputmode="numeric">
+                <input id="popup-actions" type="number" min="10" step="0.1" value="10" inputmode="decimal">
                 <div class="share-count-help" id="popup-actions-help"></div>
                 <div class="popup-balance-warning" id="popup-balance-warning"></div>
             </div>
@@ -537,10 +537,10 @@ function updatePurchaseSummary() {
         return;
     }
 
-    const actions = parseInt(rawActions, 10);
-    if (!Number.isInteger(actions) || actions < 1) {
+    const actions = parseFloat(rawActions.replace(',', '.'));
+    if (!Number.isFinite(actions) || actions < 1) {
         document.getElementById('popup-actions-help').textContent =
-            `Saisissez un nombre entier d'actions (minimum ${currentPlan.actionsMinimum})`;
+            `Saisissez un nombre d'actions valide (minimum ${currentPlan.actionsMinimum})`;
         balanceWarning.textContent = '';
         balanceWarning.style.display = 'none';
         confirmButton.disabled = true;
@@ -587,7 +587,7 @@ function showPlanLockedMsg() {
 
 document.getElementById('confirmerInvestBtn').addEventListener('click', function() {
     if (!currentPlan) return;
-    const actions = parseInt(document.getElementById('popup-actions').value, 10);
+    const actions = parseFloat(document.getElementById('popup-actions').value.replace(',', '.'));
     this.disabled = true; this.textContent = 'Traitement...';
     fetch('/acheter-action', {
         method: 'POST',
