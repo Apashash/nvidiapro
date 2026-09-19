@@ -39,9 +39,9 @@ router.get('/', requireAuth, async (req, res) => {
       "SELECT p.*, u.nom FROM posts p LEFT JOIN utilisateurs u ON p.user_id = u.id WHERE p.statut = 'valide' ORDER BY p.date_creation DESC LIMIT 10"
     );
 
-    // 2 plans VIP actifs pour la section aperçu du dashboard
+    // 2 plans du marché actifs pour la section aperçu du dashboard
     const [plans] = await db.query(
-      "SELECT * FROM planinvestissement WHERE COALESCE(bloque, false) = false ORDER BY id ASC LIMIT 2"
+      "SELECT * FROM planinvestissement WHERE COALESCE(bloque, false) = false AND prix_action IS NOT NULL ORDER BY id ASC LIMIT 2"
     );
 
     const devise = 'FCFA';

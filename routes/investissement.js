@@ -3,6 +3,12 @@ const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { getParams } = require('../services/params');
+const {
+  parseStrategy,
+  rateForAmount,
+  lowestRate,
+  highestRate,
+} = require('../services/investmentStrategy');
 
 router.get('/investissement', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
@@ -12,14 +18,23 @@ router.get('/investissement', requireAuth, async (req, res) => {
 
     const menu_actif = ['vip', 'commande'].includes(req.query.menu) ? req.query.menu : 'vip';
 
-    const [plans] = await db.query('SELECT *, COALESCE(bloque, false) as bloque FROM planinvestissement ORDER BY id ASC');
+    const [plans] = await db.query(
+      'SELECT *, COALESCE(bloque, false) as bloque FROM planinvestissement WHERE prix_action IS NOT NULL ORDER BY id ASC'
+    );
     const plans_corriges = [];
     const seenIds = new Set();
     for (const plan of plans) {
       if (!seenIds.has(plan.id)) {
         seenIds.add(plan.id);
-        plan.revenu_journalier = (plan.prix * plan.rendement_journalier) / 100;
+        plan.prix_action = parseFloat(plan.prix_action);
+        plan.actions_minimum = Math.max(1, parseInt(plan.actions_minimum, 10) || 1);
+        plan.prix = plan.prix_action * plan.actions_minimum;
+        plan.strategie = parseStrategy(plan.strategie_json);
+        plan.taux_minimum = lowestRate(plan.strategie);
+        plan.taux_maximum = highestRate(plan.strategie);
+        plan.revenu_journalier = (plan.prix * rateForAmount(plan.prix, plan.strategie)) / 100;
         plan.revenu_total = plan.revenu_journalier * plan.duree_jours;
+        plan.minimum_montant = plan.prix;
         plans_corriges.push(plan);
       }
     }
@@ -67,13 +82,36 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
     const [[plan]] = await db.query('SELECT * FROM planinvestissement WHERE id = ?', [plan_id]);
     if (!plan) return res.json({ success: false, message: 'Plan introuvable' });
     if (plan.bloque) return res.json({ success: false, message: "Ce plan n'est pas encore disponible, il sera bientôt disponible dans le marché ! Profitez des plans actifs actuellement." });
-    const montant = parseFloat(plan.prix);
+    const isVariableSharePlan = plan.prix_action != null;
+    let nombreActions = 1;
+    let montant;
+    let rendementJournalier;
+
+    if (isVariableSharePlan) {
+      const requestedActions = Number(req.body.actions);
+      const actionsMinimum = Math.max(1, parseInt(plan.actions_minimum, 10) || 1);
+      const prixAction = parseFloat(plan.prix_action);
+
+      if (!Number.isInteger(requestedActions) || requestedActions < actionsMinimum) {
+        return res.json({
+          success: false,
+          message: `Le minimum est de ${actionsMinimum} actions pour ce plan.`,
+        });
+      }
+
+      nombreActions = requestedActions;
+      montant = Math.round(prixAction * nombreActions * 100) / 100;
+      rendementJournalier = rateForAmount(montant, plan.strategie_json);
+    } else {
+      montant = parseFloat(plan.prix);
+      rendementJournalier = parseFloat(plan.rendement_journalier);
+    }
 
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
     if (solde < montant) return res.json({ success: false, message: 'Solde insuffisant' });
 
-    const gain_journalier = plan.prix * (plan.rendement_journalier / 100);
+    const gain_journalier = Math.round(montant * (rendementJournalier / 100) * 100) / 100;
     const duree = parseInt(plan.duree_jours);
 
     const conn = await db.getConnection();
@@ -81,8 +119,8 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
       await conn.beginTransaction();
 
       await conn.query(
-        "INSERT INTO commandes (user_id, plan_id, montant, gain_journalier, date_debut, date_fin) VALUES (?, ?, ?, ?, NOW() + INTERVAL '7 hours', NOW() + INTERVAL '7 hours' + (? || ' days')::INTERVAL)",
-        [user_id, plan_id, montant, gain_journalier, duree]
+        "INSERT INTO commandes (user_id, plan_id, montant, gain_journalier, nombre_actions, date_debut, date_fin) VALUES (?, ?, ?, ?, ?, NOW() + INTERVAL '7 hours', NOW() + INTERVAL '7 hours' + (? || ' days')::INTERVAL)",
+        [user_id, plan_id, montant, gain_journalier, nombreActions, duree]
       );
       await conn.query('UPDATE soldes SET solde = solde - ? WHERE user_id = ?', [montant, user_id]);
 
@@ -119,7 +157,15 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
       }
 
       await conn.commit();
-      res.json({ success: true, plan_name: plan.nom, montant, gain_journalier, duree });
+      res.json({
+        success: true,
+        plan_name: plan.nom,
+        montant,
+        nombre_actions: nombreActions,
+        rendement_journalier: rendementJournalier,
+        gain_journalier,
+        duree,
+      });
     } catch (e) {
       await conn.rollback();
       throw e;

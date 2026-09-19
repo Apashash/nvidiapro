@@ -624,23 +624,25 @@
 
         <% if (typeof plans !== 'undefined' && plans && plans.length > 0) { %>
             <% plans.forEach(function(plan) {
-                const prix   = parseFloat(plan.prix || 0);
-                const taux   = parseFloat(plan.rendement_journalier || 0);
+                const prixAction = parseFloat(plan.prix_action || 0);
+                const actionsMin = parseInt(plan.actions_minimum || 1, 10);
+                const prix   = prixAction ? prixAction * actionsMin : parseFloat(plan.prix || 0);
+                const taux   = prixAction ? 5 : parseFloat(plan.rendement_journalier || 0);
                 const gain_j = Math.round(prix * taux / 100);
                 const duree  = parseInt(plan.duree_jours || 0);
                 const total  = gain_j * duree;
             %>
             <div class="mini-plan-card">
                 <div class="mini-plan-img">
-                    <img src="/images/dangote-logo.png" alt="<%= plan.nom %>">
+                    <img src="<%= plan.image_url || '/images/dangote-logo.png' %>" alt="<%= plan.nom %>">
                     <div class="mini-plan-badge"><%= duree %> Jours</div>
                 </div>
                 <div class="mini-plan-body">
                     <div class="mini-plan-name"><%= plan.nom %></div>
                     <div class="mini-plan-stats">
                         <div>
-                            <div class="mini-stat-val"><%= gain_j.toLocaleString('fr-FR') %> FCFA</div>
-                            <div class="mini-stat-lbl">Gain / jour</div>
+                            <div class="mini-stat-val"><%= prixAction ? '5–20%' : gain_j.toLocaleString('fr-FR') + ' FCFA' %></div>
+                            <div class="mini-stat-lbl"><%= prixAction ? 'Taux quotidien' : 'Gain / jour' %></div>
                         </div>
                         <div>
                             <div class="mini-stat-val"><%= total.toLocaleString('fr-FR') %> FCFA</div>

@@ -164,6 +164,24 @@
         }
         .btn-confirm:hover { transform:translateY(-2px); }
 
+        .share-count-box {
+            background:#FBF5EC; border:1px solid #E8D5B0; border-radius:14px;
+            padding:14px; margin-bottom:18px;
+        }
+        .share-count-box label {
+            display:block; font-size:12px; font-weight:700; color:#7D5A38;
+            margin-bottom:7px;
+        }
+        .share-count-box input {
+            width:100%; border:1px solid #E8D5B0; border-radius:10px;
+            padding:11px 12px; font:600 15px 'Poppins',sans-serif; color:#3D2B1F;
+            background:#fff; outline:none;
+        }
+        .share-count-box input:focus { border-color:#C47D1E; }
+        .share-count-help {
+            font-size:11px; color:#A87D50; margin-top:7px; line-height:1.45;
+        }
+
         /* Insufficient balance */
         .floater-overlay {
             display:none; position:fixed; inset:0;
@@ -219,23 +237,23 @@
                     <% plans.forEach(function(plan, idx) { %>
                     <div class="plan-card<%= plan.bloque ? ' locked' : '' %>">
                         <div class="plan-image-wrap">
-                            <img src="/images/dangote-logo.png" alt="<%= plan.nom %>">
+                            <img src="<%= plan.image_url || '/images/dangote-logo.png' %>" alt="<%= plan.nom %>">
                             <div class="plan-duration-badge"><%= plan.duree_jours %> Jours</div>
                         </div>
                         <div class="plan-body">
                             <div class="plan-name"><%= plan.nom %></div>
                             <div class="plan-stats">
                                 <div class="stat-cell">
-                                    <div class="stat-val"><%= plan.revenu_journalier.toLocaleString() %> FCFA</div>
-                                    <div class="stat-lbl">Revenu quotidien</div>
+                                    <div class="stat-val"><%= plan.prix_action.toLocaleString('fr-FR') %> FCFA</div>
+                                    <div class="stat-lbl">Prix / action</div>
                                 </div>
                                 <div class="stat-cell">
-                                    <div class="stat-val"><%= plan.revenu_total.toLocaleString() %></div>
-                                    <div class="stat-lbl">Revenu total</div>
+                                    <div class="stat-val"><%= plan.taux_minimum %>–<%= plan.taux_maximum %>%</div>
+                                    <div class="stat-lbl">Gain quotidien</div>
                                 </div>
                             </div>
                             <div class="plan-footer">
-                                <div class="plan-price">Prix : <strong><%= plan.prix.toLocaleString() %> FCFA</strong></div>
+                                <div class="plan-price">Minimum : <strong><%= plan.prix.toLocaleString('fr-FR') %> FCFA</strong></div>
                                 <% if (plan.bloque) { %>
                                 <button class="btn-invest btn-invest-locked" type="button" onclick="showPlanLockedMsg()">
                                     Investir
@@ -246,9 +264,11 @@
                                     data-plan-id="<%= plan.id %>"
                                     data-nom="<%= plan.nom %>"
                                     data-prix="<%= plan.prix %>"
-                                    data-gain-journalier="<%= plan.revenu_journalier %>"
+                                    data-prix-action="<%= plan.prix_action %>"
+                                    data-actions-minimum="<%= plan.actions_minimum %>"
+                                    data-strategie='<%- JSON.stringify(plan.strategie) %>'
                                     data-duree="<%= plan.duree_jours %>"
-                                    data-gain-total="<%= plan.revenu_total %>">
+                                    data-gain-journalier="<%= plan.revenu_journalier %>">
                                     Investir
                                 </button>
                                 <% } %>
@@ -275,7 +295,12 @@
                             <div class="order-img"><img src="<%= cmd.plan_image || '/images/dangote-logo.png' %>" alt="<%= cmd.plan_nom %>"></div>
                             <div>
                                 <div class="order-name"><%= cmd.plan_nom %></div>
-                                <div class="order-amount">Montant investi : <strong><%= parseFloat(cmd.montant).toLocaleString() %> FCFA</strong></div>
+                            <div class="order-amount">
+                                Montant investi : <strong><%= parseFloat(cmd.montant).toLocaleString('fr-FR') %> FCFA</strong>
+                                <% if (cmd.nombre_actions && Number(cmd.nombre_actions) > 1) { %>
+                                    · <strong><%= cmd.nombre_actions %> actions</strong>
+                                <% } %>
+                            </div>
                             </div>
                         </div>
                         <div class="progress-row">
@@ -312,6 +337,11 @@
             <button class="popup-close-btn" onclick="fermerPopup()">&times;</button>
         </div>
         <div class="popup-body">
+            <div class="share-count-box">
+                <label for="popup-actions">Nombre d'actions</label>
+                <input id="popup-actions" type="number" min="10" step="1" value="10" inputmode="numeric">
+                <div class="share-count-help" id="popup-actions-help"></div>
+            </div>
             <div class="popup-grid">
                 <div class="popup-stat">
                     <div class="popup-stat-val" id="popup-prix">0 FCFA</div>
@@ -342,7 +372,7 @@
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <h3 style="color:#c8820a;font-size:1.25rem;margin-bottom:8px;">Achat effectué avec succès !</h3>
-        <p id="success-plan-name" style="font-weight:700;font-size:1.05rem;margin-bottom:6px;color:#333;"></p>
+            <p id="success-plan-name" style="font-weight:700;font-size:1.05rem;margin-bottom:6px;color:#333;"></p>
         <p style="color:#666;font-size:0.93rem;margin-bottom:20px;">Votre investissement est maintenant actif. Les gains seront crédités quotidiennement.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px;">
             <div style="background:#fdf5e6;border-radius:10px;padding:12px;">
@@ -442,8 +472,11 @@ document.querySelectorAll('.btn-invest:not(.btn-invest-locked)').forEach(btn => 
     btn.addEventListener('click', function() {
         currentPlan = {
             id: this.dataset.planId, nom: this.dataset.nom,
-            prix: parseInt(this.dataset.prix), gainJournalier: this.dataset.gainJournalier,
-            duree: this.dataset.duree, gainTotal: this.dataset.gainTotal
+            prix: parseFloat(this.dataset.prix),
+            prixAction: parseFloat(this.dataset.prixAction),
+            actionsMinimum: parseInt(this.dataset.actionsMinimum, 10),
+            strategie: JSON.parse(this.dataset.strategie),
+            duree: parseInt(this.dataset.duree, 10)
         };
         if (soldeClient < currentPlan.prix) {
             document.getElementById('insufficientBalanceFloater').style.display = 'flex';
@@ -453,12 +486,42 @@ document.querySelectorAll('.btn-invest:not(.btn-invest-locked)').forEach(btn => 
 
 function ouvrirPopup(plan) {
     document.getElementById('popup-titre').textContent = plan.nom;
-    document.getElementById('popup-prix').textContent = plan.prix.toLocaleString() + ' FCFA';
-    document.getElementById('popup-gain-journalier').textContent = parseInt(plan.gainJournalier).toLocaleString() + ' FCFA';
-    document.getElementById('popup-duree').textContent = plan.duree + ' jours';
-    document.getElementById('popup-gain-total').textContent = parseInt(plan.gainTotal).toLocaleString() + ' FCFA';
+    const actionsInput = document.getElementById('popup-actions');
+    actionsInput.min = plan.actionsMinimum;
+    actionsInput.value = plan.actionsMinimum;
+    document.getElementById('popup-actions-help').textContent =
+        `1 action = ${plan.prixAction.toLocaleString('fr-FR')} FCFA · minimum ${plan.actionsMinimum} actions`;
+    updatePurchaseSummary();
     document.getElementById('investPopup').style.display = 'flex';
 }
+
+function rateForAmount(amount) {
+    const tier = currentPlan.strategie.find(item =>
+        amount >= Number(item.min) && (item.max == null || amount <= Number(item.max))
+    );
+    return tier ? Number(tier.rate) : Number(currentPlan.strategie[currentPlan.strategie.length - 1].rate);
+}
+
+function updatePurchaseSummary() {
+    if (!currentPlan) return;
+    const actions = Math.max(currentPlan.actionsMinimum, parseInt(document.getElementById('popup-actions').value, 10) || 0);
+    document.getElementById('popup-actions').value = actions;
+    const montant = actions * currentPlan.prixAction;
+    const taux = rateForAmount(montant);
+    const gainJournalier = montant * taux / 100;
+    const gainTotal = gainJournalier * currentPlan.duree;
+    document.getElementById('popup-prix').textContent = montant.toLocaleString('fr-FR') + ' FCFA';
+    document.getElementById('popup-gain-journalier').textContent =
+        gainJournalier.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+    document.getElementById('popup-duree').textContent = currentPlan.duree + ' jours';
+    document.getElementById('popup-gain-total').textContent =
+        gainTotal.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+    document.getElementById('popup-actions-help').textContent =
+        `${actions} action(s) · ${currentPlan.prixAction.toLocaleString('fr-FR')} FCFA/action · taux ${taux}%/jour`;
+    document.getElementById('confirmerInvestBtn').disabled = montant > soldeClient;
+}
+
+document.getElementById('popup-actions').addEventListener('input', updatePurchaseSummary);
 
 function fermerPopup() { document.getElementById('investPopup').style.display = 'none'; }
 
@@ -468,19 +531,22 @@ function showPlanLockedMsg() {
 
 document.getElementById('confirmerInvestBtn').addEventListener('click', function() {
     if (!currentPlan) return;
+    const actions = parseInt(document.getElementById('popup-actions').value, 10);
     this.disabled = true; this.textContent = 'Traitement...';
     fetch('/acheter-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'plan_id=' + currentPlan.id
+        body: new URLSearchParams({ plan_id: currentPlan.id, actions })
     })
     .then(res => res.json())
     .then(data => {
         if (data.success) {
             fermerPopup();
-            document.getElementById('success-plan-name').textContent = data.plan_name;
-            document.getElementById('success-montant').textContent = parseInt(data.montant).toLocaleString() + ' FCFA';
-            document.getElementById('success-gain').textContent = parseInt(data.gain_journalier).toLocaleString() + ' FCFA';
+            document.getElementById('success-plan-name').textContent =
+                data.plan_name + ' · ' + data.nombre_actions + ' action(s)';
+            document.getElementById('success-montant').textContent = parseFloat(data.montant).toLocaleString('fr-FR') + ' FCFA';
+            document.getElementById('success-gain').textContent =
+                parseFloat(data.gain_journalier).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
             document.getElementById('successPopup').style.display = 'flex';
         } else {
             showAlert(data.message || "Erreur lors de l'investissement", 'error');

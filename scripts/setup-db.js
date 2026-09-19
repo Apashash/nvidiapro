@@ -62,7 +62,10 @@ CREATE TABLE IF NOT EXISTS planinvestissement (
   rendement_journalier NUMERIC(8,4),
   image_url VARCHAR(500),
   description TEXT,
-  bloque BOOLEAN DEFAULT FALSE
+  bloque BOOLEAN DEFAULT FALSE,
+  prix_action NUMERIC(15,2),
+  actions_minimum INTEGER DEFAULT 1,
+  strategie_json TEXT
 );
 
 CREATE TABLE IF NOT EXISTS commandes (
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS commandes (
   plan_id INTEGER REFERENCES planinvestissement(id),
   montant NUMERIC(15,2),
   gain_journalier NUMERIC(15,2),
+  nombre_actions INTEGER DEFAULT 1,
   date_debut TIMESTAMP DEFAULT NOW(),
   date_fin TIMESTAMP,
   date_creation TIMESTAMP DEFAULT NOW(),
@@ -199,6 +203,29 @@ VALUES
 ON CONFLICT (nom) DO NOTHING;
 `;
 
+// New market plans use a variable number of shares. `prix` remains the
+// minimum investment for compatibility with the existing admin/dashboard
+// views; the purchase route uses prix_action and strategie_json.
+const SEED_MARKET_PLANS = `
+INSERT INTO planinvestissement
+  (nom, prix, duree_jours, rendement_journalier, image_url, description,
+   prix_action, actions_minimum, strategie_json)
+VALUES
+  ('Dangote Refinery — IPO', 2250, 125, 5, '/images/dashboard-hero-1.jpeg',
+   '1 action = 225 FCFA — minimum 10 actions',
+   225, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
+  ('Dangote Cement — DANGCEM', 4500, 125, 5, '/images/dashboard-hero-3.jpeg',
+   '1 action = 450 FCFA — minimum 10 actions',
+   450, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
+  ('Dangote Sugar — DANGSUGAR', 300, 125, 5, '/images/dashboard-hero-5.jpeg',
+   '1 action = 30 FCFA — minimum 10 actions',
+   30, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
+  ('NASCON', 690, 125, 5, '/images/dashboard-hero-4.jpeg',
+   '1 action = 69 FCFA — minimum 10 actions',
+   69, 10, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]')
+ON CONFLICT (nom) DO NOTHING;
+`;
+
 async function setup() {
   const client = await pool.connect();
   try {
@@ -209,6 +236,10 @@ async function setup() {
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false`,
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS retrait_bloque BOOLEAN DEFAULT false`,
       `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS bloque BOOLEAN DEFAULT false`,
+      `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS prix_action NUMERIC(15,2)`,
+      `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS actions_minimum INTEGER DEFAULT 1`,
+      `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS strategie_json TEXT`,
+      `ALTER TABLE commandes ADD COLUMN IF NOT EXISTS nombre_actions INTEGER DEFAULT 1`,
       `ALTER TABLE historique_revenus ADD COLUMN IF NOT EXISTS niveau INTEGER`,
       `CREATE UNIQUE INDEX IF NOT EXISTS historique_revenus_salaire_niveau_uidx ON historique_revenus(user_id, niveau) WHERE type='salaire'`,
       `CREATE UNIQUE INDEX IF NOT EXISTS codes_utilises_user_code_uidx ON codes_utilises (user_id, code)`,
@@ -218,7 +249,8 @@ async function setup() {
 
     console.log('Seeding investment plans…');
     const res = await client.query(SEED_PLANS);
-    console.log(`✓ Plans seeded (${res.rowCount} inserted)`);
+    const marketRes = await client.query(SEED_MARKET_PLANS);
+    console.log(`✓ Plans seeded (${res.rowCount + marketRes.rowCount} inserted)`);
 
     console.log('\nDatabase setup complete. Run `node server.js` to start the app.');
   } catch (err) {
