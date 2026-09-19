@@ -1,3 +1,3 @@
-- [Agricultural theme redesign](agricultural-theme.md) — all 16 views + menu.ejs redesigned to warm cream/amber palette; wheat icon 5-tab nav; logic and French text intact.
+- [Corporate navy/red theme](agricultural-theme.md) — all EJS views share a Dangote-inspired navy/red/white visual layer while preserving logic and French content.
 - [Supabase DB connection](supabase-db-connection.md) — app's real DB is Supabase via SUPABASE_DATABASE_URL secret, takes precedence over Replit's DATABASE_URL.
 - [AshtechPay collect API integration](ashtechpay-integration.md) — notify_url (not callback_url) field, plain XAF/XOF currency codes, OTP retry flow with ussd_code, Wave response quirks.

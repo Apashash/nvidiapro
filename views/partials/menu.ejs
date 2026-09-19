@@ -1,12 +1,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
     :root {
-        --amber: #C47D1E;
-        --amber-dark: #A0631A;
+        --amber: #D60000;
+        --amber-dark: #B90000;
         --nav-bg: #FFFFFF;
-        --nav-inactive: #A87D50;
-        --nav-active: #C47D1E;
-        --nav-border: #E8D5B0;
+        --nav-inactive: #77777C;
+        --nav-active: #D60000;
+        --nav-border: #14105F;
     }
     .bottom-nav {
         position: fixed;
@@ -20,7 +20,7 @@
         align-items: center;
         padding: 8px 0 12px;
         z-index: 9999;
-        box-shadow: 0 -4px 20px rgba(196,125,30,0.10);
+        box-shadow: 0 -4px 20px rgba(20,16,95,0.12);
     }
     .nav-item {
         flex: 1;
@@ -31,7 +31,7 @@
         text-decoration: none;
         font-size: 10px;
         padding: 4px 0;
-        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-family: 'Montserrat', Arial, sans-serif;
         font-weight: 500;
         transition: color 0.2s;
         gap: 3px;
@@ -52,16 +52,16 @@
         width: 54px;
         height: 54px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #D4921F, #B07018);
+        background: #14105F;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 16px rgba(196,125,30,0.45);
+        box-shadow: 0 4px 16px rgba(20,16,95,0.35);
         border: 3px solid #fff;
     }
     .nav-center-btn i { font-size: 22px; color: #fff; }
-    .nav-center span { font-size: 10px; color: var(--nav-inactive); font-weight: 500; font-family: 'Inter', 'Segoe UI', sans-serif; }
-    .nav-center.active .nav-center-btn { background: linear-gradient(135deg, #C47D1E, #8B5E0F); }
+    .nav-center span { font-size: 10px; color: var(--nav-inactive); font-weight: 500; font-family: 'Montserrat', Arial, sans-serif; }
+    .nav-center.active .nav-center-btn { background: #14105F; }
     .nav-center.active span { color: var(--nav-active); font-weight: 700; }
     body { padding-bottom: 80px !important; }
 </style>
