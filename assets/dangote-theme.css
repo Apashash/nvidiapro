@@ -677,6 +677,331 @@ div[style*="background:#B07018"] {
   color: #fff !important;
 }
 
+/* Full legacy-palette sweep across every page */
+label,
+.form-label,
+.balance-label,
+.ref-label,
+.field-label,
+.input-label,
+.info-label,
+.detail-label,
+.section-label,
+.setting-label,
+.popup-stat-lbl,
+.mini-stat-lbl,
+.stat-lbl {
+  color: var(--brand-navy) !important;
+}
+
+.form-subtitle,
+.balance-cur,
+.revenue-label,
+.powered-by,
+.loading-wrap p,
+.loading-wrap small,
+.ppc-phone span,
+.ppc-note,
+.otp-instructions,
+.empty-msg,
+.empty-title,
+.order-amount,
+.progress-labels,
+.vip-label,
+.step-body p,
+.sec-desc,
+.profile-subtitle,
+.history-date,
+.transaction-date,
+.menu-description,
+.faq-answer,
+.commission-note,
+.share-btn,
+.hint,
+.helper-text,
+.muted {
+  color: var(--brand-muted) !important;
+}
+
+.form-title,
+.balance-val,
+.ppc-title,
+.otp-card h3,
+.order-name,
+.vip-title,
+.step-body h4,
+.profile-name,
+.history-title,
+.transaction-title,
+.faq-question,
+.commission-title,
+.setting-title,
+.menu-txt,
+.lc-title {
+  color: var(--brand-navy) !important;
+}
+
+.info-card h3,
+.info-card li::before,
+.powered-by i,
+.ppc-phone i,
+.ppc-note i,
+.otp-card h3 i,
+.faq-arrow,
+.commission-row .pct,
+.login-link a,
+.copy-success,
+.empty-icon {
+  color: var(--brand-red) !important;
+}
+
+.phone-divider,
+.stat-divider,
+.divider hr,
+.menu-item,
+.commission-row,
+.faq-answer,
+.plans-table td,
+.plan-footer,
+.profile-row,
+.history-row,
+.transaction-row {
+  border-color: var(--brand-border) !important;
+}
+
+.choice-card,
+.code-card,
+.salary-card,
+.salary-info,
+.vip-info,
+.faq-card,
+.info-item,
+.commission-card,
+.profile-card,
+.history-card,
+.transaction-card,
+.otp-card,
+.payment-pending-card,
+.popup-stat,
+.step,
+.tip-card,
+.menu-card,
+.settings-card {
+  background: #fff !important;
+  border-color: var(--brand-border) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 5px 18px rgba(20, 16, 95, 0.07) !important;
+}
+
+.choice-card:hover,
+.faq-card.open,
+.profile-row:hover,
+.menu-item:hover {
+  border-color: var(--brand-navy) !important;
+  background: #f7f7f8 !important;
+}
+
+.code-input,
+.otp-input,
+.ref-input,
+.transaction-input,
+.amount-input {
+  background: #fff !important;
+  color: var(--brand-text) !important;
+  border-color: var(--brand-border) !important;
+  border-radius: 2px !important;
+}
+
+.amount-chip,
+.quick-amount,
+.operator-badge,
+.country-badge,
+.info-badge,
+.countdown-box,
+.salary-badge {
+  background: #f4f3ff !important;
+  color: var(--brand-navy) !important;
+  border-color: rgba(20, 16, 95, 0.18) !important;
+  border-radius: 2px !important;
+}
+
+.amount-chip.active,
+.quick-amount.active,
+.choice-card.active {
+  background: var(--brand-navy) !important;
+  color: #fff !important;
+  border-color: var(--brand-navy) !important;
+}
+
+.faq-card.open,
+.faq-question:hover,
+.plans-table tr:nth-child(even) td,
+.info-item {
+  background: #f7f7f8 !important;
+}
+
+.plans-table th,
+.sector-tag,
+.comm-header,
+.salary-header,
+.vip-header {
+  background: var(--brand-navy) !important;
+  color: #fff !important;
+}
+
+.plans-table th *,
+.sector-tag *,
+.comm-header *,
+.salary-header *,
+.vip-header * {
+  color: #fff !important;
+}
+
+.info-item .label,
+.commission-row .pct,
+.faq-arrow {
+  color: var(--brand-red) !important;
+}
+
+.info-item .value,
+.commission-row .level,
+.plans-table td {
+  color: var(--brand-text) !important;
+}
+
+.page-header .back-btn {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #fff !important;
+}
+
+.page-header .back-btn:hover {
+  background: rgba(255, 255, 255, 0.24) !important;
+}
+
+.spinner,
+.ppc-spinner {
+  border-color: #e4e4e8 !important;
+  border-top-color: var(--brand-red) !important;
+}
+
+.ppc-progress-bar,
+.salary-progress,
+.vip-progress,
+.wheel-progress {
+  background: #e7e7eb !important;
+}
+
+.ppc-progress-fill,
+.salary-progress-fill,
+.vip-progress-fill,
+.wheel-progress-fill {
+  background: var(--brand-red) !important;
+}
+
+.wheel-container,
+.slot-machine,
+.slot-window,
+.salary-hero,
+.team-hero,
+.gift-hero {
+  border-color: var(--brand-border) !important;
+}
+
+.wheel-pointer,
+.wheel-center,
+.slot-action,
+.salary-action,
+.gift-action,
+.redeem-btn,
+.withdraw-btn,
+.deposit-btn,
+.copy-btn,
+.share-main-btn {
+  background: var(--brand-red) !important;
+  color: #fff !important;
+  border-color: var(--brand-red) !important;
+}
+
+.topbar,
+.sidebar-header,
+.admin-header,
+.user-header {
+  background: var(--brand-navy) !important;
+}
+
+.topbar-title,
+.topbar i,
+.sidebar-header *,
+.admin-header *,
+.user-header * {
+  color: #fff !important;
+}
+
+.notif-dropdown-header,
+.admin-card-header,
+.user-card-header {
+  background: #f4f3ff !important;
+  color: var(--brand-navy) !important;
+}
+
+.notif-item:hover,
+.admin-row:hover,
+.user-row:hover {
+  background: #f7f7f8 !important;
+}
+
+/* Inline declarations left by the former amber theme */
+[style*="color:#A87D50"],
+[style*="color: #A87D50"],
+[style*="color:#7D5A38"],
+[style*="color: #7D5A38"],
+[style*="color:#3D2B1F"],
+[style*="color: #3D2B1F"],
+[style*="color:#B09070"],
+[style*="color: #B09070"],
+[style*="color:#C4A07A"],
+[style*="color: #C4A07A"] {
+  color: var(--brand-muted) !important;
+}
+
+[style*="color:#C47D1E"],
+[style*="color: #C47D1E"],
+[style*="color:#C9A84C"],
+[style*="color: #C9A84C"],
+[style*="color:#E8931A"],
+[style*="color: #E8931A"],
+[style*="color:#EA580C"],
+[style*="color: #EA580C"] {
+  color: var(--brand-red) !important;
+}
+
+[style*="border:1px solid #F0E0C8"],
+[style*="border: 1px solid #F0E0C8"],
+[style*="border-color:#E8D5B0"],
+[style*="border-color: #E8D5B0"] {
+  border-color: var(--brand-border) !important;
+}
+
+[style*="background:#FBF5EC"],
+[style*="background: #FBF5EC"],
+[style*="background:#FFF7ED"],
+[style*="background: #FFF7ED"],
+[style*="background:#FFF8F0"],
+[style*="background: #FFF8F0"] {
+  background: #f7f7f8 !important;
+}
+
+[style*="background:#E8931A"],
+[style*="background: #E8931A"],
+[style*="background:#EA580C"],
+[style*="background: #EA580C"],
+[style*="background:#D4921F"],
+[style*="background: #D4921F"],
+[style*="background:#C47D1E"],
+[style*="background: #C47D1E"] {
+  background: var(--brand-red) !important;
+}
+
 @media (min-width: 600px) {
   body:not(.admin-body) {
     background:
