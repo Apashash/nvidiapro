@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "ashtech": {
+      "source": "doc.ashtechpay.com",
+      "sourceType": "well-known",
+      "computedHash": "c6f5b9852658651446f147833acb496be076c7c1760fbfd8c6da46896a9e82a0"
+    }
+  }
+}
