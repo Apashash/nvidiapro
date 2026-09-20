@@ -273,6 +273,7 @@
                 }
             });
         });
+        document.documentElement.classList.remove('gd-language-pending');
     }
 
     function setLanguage(language) {
