@@ -103,6 +103,25 @@
     .plan-meta strong { color:#1a1a1a; }
     .plan-rend { font-size:0.88rem; font-weight:700; margin-bottom:2px; }
     .plan-gain { font-size:0.8rem; color:#555; }
+    .plan-edit-card { background:#fff; border-radius:16px; padding:18px; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+    .plan-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+    .plan-edit-group { display:flex; flex-direction:column; gap:6px; }
+    .plan-edit-group.full { grid-column:1 / -1; }
+    .plan-edit-group label { font-size:0.78rem; color:#555; font-weight:700; }
+    .plan-edit-group input, .plan-edit-group textarea {
+      width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px;
+      padding:11px 14px; font-size:0.9rem; color:#1a1a1a; outline:none; font-family:inherit;
+    }
+    .plan-edit-group textarea { min-height:100px; resize:vertical; }
+    .plan-edit-group input:focus, .plan-edit-group textarea:focus { border-color:#E8931A; }
+    .plan-edit-actions { display:flex; gap:10px; margin-top:4px; }
+    .plan-edit-actions a, .plan-edit-actions button {
+      flex:1; border:none; border-radius:12px; padding:13px; font-size:0.92rem;
+      font-weight:700; cursor:pointer; text-align:center; text-decoration:none;
+    }
+    .plan-edit-cancel { background:#F5F5F0; color:#555; }
+    .plan-edit-save { background:#E8931A; color:#fff; }
+    .plan-edit-save:hover { background:#d4820e; }
 
     .icon-btn { width:36px; height:36px; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
     .icon-btn-edit { background:#EFF6FF; color:#3b82f6; }
@@ -264,6 +283,10 @@
     @media(min-width:600px) {
       .main { padding:20px; }
       .stats-grid { grid-template-columns:repeat(4,1fr); }
+    }
+    @media(max-width:599px) {
+      .plan-edit-grid { grid-template-columns:1fr; }
+      .plan-edit-group.full { grid-column:auto; }
     }
   </style>
   <link rel="stylesheet" href="/assets/dangote-theme.css">
@@ -485,14 +508,7 @@
         <i class="fas <%= p.bloque ? 'fa-lock' : 'fa-lock-open' %>"></i>
       </button>
       <button class="icon-btn icon-btn-edit"
-        data-pid="<%= p.id %>"
-        data-nom="<%- (p.nom||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        data-prix="<%= p.prix %>"
-        data-duree="<%= p.duree_jours %>"
-        data-rend="<%= p.rendement_journalier %>"
-        data-image="<%- (p.image_url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        data-desc="<%- (p.description||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        onclick="openPlanModalBtn(this)">
+        onclick="window.location.href='/adminxyz/plans/<%= p.id %>/edit'">
         <i class="fas fa-pen"></i>
       </button>
       <button class="icon-btn icon-btn-del"
@@ -505,6 +521,52 @@
   </div>
   <% }); %>
   <% if (!plans.length) { %><div class="empty">Aucun plan VIP</div><% } %>
+
+<%# ══════════════════ MODIFIER UN PLAN VIP ══════════════════ %>
+<% } else if (currentPage === 'plan-edit') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-pen"></i></div>
+      <div>
+        <div class="page-title">Modifier le plan</div>
+        <div class="page-count"><%= plan.nom %></div>
+      </div>
+    </div>
+  </div>
+
+  <form class="plan-edit-card" method="POST" action="/adminxyz/plans/<%= plan.id %>/edit">
+    <div class="plan-edit-grid">
+      <div class="plan-edit-group full">
+        <label for="editPlanNom">Nom du plan</label>
+        <input id="editPlanNom" name="nom" type="text" value="<%= plan.nom %>" required>
+      </div>
+      <div class="plan-edit-group">
+        <label for="editPlanPrix">Prix (FCFA)</label>
+        <input id="editPlanPrix" name="prix" type="number" step="100" value="<%= plan.prix %>" required>
+      </div>
+      <div class="plan-edit-group">
+        <label for="editPlanDuree">Durée (jours)</label>
+        <input id="editPlanDuree" name="duree_jours" type="number" min="1" value="<%= plan.duree_jours %>" required>
+      </div>
+      <div class="plan-edit-group">
+        <label for="editPlanRend">Rendement journalier (%)</label>
+        <input id="editPlanRend" name="rendement_journalier" type="number" step="0.01" min="0" value="<%= plan.rendement_journalier %>" required>
+      </div>
+      <div class="plan-edit-group">
+        <label for="editPlanImage">URL de l'image du plan</label>
+        <input id="editPlanImage" name="image_url" type="text" value="<%= plan.image_url || '' %>" placeholder="https://...">
+      </div>
+      <div class="plan-edit-group full">
+        <label for="editPlanDescription">Description</label>
+        <textarea id="editPlanDescription" name="description"><%= plan.description || '' %></textarea>
+      </div>
+    </div>
+    <div class="plan-edit-actions">
+      <a class="plan-edit-cancel" href="/adminxyz/plans">Annuler</a>
+      <button class="plan-edit-save" type="submit">Enregistrer</button>
+    </div>
+  </form>
 
 <%# ══════════════════ UTILISATEURS ══════════════════ %>
 <% } else if (currentPage === 'utilisateurs') { %>
@@ -1235,30 +1297,6 @@
 
 </div><!-- /main -->
 
-<!-- Plan Modal (edit) -->
-<div class="modal-overlay" id="planModal">
-  <div class="modal-box">
-    <h3><i class="fas fa-chart-line" style="color:#22c55e"></i> Modifier le plan</h3>
-    <input type="hidden" id="planId">
-    <label>Nom du plan</label>
-    <input type="text" id="planNom">
-    <label>Prix (FCFA)</label>
-    <input type="number" id="planPrix" step="100">
-    <label>Durée (jours)</label>
-    <input type="number" id="planDuree">
-    <label>Rendement journalier (%)</label>
-    <input type="number" id="planRend" step="0.01">
-    <label>URL de l'image du plan</label>
-    <input type="text" id="planImage" placeholder="https://... (laisser vide pour l'image par défaut)">
-    <label>Description</label>
-    <input type="text" id="planDesc">
-    <div class="modal-btns">
-      <button class="m-cancel" onclick="closeModal('planModal')">Annuler</button>
-      <button class="m-confirm" onclick="savePlan()">Enregistrer</button>
-    </div>
-  </div>
-</div>
-
 <!-- Plan Modal (add) -->
 <div class="modal-overlay" id="addPlanModal">
   <div class="modal-box">
@@ -1554,42 +1592,6 @@ async function saveBalance() {
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 
-// ── Plan edit ───────────────────────────────────────────────────────────
-function openPlanModalBtn(btn) {
-  document.getElementById('planId').value    = btn.dataset.pid;
-  document.getElementById('planNom').value   = btn.dataset.nom;
-  document.getElementById('planPrix').value  = btn.dataset.prix;
-  document.getElementById('planDuree').value = btn.dataset.duree;
-  document.getElementById('planRend').value  = btn.dataset.rend;
-  document.getElementById('planImage').value = btn.dataset.image || '';
-  document.getElementById('planDesc').value  = btn.dataset.desc;
-  openModal('planModal');
-}
-function openPlanModal(id, nom, prix, duree, rend, desc) {
-  document.getElementById('planId').value    = id;
-  document.getElementById('planNom').value   = nom;
-  document.getElementById('planPrix').value  = prix;
-  document.getElementById('planDuree').value = duree;
-  document.getElementById('planRend').value  = rend;
-  document.getElementById('planDesc').value  = desc;
-  openModal('planModal');
-}
-async function savePlan() {
-  const body = new URLSearchParams({
-    action:'update_plan',
-    id: document.getElementById('planId').value,
-    nom: document.getElementById('planNom').value,
-    prix: document.getElementById('planPrix').value,
-    duree_jours: document.getElementById('planDuree').value,
-    rendement_journalier: document.getElementById('planRend').value,
-    image_url: document.getElementById('planImage').value,
-    description: document.getElementById('planDesc').value,
-  });
-  const r = await fetch('/adminxyz/action', { method:'POST', body });
-  const d = await r.json();
-  if (d.success) { closeModal('planModal'); toast('✓ Plan mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
 function openAddPlanModal() { openModal('addPlanModal'); }
 async function addPlan() {
   const body = new URLSearchParams({

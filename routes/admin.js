@@ -192,6 +192,28 @@ router.get('/adminxyz/plans', requireAdminAuth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
+router.get('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
+  try {
+    const [[plan]] = await db.query('SELECT * FROM planinvestissement WHERE id=?', [req.params.id]);
+    if (!plan) return res.status(404).send('Plan non trouvé');
+    res.render('admin', { currentPage: 'plan-edit', pageTitle: 'Modifier le plan', plan });
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.post('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
+  const { nom, prix, duree_jours, rendement_journalier, image_url, description } = req.body;
+  if (!nom || !prix || !duree_jours || !rendement_journalier) {
+    return res.status(400).send('Tous les champs obligatoires doivent être renseignés');
+  }
+  try {
+    await db.query(
+      'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, image_url=?, description=? WHERE id=?',
+      [nom, prix, duree_jours, rendement_journalier, image_url || null, description || '', req.params.id]
+    );
+    res.redirect('/adminxyz/plans');
+  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
 // ── Utilisateurs ───────────────────────────────────────────────────────────────
 router.get('/adminxyz/utilisateurs', requireAdminAuth, async (req, res) => {
   try {
