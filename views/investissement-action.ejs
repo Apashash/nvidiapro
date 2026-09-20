@@ -126,7 +126,7 @@
             <div class="card-title">Préparer votre investissement</div>
             <div class="mode-switch">
                 <button type="button" class="mode-btn active" data-mode="actions">Nombre d'actions</button>
-                <button type="button" class="mode-btn" data-mode="amount">Montant FCFA</button>
+                <button type="button" class="mode-btn" id="amountModeButton" data-mode="amount">Montant FCFA</button>
             </div>
 
             <div id="actionsField">
@@ -134,7 +134,7 @@
                 <input id="actionsInput" type="number" min="<%= plan.actions_minimum %>" step="0.1" value="<%= plan.actions_minimum %>" inputmode="decimal">
             </div>
             <div id="amountField" style="display:none;">
-                <label for="amountInput">Montant souhaité en FCFA</label>
+                <label for="amountInput" id="amountInputLabel">Montant souhaité en FCFA</label>
                 <input id="amountInput" type="number" min="0" step="0.01" value="<%= (plan.prix).toFixed(2) %>" inputmode="decimal">
             </div>
 
@@ -198,8 +198,33 @@ function decimal(value) {
     return normalized ? Number(normalized) : NaN;
 }
 function roundActions(value) { return Math.round(value * 10000) / 10000; }
+function currentCurrency() {
+    return window.GDCurrency ? window.GDCurrency.getCurrency() : 'FCFA';
+}
+function currencyRate() {
+    return window.GDCurrency && Number.isFinite(window.GDCurrency.rate) && window.GDCurrency.rate > 0
+        ? window.GDCurrency.rate
+        : 600;
+}
+function amountFromFcfa(value) {
+    const amount = Number(value) || 0;
+    return currentCurrency() === 'USDT' ? amount / currencyRate() : amount;
+}
+function amountToFcfa(value, currency = currentCurrency()) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return NaN;
+    return currency === 'USDT' ? amount * currencyRate() : amount;
+}
+function inputAmountDecimals(currency = currentCurrency()) {
+    return currency === 'USDT' ? 5 : 2;
+}
+function syncAmountInputLabels() {
+    const currency = currentCurrency();
+    document.getElementById('amountModeButton').textContent = `Montant ${currency}`;
+    document.getElementById('amountInputLabel').textContent = `Montant souhaité en ${currency}`;
+}
 function money(value) {
-    const currency = window.GDCurrency ? window.GDCurrency.getCurrency() : 'FCFA';
+    const currency = currentCurrency();
     const formatted = window.GDCurrency
         ? window.GDCurrency.formatAmount(value, currency)
         : Number(value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
@@ -213,6 +238,7 @@ function rateForAmount(amount) {
 }
 function switchMode(nextMode) {
     mode = nextMode;
+    syncAmountInputLabels();
     document.querySelectorAll('.mode-btn').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
     document.getElementById('actionsField').style.display = mode === 'actions' ? 'block' : 'none';
     document.getElementById('amountField').style.display = mode === 'amount' ? 'block' : 'none';
@@ -231,8 +257,10 @@ function updateSummary() {
         warning.style.display = 'none'; button.disabled = true; return;
     }
 
-    let actions = mode === 'actions' ? decimal(raw) : roundActions(decimal(raw) / plan.prixAction);
-    let amount = mode === 'actions' ? decimal(raw) * plan.prixAction : decimal(raw);
+    let amount = mode === 'actions'
+        ? decimal(raw) * plan.prixAction
+        : amountToFcfa(decimal(raw));
+    let actions = mode === 'actions' ? decimal(raw) : roundActions(amount / plan.prixAction);
     if (!Number.isFinite(actions) || !Number.isFinite(amount) || actions <= 0 || amount <= 0) {
         document.getElementById('helpText').textContent = 'Saisissez une valeur valide.';
         warning.style.display = 'none'; button.disabled = true; return;
@@ -240,7 +268,9 @@ function updateSummary() {
     actions = roundActions(actions);
     amount = Math.round(amount * 100) / 100;
     if (mode === 'amount') actionsInput.value = actions;
-    if (mode === 'actions') amountInput.value = amount.toFixed(2);
+    if (mode === 'actions') {
+        amountInput.value = amountFromFcfa(amount).toFixed(inputAmountDecimals());
+    }
 
     const rate = rateForAmount(amount);
     const daily = amount * rate / 100;
@@ -267,6 +297,11 @@ function showBalanceModal(amount) {
         `Votre solde est de ${money(solde)}. Il vous manque ${money(missing)} pour confirmer.`;
     document.getElementById('balanceModal').style.display = 'flex';
 }
+let displayedCurrency = currentCurrency();
+const initialAmountInput = document.getElementById('amountInput');
+initialAmountInput.value = amountFromFcfa(plan.prix).toFixed(inputAmountDecimals());
+syncAmountInputLabels();
+
 document.querySelectorAll('.mode-btn').forEach(button => button.addEventListener('click', () => switchMode(button.dataset.mode)));
 document.getElementById('actionsInput').addEventListener('input', updateSummary);
 document.getElementById('amountInput').addEventListener('input', updateSummary);
@@ -275,7 +310,8 @@ document.getElementById('closeBalanceModal').addEventListener('click', () => {
 });
 document.getElementById('confirmButton').addEventListener('click', async function() {
     const actions = decimal(document.getElementById('actionsInput').value);
-    const amount = decimal(document.getElementById('summaryAmount').textContent.replace(/[^\d,.-]/g, '').replace(',', '.'));
+    const displayedAmount = decimal(document.getElementById('summaryAmount').textContent.replace(/[^\d,.-]/g, '').replace(',', '.'));
+    const amount = amountToFcfa(displayedAmount);
     this.disabled = true; this.textContent = 'Traitement...';
     try {
         const response = await fetch('/acheter-action', {
@@ -305,7 +341,19 @@ document.getElementById('confirmButton').addEventListener('click', async functio
     }
 });
 
-window.addEventListener('gd-currency-change', updateSummary);
+window.addEventListener('gd-currency-change', event => {
+    const nextCurrency = event.detail && event.detail.currency ? event.detail.currency : currentCurrency();
+    const amountInput = document.getElementById('amountInput');
+    const displayedAmount = decimal(amountInput.value);
+    if (Number.isFinite(displayedAmount)) {
+        const amountFcfa = amountToFcfa(displayedAmount, displayedCurrency);
+        const convertedAmount = nextCurrency === 'USDT' ? amountFcfa / currencyRate() : amountFcfa;
+        amountInput.value = convertedAmount.toFixed(inputAmountDecimals(nextCurrency));
+    }
+    displayedCurrency = nextCurrency;
+    syncAmountInputLabels();
+    updateSummary();
+});
 updateSummary();
 </script>
 </body>
