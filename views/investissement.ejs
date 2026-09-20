@@ -482,6 +482,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 function pad(n) { return n.toString().padStart(2, '0'); }
+function translateDynamic(value) {
+    return window.GDLanguage ? window.GDLanguage.translate(value) : value;
+}
 
 function updateOrderTimers() {
     const now = Date.now();
@@ -503,19 +506,21 @@ function updateOrderTimers() {
         const textEl = box.querySelector('.countdown-text');
         if (remaining <= 0) {
             box.classList.add('ready');
-            textEl.textContent = 'Versement disponible !';
+            textEl.textContent = translateDynamic('Versement disponible !');
         } else {
             box.classList.remove('ready');
             const h = Math.floor(remaining / 3600000);
             const m = Math.floor((remaining % 3600000) / 60000);
             const s = Math.floor((remaining % 60000) / 1000);
-            textEl.textContent = pad(h) + ':' + pad(m) + ':' + pad(s) + ' avant versement';
+            textEl.textContent = pad(h) + ':' + pad(m) + ':' + pad(s) + ' ' +
+                translateDynamic('avant versement');
         }
     });
 }
 if (document.querySelector('.countdown-box')) {
     updateOrderTimers();
     setInterval(updateOrderTimers, 1000);
+    window.addEventListener('gd-language-change', updateOrderTimers);
 }
 
 document.querySelectorAll('.btn-invest:not(.btn-invest-locked)').forEach(btn => {
