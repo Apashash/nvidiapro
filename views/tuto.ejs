@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins','Segoe UI',sans-serif; }
-        body { background:#F5EFE6; color:#3D2B1F; min-height:100vh; padding-bottom:90px; }
+        body { background:#F5F5FA; color:#292735; min-height:100vh; padding-bottom:90px; }
         .container { max-width:430px; margin:0 auto; }
 
         .page-header {
-            background: linear-gradient(135deg, #D4921F, #A0631A);
+            background: linear-gradient(135deg, #14105F, #211987);
+            border-top:5px solid #D60000;
             padding: 50px 20px 0; text-align:center; color:#fff;
         }
         .page-header h1 { font-size:22px; font-weight:800; margin-bottom:4px; }
@@ -20,7 +21,7 @@
 
         /* Tab nav */
         .tab-nav {
-            background:linear-gradient(135deg,#D4921F,#A0631A);
+            background:#14105F;
             display:flex; overflow-x:auto; padding:0 16px;
             scrollbar-width:none; border-bottom:none;
         }
@@ -42,10 +43,10 @@
         .section.active { display:block; }
 
         .sec-title {
-            font-size:20px; font-weight:800; color:#C47D1E; margin-bottom:6px;
-            padding-left:12px; border-left:4px solid #C47D1E; border-radius:0 4px 4px 0;
+            font-size:20px; font-weight:800; color:#14105F; margin-bottom:6px;
+            padding-left:12px; border-left:4px solid #D60000; border-radius:0 4px 4px 0;
         }
-        .sec-desc { font-size:14px; color:#A87D50; margin-bottom:20px; }
+        .sec-desc { font-size:14px; color:#6F6B82; margin-bottom:20px; }
 
         /* Video/Link buttons */
         .tuto-btns { display:flex; flex-direction:column; gap:12px; margin-bottom:22px; }
@@ -63,27 +64,27 @@
         /* Steps */
         .steps-box {
             background:#fff; border-radius:16px; padding:18px;
-            border:1px solid #F0E0C8; box-shadow:0 2px 10px rgba(196,125,30,0.08);
+            border:1px solid #E4E4EE; box-shadow:0 2px 10px rgba(20,16,95,0.08);
             margin-bottom:14px;
         }
         .step { display:flex; gap:14px; margin-bottom:18px; }
         .step:last-child { margin-bottom:0; }
         .step-num {
             width:32px; height:32px; border-radius:50%; flex-shrink:0;
-            background:linear-gradient(135deg,#D4921F,#B07018);
+            background:linear-gradient(135deg,#D60000,#B90000);
             display:flex; align-items:center; justify-content:center;
             font-weight:800; font-size:13px; color:#fff; margin-top:2px;
         }
-        .step-body h4 { color:#C47D1E; font-size:14px; margin-bottom:3px; }
-        .step-body p { color:#7D5A38; font-size:13px; line-height:1.5; }
+        .step-body h4 { color:#14105F; font-size:14px; margin-bottom:3px; }
+        .step-body p { color:#6F6B82; font-size:13px; line-height:1.5; }
 
         /* Tips */
         .tip-card {
-            background:#FFFBF0; border:1px solid #F5D78A; border-left:4px solid #C47D1E;
+            background:#FBFBFF; border:1px solid #D9D9E7; border-left:4px solid #D60000;
             border-radius:0 12px 12px 0; padding:13px 15px; margin-bottom:12px;
-            font-size:13px; color:#7D5A38; line-height:1.5;
+            font-size:13px; color:#6F6B82; line-height:1.5;
         }
-        .tip-card strong { color:#C47D1E; }
+        .tip-card strong { color:#D60000; }
     </style>
     <link rel="stylesheet" href="/assets/dangote-theme.css">
 </head>
