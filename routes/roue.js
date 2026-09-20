@@ -57,7 +57,10 @@ async function doSpin(user_id) {
     await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [gains, user_id]);
     await conn.query('UPDATE utilisateurs SET last_spin_time = NOW() WHERE id = ?', [user_id]);
     if (gains > 0) {
-      await conn.query("INSERT INTO historique_revenus (user_id, montant, type) VALUES (?, ?, 'bonus')", [user_id, gains]);
+      await conn.query(
+        "INSERT INTO historique_revenus (user_id, montant, type, source) VALUES (?, ?, 'bonus', 'machine_a_sous')",
+        [user_id, gains]
+      );
     }
     await conn.commit();
     const [[sl]] = await conn.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);

@@ -244,6 +244,7 @@ async function setup() {
       `ALTER TABLE commandes ADD COLUMN IF NOT EXISTS nombre_actions NUMERIC(15,4) DEFAULT 1`,
       `ALTER TABLE commandes ALTER COLUMN nombre_actions TYPE NUMERIC(15,4) USING nombre_actions::numeric`,
       `ALTER TABLE historique_revenus ADD COLUMN IF NOT EXISTS niveau INTEGER`,
+      `ALTER TABLE historique_revenus ADD COLUMN IF NOT EXISTS source VARCHAR(100)`,
       `CREATE UNIQUE INDEX IF NOT EXISTS historique_revenus_salaire_niveau_uidx ON historique_revenus(user_id, niveau) WHERE type='salaire'`,
       `CREATE UNIQUE INDEX IF NOT EXISTS codes_utilises_user_code_uidx ON codes_utilises (user_id, code)`,
     ];

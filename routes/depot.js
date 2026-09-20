@@ -375,7 +375,7 @@ async function creditDepositReferralCommissions(conn, depot, rates) {
         );
       }
       await conn.query(
-        "INSERT INTO historique_revenus (user_id, montant, type) VALUES (?, ?, 'parrainage')",
+        "INSERT INTO historique_revenus (user_id, montant, type, source) VALUES (?, ?, 'parrainage', 'parrainage')",
         [sponsorId, bonus]
       );
     }

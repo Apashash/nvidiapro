@@ -93,7 +93,18 @@
         <% if (transactions && transactions.length > 0) { %>
         <div class="tx-card">
             <ul class="tx-list">
-                <% const revenuSourceLabels = { paiement_journalier: 'Investissement', parrainage: 'Parrainage', bonus: 'Machine à sous', cadeau: 'Machine à sous', salaire: 'Salaire VIP' }; %>
+                <% const revenuSourceLabels = {
+                    investissement: 'Investissement',
+                    paiement_journalier: 'Investissement',
+                    parrainage: 'Parrainage',
+                    bonus_code: 'Bonus de code',
+                    bonus_inscription: 'Bonus d’inscription',
+                    machine_a_sous: 'Machine à sous',
+                    salaire_vip: 'Salaire VIP',
+                    bonus: 'Bonus',
+                    cadeau: 'Cadeau',
+                    salaire: 'Salaire VIP'
+                }; %>
                 <% transactions.forEach(tx => { %>
                 <li class="tx-item" style="flex-wrap:wrap;gap:4px;">
                     <div class="tx-left" style="flex:1;min-width:0;">

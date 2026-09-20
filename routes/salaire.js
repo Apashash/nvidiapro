@@ -116,8 +116,8 @@ router.post('/salaire', requireAuth, async (req, res) => {
       await conn.query(
         'UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [montant, user_id]);
       await conn.query(
-        `INSERT INTO historique_revenus (user_id, montant, type, niveau, date_paiement)
-         VALUES (?, ?, 'salaire', ?, NOW())`, [user_id, montant, niveau_actuel]);
+        `INSERT INTO historique_revenus (user_id, montant, type, source, niveau, date_paiement)
+         VALUES (?, ?, 'salaire', 'salaire_vip', ?, NOW())`, [user_id, montant, niveau_actuel]);
       await conn.commit();
     } catch (e) {
       await conn.rollback();

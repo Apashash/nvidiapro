@@ -336,14 +336,26 @@
 
   <div class="page-card">
     <h3><i class="fas fa-list-alt" style="color:#22c55e"></i> Historique des transactions (<%= transactions.length %>)</h3>
-    <% const txLabels = { paiement_journalier:'Revenu investissement', parrainage:'Parrainage', bonus:'Bonus', cadeau:'Cadeau', paiement_journalie:'Revenu invest.' }; %>
+    <% const txLabels = {
+      investissement:'Revenu investissement',
+      paiement_journalier:'Revenu investissement',
+      parrainage:'Parrainage',
+      bonus_code:'Bonus de code',
+      bonus_inscription:'Bonus d’inscription',
+      machine_a_sous:'Machine à sous',
+      salaire_vip:'Salaire VIP',
+      bonus:'Bonus',
+      cadeau:'Cadeau',
+      salaire:'Salaire VIP',
+      paiement_journalie:'Revenu invest.'
+    }; %>
     <% if (!transactions.length) { %>
     <div class="empty">Aucune transaction</div>
     <% } %>
     <% transactions.forEach(t => { %>
     <div class="tx-card">
       <div>
-        <div class="tx-type"><%- txLabels[t.type] || t.type %></div>
+        <div class="tx-type"><%- txLabels[t.source] || txLabels[t.type] || t.type %></div>
         <div class="tx-date"><%= t.date_creation ? new Date(t.date_creation).toLocaleString('fr-FR') : '—' %></div>
       </div>
       <div style="text-align:right">

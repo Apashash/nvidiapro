@@ -30,7 +30,7 @@ async function payDueCommande(commandeId) {
 
     const gain = parseFloat(cmd.gain_journalier);
     await conn.query(
-      "INSERT INTO historique_revenus (user_id, commande_id, montant, type, date_paiement) VALUES (?, ?, ?, 'paiement_journalier', NOW())",
+      "INSERT INTO historique_revenus (user_id, commande_id, montant, type, source, date_paiement) VALUES (?, ?, ?, 'paiement_journalier', 'investissement', NOW())",
       [cmd.user_id, cmd.id, gain]
     );
     await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [gain, cmd.user_id]);

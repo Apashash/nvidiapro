@@ -49,7 +49,7 @@ router.get('/compte', requireAuth, async (req, res) => {
       UNION ALL
       (SELECT NULL as id, 'retrait' as type, NULL as source, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
       UNION ALL
-      (SELECT NULL as id, 'revenu' as type, type as source, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
+       (SELECT NULL as id, 'revenu' as type, COALESCE(source, type) as source, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
       ORDER BY date DESC LIMIT 20
     `, [user_id, user_id, user_id]);
 
@@ -126,7 +126,7 @@ router.get('/historique', requireAuth, async (req, res) => {
       UNION ALL
       (SELECT NULL as id, 'retrait' as type, NULL as source, montant, date_demande as date, statut FROM retraits WHERE user_id = ?)
       UNION ALL
-      (SELECT NULL as id, 'revenu' as type, type as source, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
+       (SELECT NULL as id, 'revenu' as type, COALESCE(source, type) as source, montant, date_paiement as date, 'valide' as statut FROM historique_revenus WHERE user_id = ?)
     `;
 
     const [[countRow]] = await db.query(

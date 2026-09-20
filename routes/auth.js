@@ -150,6 +150,12 @@ router.post('/inscription1', async (req, res) => {
       const parsedBonus = Number(welcome_bonus);
       const bonusAmount = (welcome_bonus !== undefined && Number.isFinite(parsedBonus) && parsedBonus >= 0) ? parsedBonus : 250;
       await conn.query('INSERT INTO soldes (user_id, solde, solde_precedent) VALUES (?, ?, ?)', [user_id, bonusAmount, bonusAmount]);
+      if (bonusAmount > 0) {
+        await conn.query(
+          "INSERT INTO historique_revenus (user_id, montant, type, source) VALUES (?, ?, 'bonus', 'bonus_inscription')",
+          [user_id, bonusAmount]
+        );
+      }
       await conn.query('INSERT INTO vip (user_id, niveau, pourcentage, invitations_requises, invitations_actuelles) VALUES (?, 0, 0, 3, 0)', [user_id]).catch(() => {});
       await conn.query('INSERT INTO filleuls (user_id) VALUES (?)', [user_id]).catch(() => {});
       await conn.query('INSERT INTO connexions_journalieres (user_id) VALUES (?)', [user_id]).catch(() => {});

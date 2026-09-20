@@ -73,7 +73,10 @@ router.post('/cadeau', requireAuth, async (req, res) => {
       if (montant > 0) {
         await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [montant, user_id]);
       }
-      await conn.query("INSERT INTO historique_revenus (user_id, montant, type) VALUES (?, ?, 'bonus')", [user_id, montant]);
+      await conn.query(
+        "INSERT INTO historique_revenus (user_id, montant, type, source) VALUES (?, ?, 'bonus', 'bonus_code')",
+        [user_id, montant]
+      );
       await conn.commit();
       req.session.cadeau_success = montant > 0
         ? `Code validé ! Vous avez reçu ${montant} FCFA.`
