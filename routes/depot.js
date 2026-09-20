@@ -50,6 +50,35 @@ function getAshtechApiKey() {
   return process.env.ASHTECH_API_KEY || process.env.ASHTECHPAY_API_KEY || null;
 }
 
+function formatAshtechError(error) {
+  const status = error.response?.status;
+  const responseBody = error.response?.data;
+  const prefix = status ? `AshTechPay (HTTP ${status})` : 'AshTechPay';
+
+  if (typeof responseBody === 'string' && responseBody.trim()) {
+    return `${prefix} : ${responseBody.trim().slice(0, 300)}`;
+  }
+
+  if (responseBody && typeof responseBody === 'object') {
+    const code = responseBody.error || responseBody.code || responseBody.type;
+    const message = responseBody.message || responseBody.detail || responseBody.error_description;
+    if (code && message) return `${prefix} [${code}] : ${message}`;
+    if (message) return `${prefix} : ${message}`;
+    if (code) return `${prefix} [${code}]`;
+  }
+
+  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+    return 'AshTechPay : délai d’attente dépassé, le serveur n’a pas répondu.';
+  }
+  if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
+    return 'AshTechPay : serveur de paiement introuvable.';
+  }
+  if (!error.response && error.message) {
+    return `AshTechPay : ${error.message}`;
+  }
+  return 'AshTechPay : erreur inconnue du serveur de paiement.';
+}
+
 function normalizeAshtechCountries(payload) {
   const countries = Array.isArray(payload)
     ? payload
@@ -207,7 +236,7 @@ async function initiateCollect(req, res, { depot_id, montant, currency, numero, 
     const apiKey = getAshtechApiKey();
     if (!apiKey) {
       await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
-      req.session.error = 'Le service de recharge est temporairement indisponible. Veuillez réessayer plus tard.';
+      req.session.error = 'AshTechPay : clé API Direct API absente du serveur.';
       return res.redirect('/depot');
     }
 
@@ -252,7 +281,7 @@ async function initiateCollect(req, res, { depot_id, montant, currency, numero, 
     console.error(`AshtechPay collect error [HTTP ${e.response?.status}] country=${country_code} operator=${operateur} currency=${currency}:`, JSON.stringify(apiError) || e.message);
     // Mark deposit as rejected if API call failed for any other reason
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
-    req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
+    req.session.error = formatAshtechError(e);
     res.redirect('/depot');
   }
 }
@@ -336,7 +365,7 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
     // Erreur 4xx définitive (code invalide, session expirée, etc.) → rejeter
     delete req.session.otp_pending;
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
-    req.session.error = apiError?.message || 'Erreur de connexion au serveur de paiement';
+    req.session.error = formatAshtechError(e);
     res.redirect('/depot');
   }
 });
