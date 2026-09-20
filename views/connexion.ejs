@@ -103,6 +103,15 @@
             outline: none;
         }
         .input-wrap select { cursor: pointer; -webkit-appearance: none; }
+        html[dir="rtl"] .eye-toggle {
+            right: auto;
+            left: 0;
+        }
+        html[dir="rtl"] .input-wrap input[type="password"],
+        html[dir="rtl"] .input-wrap input[type="text"] {
+            padding-right: 14px !important;
+            padding-left: 48px !important;
+        }
         .input-wrap .phone-divider { width: 1px; height: 24px; background: #E8D5B0; flex-shrink: 0; }
         .country-picker { position:relative; margin-bottom:8px; }
         .country-trigger {

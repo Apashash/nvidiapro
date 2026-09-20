@@ -146,6 +146,15 @@
             display:flex; align-items:center; justify-content:center;
             width:44px; z-index:2;
         }
+        html[dir="rtl"] .eye-toggle {
+            right:auto;
+            left:0;
+        }
+        html[dir="rtl"] .input-wrap input[type="password"],
+        html[dir="rtl"] .input-wrap input[type="text"] {
+            padding-right:14px !important;
+            padding-left:48px !important;
+        }
         .error-box {
             background:#FFF0EE; border:1px solid #F5A9A0; border-radius:12px;
             padding:12px 16px; margin-bottom:18px; color:#C0392B;
