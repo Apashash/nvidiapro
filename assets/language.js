@@ -173,6 +173,10 @@
         return value.replace(/\s+/g, ' ').trim();
     }
 
+    function escapeRegExp(value) {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
     function translateValue(value, language) {
         if (language === 'fr') return value;
         const dictionary = dictionaries[language] || {};
@@ -183,7 +187,16 @@
         Object.keys(dictionary)
             .sort((a, b) => b.length - a.length)
             .forEach((source) => {
-                translated = translated.split(source).join(dictionary[source]);
+                const replacement = dictionary[source];
+                if (source.includes(' ')) {
+                    translated = translated.split(source).join(replacement);
+                    return;
+                }
+                const pattern = new RegExp(
+                    `(^|[^\\p{L}\\p{N}])${escapeRegExp(source)}(?=$|[^\\p{L}\\p{N}])`,
+                    'gu'
+                );
+                translated = translated.replace(pattern, (match, prefix) => `${prefix}${replacement}`);
             });
         return translated;
     }
