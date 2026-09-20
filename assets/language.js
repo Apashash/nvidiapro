@@ -7,6 +7,16 @@
     const originalText = new WeakMap();
     const originalAttributes = new WeakMap();
     let originalTitle = null;
+    const legacyTranslations = {
+        'Together, let\'s build the wealth of tomorrow.': {
+            en: '“Together, let us build tomorrow’s wealth.”',
+            es: '« Juntos, construyamos la riqueza del mañana. »',
+            zh: '“让我们共同建设美好的明天。”',
+            ur: '“آئیں مل کر کل کی دولت بنائیں۔”'
+        },
+        Login: { en: 'Log in', es: 'Iniciar sesión', zh: '登录', ur: 'لاگ ان' },
+        either: { en: 'or', es: 'o', zh: '或', ur: 'یا' }
+    };
     const dictionaries = {
         en: {
             'Accueil': 'Home', 'Investir': 'Invest', 'Salaire': 'Salary', 'Équipe': 'Team', 'Profil': 'Profile',
@@ -177,9 +187,24 @@
         return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    function getTranslationDictionary(language) {
+        const dictionary = { ...(dictionaries[language] || {}) };
+        Object.values(dictionaries).forEach((sourceDictionary) => {
+            Object.entries(sourceDictionary).forEach(([french, translated]) => {
+                if (dictionary[french] && !dictionary[translated]) {
+                    dictionary[translated] = dictionary[french];
+                }
+            });
+        });
+        Object.entries(legacyTranslations).forEach(([source, translations]) => {
+            if (translations[language]) dictionary[source] = translations[language];
+        });
+        return dictionary;
+    }
+
     function translateValue(value, language) {
         if (language === 'fr') return value;
-        const dictionary = dictionaries[language] || {};
+        const dictionary = getTranslationDictionary(language);
         const normalized = normalize(value);
         if (dictionary[normalized]) return value.replace(normalized, dictionary[normalized]);
 
