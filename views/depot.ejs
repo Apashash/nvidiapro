@@ -293,7 +293,9 @@
         <% } %>
 
         <% if (!locals.otp_pending) { %>
-        <div class="form-card" id="formCard">
+        <div class="form-card" id="formCard"
+             data-selected-country="<%= selectedCountryCode || '' %>"
+             data-selected-operator="<%= selectedOperator || '' %>">
             <form id="depotForm" method="POST" action="/depot/process">
 
                 <div class="form-group">
@@ -350,10 +352,10 @@
                 <div class="form-group">
                     <label class="form-label"><i class="fas fa-phone"></i> Numéro Mobile Money</label>
                     <input type="tel" name="numero" id="numero" required
-                           placeholder="Ex : 690000001" pattern="[0-9]{6,15}"
+                         placeholder="Ex : 22890000000" pattern="[0-9]{6,15}"
                            class="form-input" autocomplete="tel">
                     <p style="font-size:11px;color:#B09070;margin-top:5px;">
-                        <i class="fas fa-info-circle"></i> Saisissez le numéro sans indicatif (+237…)
+                        <i class="fas fa-info-circle"></i> Saisissez le numéro au format international (sans le signe +)
                     </p>
                 </div>
 
@@ -385,6 +387,13 @@ const countryOptions  = Array.from(document.querySelectorAll('.country-option'))
 const countryPicker   = document.getElementById('countryPicker');
 const countryTrigger  = document.getElementById('countryTrigger');
 const countryLabel    = document.getElementById('countrySelectedLabel');
+const numeroInput     = document.getElementById('numero');
+const savedCountryCode = document.getElementById('formCard')?.dataset.selectedCountry || '';
+const savedOperator    = document.getElementById('formCard')?.dataset.selectedOperator || '';
+const phoneDialCodes = {
+    CM: '237', TG: '228', BJ: '229', CI: '225', BF: '226',
+    GA: '241', CG: '242', NE: '227', ML: '223', SN: '221'
+};
 function translateDynamic(value) {
     return window.GDLanguage ? window.GDLanguage.translate(value) : value;
 }
@@ -415,6 +424,8 @@ if (countrySearch) {
         currencyBadge.textContent = option.dataset.currency;
         currencyBadge.style.display = 'inline-block';
         countryLabel.textContent = translateDynamic(option.dataset.name);
+        const dialCode = phoneDialCodes[option.dataset.code];
+        if (numeroInput && dialCode) numeroInput.placeholder = 'Ex : ' + dialCode + '90000000';
         toggleCountryMenu(false);
     }
 
@@ -438,8 +449,16 @@ if (countrySearch) {
         countryEmpty.hidden = visibleCount !== 0;
     });
 
-    // Select the first supported country by default.
-    if (countryOptions.length) selectCountry(countryOptions[0]);
+    // Restore the country/operator after an error; otherwise use the first
+    // active country from AshTechPay's live catalogue.
+    const initialCountry = countryOptions.find(option => option.dataset.code === savedCountryCode)
+        || countryOptions[0];
+    if (initialCountry) {
+        selectCountry(initialCountry);
+        if (savedOperator && Array.from(operateurSelect.options).some(option => option.value === savedOperator)) {
+            operateurSelect.value = savedOperator;
+        }
+    }
 
     document.addEventListener('click', event => {
         if (!countryPicker.contains(event.target)) toggleCountryMenu(false);

@@ -8,6 +8,18 @@ const { getParams } = require('../services/params');
 
 const ASHTECH_API_BASE = process.env.ASHTECH_API_BASE || 'https://www.ashtechpay.com';
 const COUNTRY_CACHE_TTL_MS = 5 * 60 * 1000;
+const countryDialCodes = {
+  CM: '237',
+  TG: '228',
+  BJ: '229',
+  CI: '225',
+  BF: '226',
+  GA: '241',
+  CG: '242',
+  NE: '227',
+  ML: '223',
+  SN: '221',
+};
 
 // Fallback only for the period before the Direct API key is configured or when
 // AshTechPay is temporarily unavailable. With a configured key, the live
@@ -97,16 +109,20 @@ router.get('/depot', requireAuth, async (req, res) => {
     const pending_numero   = req.session.pending_numero   || null;
     const pending_wave_url = req.session.pending_wave_url || null;
     const otp_pending      = req.session.otp_pending      || null;
+    const depotForm        = req.session.depot_form || {};
     delete req.session.error;
     delete req.session.pending_depot_id;
     delete req.session.pending_numero;
     delete req.session.pending_wave_url;
+    delete req.session.depot_form;
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
     const countries = await getAshtechCountries();
     res.render('depot', {
       user, countries, error, failed, depotMin,
       pending_depot_id, pending_numero, pending_wave_url, otp_pending,
+      selectedCountryCode: depotForm.country_code || '',
+      selectedOperator: depotForm.operateur || '',
     });
   } catch (e) {
     console.error('GET /depot error:', e);
@@ -120,7 +136,10 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   const montant      = parseFloat(req.body.montant || 0);
   const country_code = (req.body.country_code || '').trim().toUpperCase();
   const operateur    = (req.body.operateur    || '').trim();
-  const numero       = (req.body.numero       || '').trim();
+  const numeroInput  = (req.body.numero       || '').trim();
+  // Keep the selected country/operator after an API or validation error,
+  // without storing the phone number in the session.
+  req.session.depot_form = { country_code, operateur };
 
   // ── Validations ────────────────────────────────────────────────────────────
   const params = await getParams();
@@ -129,11 +148,11 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     req.session.error = `Le montant minimum de dépôt est de ${depotMin.toLocaleString('fr-FR')} FCFA.`;
     return res.redirect('/depot');
   }
-  if (!country_code || !operateur || !numero) {
+  if (!country_code || !operateur || !numeroInput) {
     req.session.error = 'Tous les champs sont obligatoires';
     return res.redirect('/depot');
   }
-  if (!/^[0-9]{6,15}$/.test(numero)) {
+  if (!/^[0-9]{6,15}$/.test(numeroInput)) {
     req.session.error = 'Numéro de téléphone invalide (chiffres uniquement, 6–15 chiffres)';
     return res.redirect('/depot');
   }
@@ -147,6 +166,12 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   }
   if (!country.operators.includes(operateur)) {
     req.session.error = 'Opérateur invalide pour ce pays';
+    return res.redirect('/depot');
+  }
+
+  const numero = normalizeInternationalPhone(numeroInput, country_code);
+  if (!/^[0-9]{8,15}$/.test(numero)) {
+    req.session.error = 'Numéro de téléphone invalide pour le pays sélectionné';
     return res.redirect('/depot');
   }
 
@@ -195,6 +220,7 @@ async function initiateCollect(req, res, { depot_id, montant, currency, numero, 
     );
 
     await onCollectAccepted(req, depot_id, data, apiKey);
+    delete req.session.depot_form;
     res.redirect('/depot');
 
   } catch (e) {
@@ -329,6 +355,17 @@ function buildNotifyUrl(req) {
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   const host     = req.headers['x-forwarded-host']  || req.headers.host;
   return `${protocol}://${host}/ashtechpay_callback`;
+}
+
+function normalizeInternationalPhone(phone, countryCode) {
+  const dialCode = countryDialCodes[countryCode];
+  if (!dialCode) return phone;
+
+  let digits = phone;
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (digits.startsWith(dialCode)) return digits;
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return `${dialCode}${digits}`;
 }
 
 // Shared handling for any AshtechPay /v1/collect call that came back 202 —

@@ -37,6 +37,7 @@
         'Sélectionnez un opérateur': { en: 'Select an operator', es: 'Selecciona un operador', zh: '选择运营商', ur: 'آپریٹر منتخب کریں' },
         'Numéro Mobile Money': { en: 'Mobile Money number', es: 'Número de Mobile Money', zh: '移动支付号码', ur: 'موبائل منی نمبر' },
         'Saisissez le numéro sans indicatif (+237…)': { en: 'Enter the number without the country code (+237…)', es: 'Introduce el número sin el prefijo (+237…)', zh: '输入号码时不要包含国家区号（+237…）', ur: 'ملکی کوڈ کے بغیر نمبر درج کریں (+237…)' },
+        'Saisissez le numéro au format international (sans le signe +)': { en: 'Enter the number in international format (without the + sign)', es: 'Introduce el número en formato internacional (sin el signo +)', zh: '请输入国际格式号码（不含 + 号）', ur: 'نمبر بین الاقوامی فارمیٹ میں درج کریں (+ کے بغیر)' },
         'Montant minimum :': { en: 'Minimum amount:', es: 'Monto mínimo:', zh: '最低金额：', ur: 'کم از کم رقم:' },
         'Confirmer le paiement': { en: 'Confirm payment', es: 'Confirmar el pago', zh: '确认付款', ur: 'ادائیگی کی تصدیق کریں' },
         'Paiement en cours de traitement…': { en: 'Payment is being processed…', es: 'Pago en proceso…', zh: '付款处理中……', ur: 'ادائیگی پر کارروائی جاری ہے…' },
