@@ -73,6 +73,15 @@
         .stat-num { font-size:28px; font-weight:800; color:#C47D1E; line-height:1.1; }
         .stat-lbl { font-size:11px; color:#A87D50; margin-top:2px; }
 
+        .commission-note {
+            display:flex; align-items:flex-start; gap:8px;
+            background:#FFFBF0; border:1px solid #F5D78A;
+            border-radius:12px; padding:12px 13px; margin-bottom:14px;
+            color:#7D5A38; font-size:12px; line-height:1.5;
+        }
+        .commission-note i { color:#C47D1E; margin-top:2px; flex-shrink:0; }
+        .commission-note strong { color:#A0631A; }
+
         /* Commission table */
         .comm-table {
             background:#fff; border-radius:16px; overflow:hidden;
@@ -235,9 +244,19 @@
                 <% const c1 = parseFloat(appParams.commission_niveau1 ?? 20) / 100;
                    const c2 = parseFloat(appParams.commission_niveau2 ?? 10) / 100;
                    const c3 = parseFloat(appParams.commission_niveau3 ?? 5)  / 100; %>
-                <div class="stat-num"><%= Math.round((invest_niveau1 * c1) + (invest_niveau2 * c2) + (invest_niveau3 * c3)).toLocaleString('fr-FR') %></div>
+                <div class="stat-num"><%= Math.round((depot_niveau1 * c1) + (depot_niveau2 * c2) + (depot_niveau3 * c3)).toLocaleString('fr-FR') %></div>
                 <div class="stat-lbl">Total commission</div>
             </div>
+        </div>
+
+        <div class="commission-note">
+            <i class="fas fa-circle-info"></i>
+            <span>Les commissions sont calculées sur chaque dépôt validé de vos filleuls :
+                <strong><%= appParams.commission_niveau1 ?? 20 %>%</strong> au niveau 1,
+                <strong><%= appParams.commission_niveau2 ?? 10 %>%</strong> au niveau 2 et
+                <strong><%= appParams.commission_niveau3 ?? 5 %>%</strong> au niveau 3.
+                Un filleul doit acheter au moins une action pour effectuer un retrait.
+            </span>
         </div>
 
         <!-- Commission table -->

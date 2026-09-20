@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
-const { getParams } = require('../services/params');
 const {
   parseStrategy,
   rateForAmount,
@@ -132,11 +131,6 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
   const plan_id = parseInt(req.body.plan_id);
 
   try {
-    const params = await getParams();
-    const comm1 = parseFloat(params.commission_niveau1 ?? 20) / 100;
-    const comm2 = parseFloat(params.commission_niveau2 ?? 10) / 100;
-    const comm3 = parseFloat(params.commission_niveau3 ?? 5)  / 100;
-
     const [[plan]] = await db.query('SELECT * FROM planinvestissement WHERE id = ?', [plan_id]);
     if (!plan) return res.json({ success: false, message: 'Plan introuvable' });
     if (plan.bloque) return res.json({ success: false, message: "Ce plan n'est pas encore disponible, il sera bientôt disponible dans le marché ! Profitez des plans actifs actuellement." });
@@ -209,38 +203,6 @@ router.post('/acheter-action', requireAuth, async (req, res) => {
         [user_id, plan_id, montant, gain_journalier, nombreActions, duree]
       );
       await conn.query('UPDATE soldes SET solde = solde - ? WHERE user_id = ?', [montant, user_id]);
-
-      // ── Commissions parrainage (niveaux 1, 2, 3) ────────────────────────────
-      async function creditParrain(parrainId, taux, niveau) {
-        if (!parrainId || taux <= 0) return;
-        const bonus = Math.round(montant * taux * 100) / 100;
-        if (bonus <= 0) return;
-        const [[ps]] = await conn.query('SELECT id FROM soldes WHERE user_id = ?', [parrainId]);
-        if (ps) {
-          await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [bonus, parrainId]);
-        } else {
-          await conn.query('INSERT INTO soldes (user_id, solde) VALUES (?, ?)', [parrainId, bonus]);
-        }
-        await conn.query(
-          "INSERT INTO historique_revenus (user_id, montant, type) VALUES (?, ?, 'parrainage')",
-          [parrainId, bonus]
-        ).catch(() => {});
-      }
-
-      const [[u1]] = await conn.query('SELECT parrain_id FROM utilisateurs WHERE id = ?', [user_id]);
-      const parrain1 = u1?.parrain_id;
-      await creditParrain(parrain1, comm1, 1);
-
-      if (parrain1) {
-        const [[u2]] = await conn.query('SELECT parrain_id FROM utilisateurs WHERE id = ?', [parrain1]);
-        const parrain2 = u2?.parrain_id;
-        await creditParrain(parrain2, comm2, 2);
-
-        if (parrain2) {
-          const [[u3]] = await conn.query('SELECT parrain_id FROM utilisateurs WHERE id = ?', [parrain2]);
-          await creditParrain(u3?.parrain_id, comm3, 3);
-        }
-      }
 
       await conn.commit();
       res.json({

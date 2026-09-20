@@ -64,11 +64,11 @@ router.get('/retrait', requireAuth, async (req, res) => {
     const suspendu = (params.retraits_actifs === '0');
     const schedule = buildScheduleStatus(params);
     const retrait_bloque = !!(user && user.retrait_bloque);
-    const [[activeCommandRow]] = await db.query(
-      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE AND statut = 'actif'",
+    const [[commandRow]] = await db.query(
+      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ?",
       [user_id]
     );
-    const hasActiveInvestment = Number(activeCommandRow?.nb) > 0;
+    const hasActiveInvestment = Number(commandRow?.nb) > 0;
     const retraits_disponibles = !suspendu && !retrait_bloque && schedule.disponible && hasActiveInvestment;
 
     const message = req.session.retrait_message || null;
@@ -108,13 +108,13 @@ router.post('/retrait', requireAuth, async (req, res) => {
       return res.json({ success: false, message: schedule.message });
     }
 
-    // 3. Active investment plan required
+    // 3. At least one investment/action must have been purchased.
     const [[cmds]] = await db.query(
-      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE AND statut = 'actif'",
+      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ?",
       [user_id]
     );
     if (Number(cmds.nb) === 0) {
-      return res.json({ success: false, message: "Vous devez avoir au moins un plan d'investissement actif pour effectuer un retrait." });
+      return res.json({ success: false, message: "Vous devez acheter au moins une action avant de pouvoir effectuer un retrait." });
     }
 
     // 4. Form validation

@@ -342,6 +342,48 @@ function pollTransactionStatus(depot_id, transaction_id, apiKey) {
   setTimeout(tick, POLL_INTERVAL_MS);
 }
 
+// Credit referral commissions only after a deposit has been confirmed.
+// Level 1 is the depositor's direct sponsor, then levels 2 and 3 follow
+// the sponsor chain.
+async function creditDepositReferralCommissions(conn, depot, rates) {
+  const depositAmount = parseFloat(depot.montant);
+  let memberId = depot.user_id;
+
+  for (let level = 0; level < rates.length && memberId; level += 1) {
+    const [[member]] = await conn.query(
+      'SELECT parrain_id FROM utilisateurs WHERE id = ?',
+      [memberId]
+    );
+    const sponsorId = member?.parrain_id;
+    if (!sponsorId) break;
+
+    const bonus = Math.round(depositAmount * rates[level] * 100) / 100;
+    if (bonus > 0) {
+      const [[sponsorBalance]] = await conn.query(
+        'SELECT id FROM soldes WHERE user_id = ?',
+        [sponsorId]
+      );
+      if (sponsorBalance) {
+        await conn.query(
+          'UPDATE soldes SET solde = solde + ? WHERE user_id = ?',
+          [bonus, sponsorId]
+        );
+      } else {
+        await conn.query(
+          'INSERT INTO soldes (user_id, solde) VALUES (?, ?)',
+          [sponsorId, bonus]
+        );
+      }
+      await conn.query(
+        "INSERT INTO historique_revenus (user_id, montant, type) VALUES (?, ?, 'parrainage')",
+        [sponsorId, bonus]
+      );
+    }
+
+    memberId = sponsorId;
+  }
+}
+
 // ── GET /depot/status/:id  (polling by client) ───────────────────────────────
 // If still en_attente, actively re-checks AshtechPay before answering — this
 // is what makes the "Vérifier" button on /historique work even after the
@@ -453,6 +495,12 @@ async function finalizeDepot(depot, status) {
   }
 
   if (status === 'success') {
+    const params = await getParams();
+    const commissionRates = [
+      parseFloat(params.commission_niveau1 ?? 20) / 100,
+      parseFloat(params.commission_niveau2 ?? 10) / 100,
+      parseFloat(params.commission_niveau3 ?? 5) / 100,
+    ];
     const conn = await db.getConnection();
     try {
       await conn.beginTransaction();
@@ -467,13 +515,17 @@ async function finalizeDepot(depot, status) {
         return { success: true, message: 'Already processed' };
       }
 
-      // Credit balance
+      // Credit the depositor's balance.
       const [[sl]] = await conn.query('SELECT id FROM soldes WHERE user_id = ?', [depot.user_id]);
       if (sl) {
         await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [depot.montant, depot.user_id]);
       } else {
         await conn.query('INSERT INTO soldes (user_id, solde) VALUES (?, ?)', [depot.user_id, depot.montant]);
       }
+
+      // Referral earnings are based on the confirmed deposit amount, not on
+      // the purchase of an investment plan/action.
+      await creditDepositReferralCommissions(conn, depot, commissionRates);
 
       await conn.commit();
       console.log(`✓ Dépôt ${depot.id} validé — ${depot.montant} crédité à user ${depot.user_id}`);

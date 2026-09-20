@@ -15,11 +15,11 @@ async function getFilleulsByLevel(user_id, level) {
   return [];
 }
 
-async function getInvestissementActif(ids) {
+async function getDepotsValides(ids) {
   if (!ids.length) return 0;
   const placeholders = ids.map(() => '?').join(',');
   const [[row]] = await db.query(
-    `SELECT COALESCE(SUM(montant), 0) as total FROM commandes WHERE user_id IN (${placeholders}) AND statut = 'actif' AND date_fin >= CURRENT_DATE`,
+    `SELECT COALESCE(SUM(montant), 0) as total FROM depots WHERE user_id IN (${placeholders}) AND statut = 'valide'`,
     ids
   );
   return parseFloat(row.total || 0);
@@ -36,10 +36,10 @@ router.get('/equipe', requireAuth, async (req, res) => {
       getFilleulsByLevel(user_id, 3),
     ]);
 
-    const [inv1, inv2, inv3] = await Promise.all([
-      getInvestissementActif(f1),
-      getInvestissementActif(f2),
-      getInvestissementActif(f3),
+    const [depot1, depot2, depot3] = await Promise.all([
+      getDepotsValides(f1),
+      getDepotsValides(f2),
+      getDepotsValides(f3),
     ]);
 
     // Helper to fetch details for any level
@@ -76,7 +76,7 @@ router.get('/equipe', requireAuth, async (req, res) => {
     res.render('equipe', {
       user,
       filleuls_niveau1: f1, filleuls_niveau2: f2, filleuls_niveau3: f3,
-      invest_niveau1: inv1, invest_niveau2: inv2, invest_niveau3: inv3,
+      depot_niveau1: depot1, depot_niveau2: depot2, depot_niveau3: depot3,
       filleuls_details1, filleuls_details2, filleuls_details3,
       vip: vip || { niveau: 0, invitations_actuelles: 0, invitations_requises: 3 },
       baseUrl,
