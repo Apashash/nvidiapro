@@ -243,11 +243,7 @@
             </div>
         <% } %>
 
-        <% if (niveau_actuel === 0) { %>
-            <div class="alert-box alert-warning"><i class="fas fa-info-circle"></i>
-                Atteignez le niveau VIP 1 en invitant <strong><%= filleuls_requis %></strong> filleuls actifs pour débloquer votre salaire.
-            </div>
-        <% } else if (deja_reclame) { %>
+        <% if (deja_reclame) { %>
             <div class="alert-box alert-warning"><i class="fas fa-info-circle"></i>
                 Vous avez déjà reçu le salaire du palier VIP <%= niveau_actuel %>. Chaque palier n'est payé qu'une seule fois — progressez au niveau suivant pour débloquer un nouveau salaire.
             </div>
