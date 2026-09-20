@@ -572,7 +572,7 @@
                 <i class="fas fa-newspaper"></i>
                 Actualités Communauté
             </div>
-            <button class="post-btn" onclick="openPostPopup()">
+            <button class="post-btn" onclick="window.location.href='/post/nouveau'">
                 <i class="fas fa-plus"></i> Poster
             </button>
         </div>
@@ -740,47 +740,11 @@
     </div>
 </div>
 
-<!-- Post popup -->
-<div class="popup" id="postPopup">
-    <div class="popup-content">
-        <div class="popup-header">
-            <h3>Créer un post</h3>
-            <button class="popup-close" onclick="closePopup('postPopup')">&times;</button>
-        </div>
-        <div class="popup-body">
-            <form id="postForm" enctype="multipart/form-data" method="POST">
-                <div class="form-group">
-                    <label class="form-label" for="postMessage">Message</label>
-                    <textarea id="postMessage" name="message" class="form-textarea" placeholder="Partagez votre expérience avec Groupe Dangote..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="postImage">Image</label>
-                    <div class="file-upload">
-                        <div class="file-upload-btn">
-                            <i class="fas fa-cloud-upload-alt" style="font-size:24px;margin-bottom:8px;display:block;color:#D60000"></i>
-                            <div class="file-upload-title">Cliquez pour télécharger une image</div>
-                            <div class="file-upload-hint">PNG, JPG, JPEG max 5MB</div>
-                            <img id="imagePreview" class="image-preview-small" alt="Aperçu">
-                        </div>
-                        <input type="file" id="postImage" name="image" class="file-upload-input"
-                               accept="image/*" required onchange="previewImage(this)">
-                    </div>
-                </div>
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-paper-plane"></i> Publier le post
-                </button>
-            </form>
-        </div>
-    </div>
-
-</div>
-
 <script>
 // ── POPUP UTILITIES ──
 function closePopup(id) { const p = document.getElementById(id); if (p) p.style.display = 'none'; }
 function closeWelcomePopup() { closePopup('welcomePopup'); }
 function openTelegramPopup() { document.getElementById('telegramPopup').style.display = 'flex'; }
-function openPostPopup() { document.getElementById('postPopup').style.display = 'flex'; }
 
 // (floating WhatsApp button is rendered by menu partial)
 
@@ -897,16 +861,6 @@ setInterval(() => {
     if (current) { current.classList.remove('visible'); setTimeout(showNotifications, 500); }
     else showNotifications();
 }, 3500);
-
-// ── IMAGE PREVIEW ──
-function previewImage(input) {
-    const preview = document.getElementById('imagePreview');
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
 // ── DISABLE ZOOM ──
 document.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
