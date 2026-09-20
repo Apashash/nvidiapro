@@ -242,14 +242,6 @@ router.get('/adminxyz/cadeaux', requireAdminAuth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
-// ── Salaires VIP ───────────────────────────────────────────────────────────────
-router.get('/adminxyz/salaires', requireAdminAuth, async (req, res) => {
-  try {
-    const [paliers] = await db.query('SELECT * FROM vip_paliers ORDER BY niveau ASC');
-    res.render('admin', { currentPage: 'salaires', pageTitle: 'Salaires VIP', paliers });
-  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
-});
-
 // ── Transactions ───────────────────────────────────────────────────────────────
 router.get('/adminxyz/transactions', requireAdminAuth, async (req, res) => {
   try {
@@ -446,8 +438,7 @@ router.post('/adminxyz/verser-revenus', requireAdminAuth, async (req, res) => {
 
 // ── AJAX: Actions ──────────────────────────────────────────────────────────────
 router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
-  const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description,
-          label, filleuls_requis, montant_cadeau, niveau } = req.body;
+  const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description } = req.body;
   try {
     switch (action) {
 
@@ -537,24 +528,6 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         await db.query('DELETE FROM planinvestissement WHERE id=?', [id]);
         return res.json({ success: true });
       }
-
-      case 'update_palier':
-        await db.query(
-          'UPDATE vip_paliers SET label=?, filleuls_requis=?, montant_cadeau=? WHERE id=?',
-          [label, filleuls_requis, montant_cadeau, id]);
-        return res.json({ success: true });
-
-      case 'add_palier': {
-        if (!niveau) return res.json({ success: false, message: 'Niveau requis' });
-        await db.query(
-          'INSERT INTO vip_paliers (niveau, label, filleuls_requis, montant_cadeau) VALUES (?,?,?,?)',
-          [niveau, label || '', filleuls_requis || 0, montant_cadeau || 0]);
-        return res.json({ success: true });
-      }
-
-      case 'delete_palier':
-        await db.query('DELETE FROM vip_paliers WHERE id=?', [id]);
-        return res.json({ success: true });
 
       case 'toggle_ban': {
         const [[ub]] = await db.query('SELECT is_banned FROM utilisateurs WHERE id=?', [id]);
