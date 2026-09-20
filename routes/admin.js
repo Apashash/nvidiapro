@@ -180,18 +180,6 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
-// ── Plans VIP ──────────────────────────────────────────────────────────────────
-router.get('/adminxyz/plans', requireAdminAuth, async (req, res) => {
-  try {
-    const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY id ASC');
-    const counts  = await Promise.all(plans.map(async p => {
-      const [[c]] = await db.query("SELECT COUNT(*) as total FROM commandes WHERE plan_id=? AND statut='actif'", [p.id]);
-      return parseInt(c.total)||0;
-    }));
-    res.render('admin', { currentPage: 'plans', pageTitle: 'Plans VIP', plans, counts });
-  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
-});
-
 // ── Utilisateurs ───────────────────────────────────────────────────────────────
 router.get('/adminxyz/utilisateurs', requireAdminAuth, async (req, res) => {
   try {
@@ -498,35 +486,6 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         if (!u) return res.json({ success: false, message: 'Utilisateur non trouvé' });
         await db.query('UPDATE utilisateurs SET is_admin=? WHERE id=?', [!u.is_admin, id]);
         return res.json({ success: true, is_admin: !u.is_admin });
-      }
-
-      case 'update_plan':
-        await db.query(
-          'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, image_url=?, description=? WHERE id=?',
-          [nom, prix, duree_jours, rendement_journalier, req.body.image_url || null, description, id]);
-        return res.json({ success: true });
-
-      case 'add_plan': {
-        if (!nom || !prix || !duree_jours || !rendement_journalier)
-          return res.json({ success: false, message: 'Tous les champs sont requis' });
-        await db.query(
-          'INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, image_url, description) VALUES (?,?,?,?,?,?)',
-          [nom, prix, duree_jours, rendement_journalier, req.body.image_url || null, description || '']);
-        return res.json({ success: true });
-      }
-
-      case 'toggle_plan_lock': {
-        const [[pl]] = await db.query('SELECT bloque FROM planinvestissement WHERE id=?', [id]);
-        if (!pl) return res.json({ success: false, message: 'Plan non trouvé' });
-        await db.query('UPDATE planinvestissement SET bloque=? WHERE id=?', [!pl.bloque, id]);
-        return res.json({ success: true, bloque: !pl.bloque });
-      }
-
-      case 'delete_plan': {
-        const [[activeCount]] = await db.query("SELECT COUNT(*) as cnt FROM commandes WHERE plan_id=? AND statut='actif'", [id]);
-        if (parseInt(activeCount.cnt) > 0) return res.json({ success: false, message: 'Ce plan a des investissements actifs' });
-        await db.query('DELETE FROM planinvestissement WHERE id=?', [id]);
-        return res.json({ success: true });
       }
 
       case 'toggle_ban': {

@@ -95,14 +95,6 @@
     .card-row { display:flex; align-items:center; justify-content:space-between; }
     .card-actions { display:flex; gap:8px; }
 
-    /* Plan cards */
-    .plan-card { background:#fff; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 1px 6px rgba(0,0,0,0.06); display:flex; align-items:flex-start; justify-content:space-between; }
-    .plan-body { flex:1; }
-    .plan-name { font-size:1rem; font-weight:800; margin-bottom:4px; }
-    .plan-meta { font-size:0.82rem; color:#555; margin-bottom:6px; }
-    .plan-meta strong { color:#1a1a1a; }
-    .plan-rend { font-size:0.88rem; font-weight:700; margin-bottom:2px; }
-    .plan-gain { font-size:0.8rem; color:#555; }
     .icon-btn { width:36px; height:36px; border:none; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
     .icon-btn-edit { background:#EFF6FF; color:#3b82f6; }
     .icon-btn-del  { background:#FEF2F2; color:#ef4444; }
@@ -320,7 +312,6 @@
   <nav class="sidebar-nav">
     <% const nav = [
       { page:'dashboard',    href:'/adminxyz/dashboard',    icon:'fas fa-chart-pie',          bg:'#FFF3E0', color:'#E8931A', label:'Tableau de bord' },
-      { page:'plans',        href:'/adminxyz/plans',        icon:'fas fa-chart-line',          bg:'#F0FDF4', color:'#22c55e', label:'Plans VIP' },
       { page:'utilisateurs', href:'/adminxyz/utilisateurs', icon:'fas fa-users',               bg:'#EFF6FF', color:'#3b82f6', label:'Utilisateurs' },
       { page:'depots',       href:'/adminxyz/depots',       icon:'fas fa-arrow-down',          bg:'#F0FDF4', color:'#22c55e', label:'Dépôts',       countKey:'depots' },
       { page:'retraits',     href:'/adminxyz/retraits',     icon:'fas fa-hand-holding-dollar', bg:'#EEF2FF', color:'#6366f1', label:'Retraits',     countKey:'retraits' },
@@ -449,61 +440,6 @@
       <i class="fas fa-paper-plane"></i> Verser les revenus maintenant
     </button>
   </div>
-
-<%# ══════════════════ PLANS VIP ══════════════════ %>
-<% } else if (currentPage === 'plans') { %>
-
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-icon"><i class="fas fa-chart-line"></i></div>
-      <div>
-        <div class="page-title">Plans VIP (<%= plans.length %>)</div>
-      </div>
-    </div>
-    <button class="btn-add" onclick="openAddPlanModal()"><i class="fas fa-plus"></i> Ajouter</button>
-  </div>
-
-  <% const planColors = ['#E8931A','#3b82f6','#22c55e','#7c3aed','#ef4444','#0891b2','#16a34a','#d97706','#6366f1','#ec4899','#14b8a6']; %>
-  <% plans.forEach((p, i) => { %>
-  <%
-    const gain = (parseFloat(p.prix) * parseFloat(p.rendement_journalier) / 100);
-    const color = planColors[i % planColors.length];
-  %>
-  <div class="plan-card" style="border-left:4px solid <%= color %><% if (p.bloque) { %>;opacity:0.75<% } %>">
-    <div class="plan-body">
-      <div class="plan-name" style="color:<%= color %>"><%- p.nom %> <% if (p.bloque) { %><span style="font-size:0.68rem;background:#FEF2F2;color:#dc2626;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle"><i class="fas fa-lock"></i> Bloqué</span><% } %></div>
-      <div class="plan-meta">Prix : <strong><%= parseFloat(p.prix).toLocaleString('fr-FR') %> FCFA</strong> &nbsp; Durée : <strong><%= p.duree_jours %>j</strong></div>
-      <div class="plan-rend" style="color:<%= color %>">Rend. : <%= parseFloat(p.rendement_journalier).toFixed(2) %>%/j</div>
-      <div class="plan-gain">+<%= gain.toLocaleString('fr-FR',{maximumFractionDigits:0}) %> FCFA/jour</div>
-    </div>
-    <div class="card-actions">
-      <button class="icon-btn <%= p.bloque ? 'icon-btn-del' : 'icon-btn-edit' %>"
-        data-pid="<%= p.id %>"
-        title="<%= p.bloque ? 'Débloquer ce plan' : 'Bloquer ce plan' %>"
-        onclick="togglePlanLockBtn(this)">
-        <i class="fas <%= p.bloque ? 'fa-lock' : 'fa-lock-open' %>"></i>
-      </button>
-      <button class="icon-btn icon-btn-edit"
-        data-pid="<%= p.id %>"
-        data-nom="<%- (p.nom||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        data-prix="<%= p.prix %>"
-        data-duree="<%= p.duree_jours %>"
-        data-rend="<%= p.rendement_journalier %>"
-        data-image="<%- (p.image_url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        data-desc="<%- (p.description||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        onclick="openPlanModalBtn(this)">
-        <i class="fas fa-pen"></i>
-      </button>
-      <button class="icon-btn icon-btn-del"
-        data-pid="<%= p.id %>"
-        data-nom="<%- (p.nom||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;') %>"
-        onclick="deletePlanBtn(this)">
-        <i class="fas fa-trash"></i>
-      </button>
-    </div>
-  </div>
-  <% }); %>
-  <% if (!plans.length) { %><div class="empty">Aucun plan VIP</div><% } %>
 
 <%# ══════════════════ UTILISATEURS ══════════════════ %>
 <% } else if (currentPage === 'utilisateurs') { %>
@@ -1249,53 +1185,6 @@
   </div>
 </div>
 
-<!-- Plan Modal (edit) -->
-<div class="modal-overlay" id="planModal">
-  <div class="modal-box">
-    <h3><i class="fas fa-chart-line" style="color:#22c55e"></i> Modifier le plan</h3>
-    <input type="hidden" id="planId">
-    <label>Nom du plan</label>
-    <input type="text" id="planNom">
-    <label>Prix (FCFA)</label>
-    <input type="number" id="planPrix" step="100">
-    <label>Durée (jours)</label>
-    <input type="number" id="planDuree">
-    <label>Rendement journalier (%)</label>
-    <input type="number" id="planRend" step="0.01">
-    <label>URL de l'image du plan</label>
-    <input type="text" id="planImage" placeholder="https://... (laisser vide pour l'image par défaut)">
-    <label>Description</label>
-    <input type="text" id="planDesc">
-    <div class="modal-btns">
-      <button class="m-cancel" onclick="closeModal('planModal')">Annuler</button>
-      <button class="m-confirm" onclick="savePlan()">Enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<!-- Plan Modal (add) -->
-<div class="modal-overlay" id="addPlanModal">
-  <div class="modal-box">
-    <h3><i class="fas fa-plus" style="color:#E8931A"></i> Ajouter un plan</h3>
-    <label>Nom du plan</label>
-    <input type="text" id="newPlanNom" placeholder="Ex: Action VIP 12">
-    <label>Prix (FCFA)</label>
-    <input type="number" id="newPlanPrix" step="100" min="0">
-    <label>Durée (jours)</label>
-    <input type="number" id="newPlanDuree" min="1">
-    <label>Rendement journalier (%)</label>
-    <input type="number" id="newPlanRend" step="0.01" min="0">
-    <label>URL de l'image du plan</label>
-    <input type="text" id="newPlanImage" placeholder="https://... (laisser vide pour l'image par défaut)">
-    <label>Description</label>
-    <input type="text" id="newPlanDesc">
-    <div class="modal-btns">
-      <button class="m-cancel" onclick="closeModal('addPlanModal')">Annuler</button>
-      <button class="m-confirm" onclick="addPlan()">Ajouter</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1550,75 +1439,6 @@ async function saveBalance() {
   const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'update_balance', user_id, montant }) });
   const d = await r.json();
   if (d.success) { closeModal('balanceModal'); toast('✓ Solde mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-
-// ── Plan edit ───────────────────────────────────────────────────────────
-function openPlanModalBtn(btn) {
-  document.getElementById('planId').value    = btn.dataset.pid;
-  document.getElementById('planNom').value   = btn.dataset.nom;
-  document.getElementById('planPrix').value  = btn.dataset.prix;
-  document.getElementById('planDuree').value = btn.dataset.duree;
-  document.getElementById('planRend').value  = btn.dataset.rend;
-  document.getElementById('planImage').value = btn.dataset.image || '';
-  document.getElementById('planDesc').value  = btn.dataset.desc;
-  openModal('planModal');
-}
-function openPlanModal(id, nom, prix, duree, rend, desc) {
-  document.getElementById('planId').value    = id;
-  document.getElementById('planNom').value   = nom;
-  document.getElementById('planPrix').value  = prix;
-  document.getElementById('planDuree').value = duree;
-  document.getElementById('planRend').value  = rend;
-  document.getElementById('planDesc').value  = desc;
-  openModal('planModal');
-}
-async function savePlan() {
-  const body = new URLSearchParams({
-    action:'update_plan',
-    id: document.getElementById('planId').value,
-    nom: document.getElementById('planNom').value,
-    prix: document.getElementById('planPrix').value,
-    duree_jours: document.getElementById('planDuree').value,
-    rendement_journalier: document.getElementById('planRend').value,
-    image_url: document.getElementById('planImage').value,
-    description: document.getElementById('planDesc').value,
-  });
-  const r = await fetch('/adminxyz/action', { method:'POST', body });
-  const d = await r.json();
-  if (d.success) { closeModal('planModal'); toast('✓ Plan mis à jour', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-function openAddPlanModal() { openModal('addPlanModal'); }
-async function addPlan() {
-  const body = new URLSearchParams({
-    action:'add_plan',
-    nom: document.getElementById('newPlanNom').value,
-    prix: document.getElementById('newPlanPrix').value,
-    duree_jours: document.getElementById('newPlanDuree').value,
-    rendement_journalier: document.getElementById('newPlanRend').value,
-    image_url: document.getElementById('newPlanImage').value,
-    description: document.getElementById('newPlanDesc').value,
-  });
-  const r = await fetch('/adminxyz/action', { method:'POST', body });
-  const d = await r.json();
-  if (d.success) { closeModal('addPlanModal'); toast('✓ Plan ajouté', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-function togglePlanLockBtn(btn) { togglePlanLock(btn.dataset.pid); }
-async function togglePlanLock(id) {
-  if (!confirm('Changer le statut (bloqué/débloqué) de ce plan ?')) return;
-  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'toggle_plan_lock', id }) });
-  const d = await r.json();
-  if (d.success) { toast(d.bloque ? '✓ Plan bloqué' : '✓ Plan débloqué', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-function deletePlanBtn(btn) { deletePlan(btn.dataset.pid, btn.dataset.nom); }
-async function deletePlan(id, nom) {
-  if (!confirm('Supprimer le plan "' + nom + '" ? Cette action est irréversible.')) return;
-  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'delete_plan', id }) });
-  const d = await r.json();
-  if (d.success) { toast('✓ Plan supprimé', 'ok'); setTimeout(() => location.reload(), 900); }
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 
