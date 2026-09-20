@@ -36,8 +36,12 @@
     }
 
     function setCurrency(currency) {
-        window.localStorage.setItem(STORAGE_KEY, currency === 'USDT' ? 'USDT' : 'FCFA');
+        const selectedCurrency = currency === 'USDT' ? 'USDT' : 'FCFA';
+        window.localStorage.setItem(STORAGE_KEY, selectedCurrency);
         render();
+        window.dispatchEvent(new CustomEvent('gd-currency-change', {
+            detail: { currency: selectedCurrency, rate: usdtRate },
+        }));
     }
 
     window.GDCurrency = {

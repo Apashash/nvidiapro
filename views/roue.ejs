@@ -173,7 +173,7 @@
                     }
                     await Promise.all(promises);
                     showResultPopup(winnings);
-                    document.getElementById('soldePrincipal').textContent = data.new_solde.toLocaleString('fr') + ' <%= devise %>';
+                    document.getElementById('soldePrincipal').textContent = slotMoney(data.new_solde);
                     setTimeout(() => window.location.reload(), 3000);
                 } else {
                     alert(data.message || 'Une erreur est survenue.');
@@ -221,7 +221,7 @@
             const message = document.getElementById('resultMessage');
             if (gains > 0) {
                 title.textContent = "Félicitations !";
-                message.innerHTML = `Vous avez gagné <span style="color:#C47D1E;font-weight:800;">${gains.toLocaleString('fr')} <%= devise %></span>. Le montant a été ajouté à votre solde.`;
+                message.innerHTML = `Vous avez gagné <span style="color:#C47D1E;font-weight:800;">${slotMoney(gains)}</span>. Le montant a été ajouté à votre solde.`;
                 document.getElementById('resultIcon').className = 'fas fa-trophy result-icon';
             } else {
                 title.textContent = "Pas de chance...";
@@ -229,6 +229,14 @@
                 document.getElementById('resultIcon').className = 'fas fa-sad-cry result-icon';
             }
             popup.style.display = 'flex';
+        }
+
+        function slotMoney(value) {
+            const currency = window.GDCurrency ? window.GDCurrency.getCurrency() : 'FCFA';
+            const formatted = window.GDCurrency
+                ? window.GDCurrency.formatAmount(value, currency)
+                : Number(value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+            return `${formatted} ${currency}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -249,7 +257,8 @@
     </div>
     <div class="balance-strip">
         <i class="fas fa-coins" style="color:#C47D1E"></i>
-        Solde: <span id="soldePrincipal"><%= solde.toLocaleString('fr') %> <%= devise %></span>
+        Solde: <span id="soldePrincipal" data-currency-amount="<%= Number(solde || 0) %>"><%= solde.toLocaleString('fr-FR') %></span>
+        <span data-currency-code>FCFA</span>
     </div>
 
     <div class="slot-area">

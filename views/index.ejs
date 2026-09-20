@@ -650,18 +650,31 @@
                     <div class="mini-plan-name"><%= plan.nom %></div>
                     <div class="mini-plan-stats">
                         <div>
-                            <div class="mini-stat-val"><%= prixAction ? '5–20%' : gain_j.toLocaleString('fr-FR') + ' FCFA' %></div>
+                            <div class="mini-stat-val">
+                                <% if (prixAction) { %>
+                                    5–20%
+                                <% } else { %>
+                                    <span data-currency-amount="<%= gain_j %>"><%= gain_j.toLocaleString('fr-FR') %></span>
+                                    <span data-currency-code>FCFA</span>
+                                <% } %>
+                            </div>
                             <div class="mini-stat-lbl"><%= prixAction ? 'Taux quotidien' : 'Gain / jour' %></div>
                         </div>
                         <div>
-                            <div class="mini-stat-val"><%= total.toLocaleString('fr-FR') %> FCFA</div>
+                            <div class="mini-stat-val">
+                                <span data-currency-amount="<%= total %>"><%= total.toLocaleString('fr-FR') %></span>
+                                <span data-currency-code>FCFA</span>
+                            </div>
                             <div class="mini-stat-lbl">Gain total</div>
                         </div>
                     </div>
                     <div class="mini-plan-price">
                         <div>
                             <div class="mini-price-lbl">Investissement</div>
-                            <div class="mini-price-val"><%= prix.toLocaleString('fr-FR') %> FCFA</div>
+                            <div class="mini-price-val">
+                                <span data-currency-amount="<%= prix %>"><%= prix.toLocaleString('fr-FR') %></span>
+                                <span data-currency-code>FCFA</span>
+                            </div>
                         </div>
                     </div>
                     <a href="/investissement" class="mini-invest-btn">

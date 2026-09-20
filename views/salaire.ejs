@@ -372,7 +372,11 @@ document.addEventListener('gesturestart', e => e.preventDefault());
         <div class="popup-body">
             <div class="popup-icon"><i class="fas fa-coins"></i></div>
             <div class="popup-msg">
-                Félicitations ! <strong><%= new Intl.NumberFormat('fr-FR').format(successMontant) %> FCFA</strong>
+                Félicitations !
+                <strong>
+                    <span data-currency-amount="<%= Number(successMontant || 0) %>"><%= new Intl.NumberFormat('fr-FR').format(successMontant) %></span>
+                    <span data-currency-code>FCFA</span>
+                </strong>
                 ont été versés dans votre portefeuille.<br><br>Ce palier est maintenant soldé — invitez plus de filleuls actifs pour débloquer le prochain palier VIP et son salaire.
             </div>
             <button class="popup-btn" onclick="closeSuccess()"><i class="fas fa-check"></i> Super, merci !</button>

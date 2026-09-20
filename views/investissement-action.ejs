@@ -110,7 +110,10 @@
     <main>
         <div class="intro-card">
             <div class="intro-item">
-                <div class="intro-value"><%= plan.prix_action.toLocaleString('fr-FR') %> FCFA</div>
+                <div class="intro-value">
+                    <span data-currency-amount="<%= Number(plan.prix_action || 0) %>"><%= plan.prix_action.toLocaleString('fr-FR') %></span>
+                    <span data-currency-code>FCFA</span>
+                </div>
                 <div class="intro-label">Prix par action</div>
             </div>
             <div class="intro-item">
@@ -148,7 +151,11 @@
         </section>
 
         <div class="notice-card">
-            <strong>À savoir :</strong> le minimum est de <%= plan.actions_minimum %> actions. Votre solde actuel est de <%= solde.toLocaleString('fr-FR') %> FCFA. Vous pouvez effectuer au maximum <%= maxAchatsParPlan %> achats sur ce plan.
+            <strong>À savoir :</strong> le minimum est de <%= plan.actions_minimum %> actions.
+            Votre solde actuel est de
+            <span data-currency-amount="<%= Number(solde || 0) %>"><%= solde.toLocaleString('fr-FR') %></span>
+            <span data-currency-code>FCFA</span>.
+            Vous pouvez effectuer au maximum <%= maxAchatsParPlan %> achats sur ce plan.
         </div>
 
         <div class="success notice-card" id="successCard">
@@ -192,7 +199,11 @@ function decimal(value) {
 }
 function roundActions(value) { return Math.round(value * 10000) / 10000; }
 function money(value) {
-    return Number(value).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+    const currency = window.GDCurrency ? window.GDCurrency.getCurrency() : 'FCFA';
+    const formatted = window.GDCurrency
+        ? window.GDCurrency.formatAmount(value, currency)
+        : Number(value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+    return `${formatted} ${currency}`;
 }
 function rateForAmount(amount) {
     const tier = plan.strategie.find(item => amount >= Number(item.min) && (item.max == null || amount <= Number(item.max)));
@@ -234,7 +245,7 @@ function updateSummary() {
     const rate = rateForAmount(amount);
     const daily = amount * rate / 100;
     document.getElementById('helpText').textContent =
-        `${actions} action(s) · ${plan.prixAction.toLocaleString('fr-FR')} FCFA/action · taux ${rate}%/jour`;
+        `${actions} action(s) · ${money(plan.prixAction)}/action · taux ${rate}%/jour`;
     document.getElementById('summaryAmount').textContent = money(amount);
     document.getElementById('summaryDaily').textContent = money(daily);
     document.getElementById('summaryTotal').textContent = money(daily * plan.duree);
@@ -293,6 +304,8 @@ document.getElementById('confirmButton').addEventListener('click', async functio
         this.disabled = false; this.textContent = "Confirmer l'achat";
     }
 });
+
+window.addEventListener('gd-currency-change', updateSummary);
 updateSummary();
 </script>
 </body>

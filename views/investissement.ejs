@@ -265,7 +265,10 @@
                             <div class="plan-name"><%= plan.nom %></div>
                             <div class="plan-stats">
                                 <div class="stat-cell">
-                                    <div class="stat-val"><%= plan.prix_action.toLocaleString('fr-FR') %> FCFA</div>
+                                    <div class="stat-val">
+                                        <span data-currency-amount="<%= Number(plan.prix_action || 0) %>"><%= plan.prix_action.toLocaleString('fr-FR') %></span>
+                                        <span data-currency-code>FCFA</span>
+                                    </div>
                                     <div class="stat-lbl">Prix / action</div>
                                 </div>
                                 <div class="stat-cell">
@@ -275,7 +278,11 @@
                             </div>
                             <div class="plan-footer">
                                 <div class="plan-price">
-                                    Minimum : <strong><%= plan.prix.toLocaleString('fr-FR') %> FCFA</strong><br>
+                                    Minimum :
+                                    <strong>
+                                        <span data-currency-amount="<%= Number(plan.prix || 0) %>"><%= plan.prix.toLocaleString('fr-FR') %></span>
+                                        <span data-currency-code>FCFA</span>
+                                    </strong><br>
                                     <small><%= achatsEffectues %>/<%= maxAchatsParPlan || 3 %> achat(s)</small>
                                 </div>
                                 <% if (plan.bloque) { %>
@@ -321,7 +328,11 @@
                             <div>
                                 <div class="order-name"><%= cmd.plan_nom %></div>
                             <div class="order-amount">
-                                Montant investi : <strong><%= parseFloat(cmd.montant).toLocaleString('fr-FR') %> FCFA</strong>
+                                Montant investi :
+                                <strong>
+                                    <span data-currency-amount="<%= Number(cmd.montant || 0) %>"><%= parseFloat(cmd.montant).toLocaleString('fr-FR') %></span>
+                                    <span data-currency-code>FCFA</span>
+                                </strong>
                                 <% if (cmd.nombre_actions && Number(cmd.nombre_actions) > 1) { %>
                                     · <strong><%= cmd.nombre_actions %> actions</strong>
                                 <% } %>
@@ -436,7 +447,14 @@
     <div class="floater-box">
         <div class="floater-icon"><i class="fas fa-coins" style="color:#c8820a;"></i></div>
         <div class="floater-title">Solde Insuffisant</div>
-        <div class="floater-msg">Votre solde actuel est de <strong><%= solde.toLocaleString() %> FCFA</strong>. Veuillez recharger pour continuer.</div>
+        <div class="floater-msg">
+            Votre solde actuel est de
+            <strong>
+                <span data-currency-amount="<%= Number(solde || 0) %>"><%= solde.toLocaleString('fr-FR') %></span>
+                <span data-currency-code>FCFA</span>
+            </strong>.
+            Veuillez recharger pour continuer.
+        </div>
         <div class="floater-btns">
             <button class="floater-btn floater-primary" onclick="window.location.href='/depot'">Recharger</button>
             <button class="floater-btn floater-secondary" onclick="document.getElementById('insufficientBalanceFloater').style.display='none'">Annuler</button>
@@ -515,7 +533,7 @@ function ouvrirPopup(plan) {
         (plan.actionsMinimum * plan.prixAction).toFixed(2);
     setPurchaseMode('actions');
     document.getElementById('popup-actions-help').textContent =
-        `1 action = ${plan.prixAction.toLocaleString('fr-FR')} FCFA · minimum ${plan.actionsMinimum} actions · ${plan.achatsRestants} achat(s) restant(s)`;
+        `1 action = ${displayMoney(plan.prixAction)}/action · minimum ${plan.actionsMinimum} actions · ${plan.achatsRestants} achat(s) restant(s)`;
     updatePurchaseSummary();
     document.getElementById('investPopup').style.display = 'flex';
 }
@@ -523,6 +541,14 @@ function ouvrirPopup(plan) {
 function parseDecimal(value) {
     const normalized = String(value ?? '').trim().replace(',', '.');
     return normalized ? Number(normalized) : NaN;
+}
+
+function displayMoney(value) {
+    const currency = window.GDCurrency ? window.GDCurrency.getCurrency() : 'FCFA';
+    const formatted = window.GDCurrency
+        ? window.GDCurrency.formatAmount(value, currency)
+        : Number(value || 0).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+    return `${formatted} ${currency}`;
 }
 
 function roundActions(value) {
@@ -552,10 +578,9 @@ function setPurchaseMode(mode) {
 
 document.querySelectorAll('.purchase-mode-btn').forEach((button) => {
     button.addEventListener('click', () => {
-        const currentAmount = document.getElementById('popup-prix').textContent
-            .replace(/[^\d,.-]/g, '').replace(',', '.');
-        if (button.dataset.mode === 'amount' && currentAmount && currentAmount !== '-') {
-            document.getElementById('popup-amount').value = currentAmount;
+        const currentAmount = parseDecimal(document.getElementById('popup-amount').value);
+        if (button.dataset.mode === 'amount' && Number.isFinite(currentAmount)) {
+            document.getElementById('popup-amount').value = currentAmount.toFixed(2);
         }
         setPurchaseMode(button.dataset.mode);
         updatePurchaseSummary();
@@ -616,14 +641,14 @@ function updatePurchaseSummary() {
     const taux = rateForAmount(montant);
     const gainJournalier = montant * taux / 100;
     const gainTotal = gainJournalier * currentPlan.duree;
-    document.getElementById('popup-prix').textContent = montant.toLocaleString('fr-FR') + ' FCFA';
+    document.getElementById('popup-prix').textContent = displayMoney(montant);
     document.getElementById('popup-gain-journalier').textContent =
-        gainJournalier.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+        displayMoney(gainJournalier);
     document.getElementById('popup-duree').textContent = currentPlan.duree + ' jours';
     document.getElementById('popup-gain-total').textContent =
-        gainTotal.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+        displayMoney(gainTotal);
     document.getElementById('popup-actions-help').textContent =
-        `${actions} action(s) · ${currentPlan.prixAction.toLocaleString('fr-FR')} FCFA/action · taux ${taux}%/jour · ${currentPlan.achatsRestants} achat(s) restant(s)`;
+        `${actions} action(s) · ${displayMoney(currentPlan.prixAction)}/action · taux ${taux}%/jour · ${currentPlan.achatsRestants} achat(s) restant(s)`;
 
     if (actions < currentPlan.actionsMinimum) {
         balanceWarning.textContent =
@@ -633,7 +658,7 @@ function updatePurchaseSummary() {
     } else if (montant > soldeClient) {
         const missing = montant - soldeClient;
         balanceWarning.textContent =
-            `Votre solde est de ${soldeClient.toLocaleString('fr-FR')} FCFA. Il vous manque ${missing.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} FCFA.`;
+            `Votre solde est de ${displayMoney(soldeClient)}. Il vous manque ${displayMoney(missing)}.`;
         balanceWarning.style.display = 'block';
         confirmButton.disabled = true;
     } else {
@@ -667,9 +692,9 @@ document.getElementById('confirmerInvestBtn').addEventListener('click', function
             fermerPopup();
             document.getElementById('success-plan-name').textContent =
                 data.plan_name + ' · ' + data.nombre_actions + ' action(s)';
-            document.getElementById('success-montant').textContent = parseFloat(data.montant).toLocaleString('fr-FR') + ' FCFA';
+            document.getElementById('success-montant').textContent = displayMoney(data.montant);
             document.getElementById('success-gain').textContent =
-                parseFloat(data.gain_journalier).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' FCFA';
+                displayMoney(data.gain_journalier);
             document.getElementById('successPopup').style.display = 'flex';
         } else {
             showAlert(data.message || "Erreur lors de l'investissement", 'error');
@@ -677,6 +702,10 @@ document.getElementById('confirmerInvestBtn').addEventListener('click', function
         }
     })
     .catch(() => { showAlert('Erreur de connexion', 'error'); fermerPopup(); this.disabled = false; this.textContent = "Confirmer l'achat"; });
+});
+
+window.addEventListener('gd-currency-change', () => {
+    if (currentPlan) updatePurchaseSummary();
 });
 
 function fermerSuccessPopup() {
