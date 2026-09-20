@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Créer un post - Groupe Dangote (GD)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { box-sizing:border-box; margin:0; padding:0; font-family:'Poppins','Segoe UI',sans-serif; }
+        body { min-height:100vh; background:#F5F5FA; color:#14105F; padding-bottom:95px; }
+        .container { max-width:520px; margin:0 auto; }
+        .page-header {
+            background:linear-gradient(135deg,#14105F,#211987); border-top:5px solid #D60000;
+            color:#fff; padding:18px 18px 22px;
+        }
+        .back-row { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+        .back-btn {
+            width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+            border-radius:50%; background:rgba(255,255,255,.16); color:#fff;
+            text-decoration:none; font-size:16px;
+        }
+        .back-row span { font-size:13px; font-weight:600; opacity:.88; }
+        .page-header h1 { font-size:22px; line-height:1.2; }
+        .page-header p { margin-top:6px; font-size:12px; opacity:.82; }
+        main { padding:18px 16px; }
+        .form-card {
+            background:#fff; border-radius:18px; padding:20px;
+            box-shadow:0 5px 18px rgba(20,16,95,.10);
+        }
+        .form-group { margin-bottom:18px; }
+        label { display:block; color:#14105F; font-size:13px; font-weight:700; margin-bottom:8px; }
+        textarea {
+            width:100%; min-height:135px; resize:vertical; border:1px solid #D5D5E2;
+            border-radius:10px; padding:13px; outline:none; color:#292735;
+            font-size:14px; line-height:1.5; background:#fff;
+        }
+        textarea:focus, input:focus { border-color:#D60000; box-shadow:0 0 0 3px rgba(214,0,0,.10); }
+        .file-upload { position:relative; }
+        .file-upload-btn {
+            min-height:155px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding:22px 15px; text-align:center; border:2px dashed #D60000;
+            border-radius:12px; background:#FBFBFF; color:#14105F; cursor:pointer;
+        }
+        .file-upload-btn i { color:#D60000; font-size:28px; margin-bottom:10px; }
+        .upload-title { font-size:14px; font-weight:700; }
+        .upload-hint { color:#6F6B82; font-size:12px; margin-top:5px; }
+        .file-upload-input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+        .image-preview { display:none; max-width:100%; max-height:130px; margin:12px auto 0; border-radius:9px; object-fit:contain; }
+        .submit-btn {
+            width:100%; border:0; border-radius:10px; padding:14px; background:#D60000;
+            color:#fff; font-size:15px; font-weight:800; cursor:pointer;
+        }
+        .submit-btn:disabled { opacity:.6; cursor:not-allowed; }
+        .info-card {
+            margin-top:14px; padding:13px 14px; border-radius:11px; background:#fff;
+            color:#6F6B82; font-size:12px; line-height:1.5; border:1px solid #E4E4EE;
+        }
+        .info-card i { color:#D60000; margin-right:5px; }
+        .success-card {
+            display:none; margin-top:14px; padding:20px; border-radius:16px; background:#fff;
+            text-align:center; box-shadow:0 5px 18px rgba(20,16,95,.10);
+        }
+        .success-card i { color:#16803C; font-size:36px; margin-bottom:9px; }
+        .success-card h2 { color:#14105F; font-size:18px; margin-bottom:6px; }
+        .success-card p { color:#6F6B82; font-size:13px; line-height:1.5; }
+        .error-card { display:none; margin-bottom:14px; padding:11px 13px; border-radius:9px; background:#FFF0EE; border:1px solid #F2B0A8; color:#B63A30; font-size:12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="page-header">
+        <div class="back-row">
+            <a class="back-btn" href="/" aria-label="Retour à l'accueil"><i class="fas fa-arrow-left"></i></a>
+            <span>Retour à l'accueil</span>
+        </div>
+        <h1>Créer un post</h1>
+        <p>Partagez votre expérience avec la communauté Groupe Dangote.</p>
+    </header>
+
+    <main>
+        <div class="error-card" id="postError"></div>
+        <section class="form-card" id="postCard">
+            <form id="newPostForm" enctype="multipart/form-data" method="POST" action="/">
+                <div class="form-group">
+                    <label for="postMessage">Message</label>
+                    <textarea id="postMessage" name="message" placeholder="Partagez votre expérience avec Groupe Dangote..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="postImage">Image</label>
+                    <div class="file-upload">
+                        <div class="file-upload-btn">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="upload-title">Cliquez pour télécharger une image</div>
+                            <div class="upload-hint">PNG, JPG, JPEG — maximum 5 MB</div>
+                            <img id="imagePreview" class="image-preview" alt="Aperçu de l'image">
+                        </div>
+                        <input type="file" id="postImage" name="image" class="file-upload-input" accept="image/jpeg,image/jpg,image/png" required>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" id="submitPost">
+                    <i class="fas fa-paper-plane"></i> Publier le post
+                </button>
+            </form>
+        </section>
+        <div class="info-card"><i class="fas fa-info-circle"></i> Votre post sera vérifié avant d’être publié dans la communauté.</div>
+        <div class="success-card" id="postSuccess">
+            <i class="fas fa-circle-check"></i>
+            <h2>Post envoyé</h2>
+            <p>Votre post a été soumis et sera vérifié avant publication.</p>
+            <a href="/" class="submit-btn" style="display:block;text-decoration:none;margin-top:15px;">Retour à l'accueil</a>
+        </div>
+    </main>
+</div>
+<%- include('partials/menu', { page: 'index' }) %>
+
+<script>
+const imageInput = document.getElementById('postImage');
+const imagePreview = document.getElementById('imagePreview');
+imageInput.addEventListener('change', () => {
+    const file = imageInput.files && imageInput.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        imageInput.value = '';
+        const error = document.getElementById('postError');
+        error.textContent = 'L’image ne doit pas dépasser 5 MB.';
+        error.style.display = 'block';
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        imagePreview.src = event.target.result;
+        imagePreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('newPostForm').addEventListener('submit', () => {
+    document.getElementById('submitPost').disabled = true;
+    document.getElementById('submitPost').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
+});
+</script>
+</body>
+</html>

@@ -21,6 +21,10 @@ const upload = multer({
   },
 });
 
+router.get('/post/nouveau', requireAuth, (req, res) => {
+  res.render('post-nouveau');
+});
+
 router.get('/', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   try {
