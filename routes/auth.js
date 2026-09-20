@@ -25,6 +25,11 @@ function isValidIndicatif(indicatif) {
   return /^\+[1-9]\d{0,3}$/.test(String(indicatif || '').trim());
 }
 
+function normalizeIndicatif(indicatif) {
+  const value = String(indicatif || '').trim();
+  return /^\d{1,4}$/.test(value) ? `+${value}` : value;
+}
+
 // GET /connexion
 router.get('/connexion', (req, res) => {
   if (req.session.user_id) return res.redirect('/');
@@ -38,7 +43,8 @@ router.get('/connexion', (req, res) => {
 // POST /connexion
 router.post('/connexion', async (req, res) => {
   try {
-    const { indicatif, telephone, mot_de_passe } = req.body;
+    const { telephone, mot_de_passe } = req.body;
+    const indicatif = normalizeIndicatif(req.body.indicatif);
     const tel = (telephone || '').replace(/[^0-9]/g, '');
     const full_tel = indicatif + tel;
 
@@ -93,7 +99,11 @@ router.get('/inscription1', (req, res) => {
 // POST /inscription1
 router.post('/inscription1', async (req, res) => {
   try {
-    const { nom, pays, indicatif, telephone, mot_de_passe, confirmation } = req.body;
+    const { nom, telephone, mot_de_passe, confirmation } = req.body;
+    const paysSelectionne = req.body.pays;
+    const indicatif = normalizeIndicatif(req.body.indicatif);
+    const paysConnu = paysEligibles[indicatif];
+    const pays = paysConnu || paysSelectionne;
     const telLocal = (telephone || '').replace(/[^0-9]/g, '');
     const tel = indicatif + telLocal;
     req.session.form_data = { nom, pays, indicatif, telephone };
@@ -101,8 +111,7 @@ router.post('/inscription1', async (req, res) => {
     if (!nom || !pays || !indicatif || !telLocal || !mot_de_passe) {
       throw new Error('Tous les champs sont obligatoires');
     }
-    const isKnownCountry = Boolean(paysEligibles[indicatif]);
-    if (!isKnownCountry && pays !== 'Autre') {
+    if (!paysConnu && paysSelectionne !== 'Autre') {
       throw new Error('Veuillez sélectionner un pays ou choisir « Autre ».');
     }
     if (!isValidIndicatif(indicatif)) throw new Error('Indicatif de pays non valide.');

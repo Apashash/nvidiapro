@@ -302,10 +302,23 @@
             countryTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
             if (open) countrySearch.focus();
         }
+        function normalizeIndicatif(value) {
+            const digits = String(value || '').replace(/\D/g, '');
+            return digits ? `+${digits}` : '';
+        }
+
         function updateOtherIndicator() {
-            const value = customIndicatif.value.trim();
-            indicatifInput.value = value;
-            countryCodeLabel.textContent = value || 'Indicatif requis';
+            const normalized = normalizeIndicatif(customIndicatif.value);
+            if (customIndicatif.value !== normalized) customIndicatif.value = normalized;
+
+            const knownOption = countryOptions.find(option => option.dataset.code === normalized);
+            if (knownOption) {
+                selectCountry(knownOption);
+                return;
+            }
+
+            indicatifInput.value = normalized;
+            countryCodeLabel.textContent = normalized || 'Indicatif requis';
         }
         function selectCountry(option) {
             const isOther = option.dataset.code === '__other__';
