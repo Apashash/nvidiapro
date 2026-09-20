@@ -263,7 +263,7 @@
 function copyId(btn) {
     const id = document.getElementById('userIdDisplay').textContent;
     navigator.clipboard.writeText(id).then(() => {
-        btn.innerHTML = '<i class="fas fa-check" style="color:#C47D1E"></i>';
+        btn.innerHTML = '<i class="fas fa-check" style="color:#D60000"></i>';
         setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
     }).catch(() => {
         try { document.execCommand('copy'); } catch(e) {}
