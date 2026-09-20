@@ -8,3 +8,5 @@ Client-side translation must run on initial page load and on an explicit languag
 **Why:** On mobile browsers, observing and re-translating pages with timers, counters, or dynamic notifications can freeze the visible page after a language change even when desktop automation shows no JavaScript error.
 
 **How to apply:** Keep language changes synchronous and bounded to the current DOM. If dynamic content needs translation, translate it at the point where that content is rendered rather than observing the entire document.
+
+When switching between non-French languages, retain a canonical source string or alias translations back to it; otherwise a page previously translated to English can remain partially English after switching to Spanish, Chinese, or Urdu.
