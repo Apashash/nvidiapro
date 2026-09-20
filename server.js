@@ -10,6 +10,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
+// Keep the raw webhook body available for AshTechPay HMAC verification.
+// This must run before express.json() consumes the request body.
+app.use('/ashtechpay_callback', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 app.use(session({

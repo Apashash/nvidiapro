@@ -28,7 +28,7 @@ The workflow is configured in `.replit` and waits for port 5000 before marking t
 - `uploads/` — user-uploaded post images (multer)
 
 ## Key Features
-- Mobile Money deposits via SoleasPay API
+- Mobile Money deposits via AshTechPay Direct API
 - Investment plans (Action VIP 1–11) with daily yield over 125 days
 - 3-level MLM referral system (20% / 10% / 5% commissions)
 - VIP tiers with daily salary
@@ -51,6 +51,10 @@ Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, 
 | `SESSION_SECRET` | Yes | Express session signing |
 | `DATABASE_URL` | Auto (Replit) | PostgreSQL connection (Replit built-in) |
 | `SUPABASE_DATABASE_URL` | Optional | Override DB with Supabase instance |
+| `ASHTECH_API_KEY` | Required for deposits | AshTechPay Direct API key (`ak_...`) |
+| `ASHTECHPAY_API_KEY` | Legacy fallback | Previous name accepted for existing deployments |
+| `ASHTECHPAY_WEBHOOK_SECRET` | Optional | AshTechPay webhook secret (`whsec_...`) |
+| `ASHTECH_API_BASE` | Optional | API base override; defaults to `https://www.ashtechpay.com` |
 
 ## Security Notes
 - Passwords stored plaintext in DB (matches original PHP — do not add bcrypt without a migration)

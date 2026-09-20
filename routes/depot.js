@@ -3,14 +3,16 @@ const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const axios = require('axios');
+const crypto = require('crypto');
 const { getParams } = require('../services/params');
 
-// Countries & operators from AshtechPay /v1/countries
-// Stored locally to avoid an extra API call on every page load.
-// `currency` must match the plain ISO code AshtechPay expects in /v1/collect
-// (XAF, XOF, GNF, CDF…) — NOT the per-country display suffixes (XOFC, XAFG…)
-// shown on the docs page, which are cosmetic only.
-const ashtechCountries = [
+const ASHTECH_API_BASE = process.env.ASHTECH_API_BASE || 'https://www.ashtechpay.com';
+const COUNTRY_CACHE_TTL_MS = 5 * 60 * 1000;
+
+// Fallback only for the period before the Direct API key is configured or when
+// AshTechPay is temporarily unavailable. With a configured key, the live
+// /v1/countries catalogue is always preferred and cached for five minutes.
+const fallbackAshtechCountries = [
   { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
   { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
   { code: 'BJ', name: 'Bénin',             currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
@@ -27,6 +29,62 @@ const ashtechCountries = [
 // hint up front — the actual otp_required signal always comes from the API
 // response, so this list is informational, not authoritative.
 const otpProneOperators = new Set(['Orange Money', 'Wave']);
+let ashtechCountriesCache = null;
+let ashtechCountriesCachedAt = 0;
+
+function getAshtechApiKey() {
+  // ASHTECH_API_KEY is the current documented name. Keep the legacy name as a
+  // compatibility fallback so existing deployments do not stop working.
+  return process.env.ASHTECH_API_KEY || process.env.ASHTECHPAY_API_KEY || null;
+}
+
+function normalizeAshtechCountries(payload) {
+  const countries = Array.isArray(payload)
+    ? payload
+    : (Array.isArray(payload?.countries) ? payload.countries : []);
+
+  return countries
+    .map(country => {
+      const operators = Array.isArray(country.operators)
+        ? country.operators.map(operator => {
+            if (typeof operator === 'string') return operator.trim();
+            return String(operator?.code || operator?.name || '').trim();
+          }).filter(Boolean)
+        : [];
+      return {
+        code: String(country.code || country.country_code || '').trim().toUpperCase(),
+        name: String(country.name || country.country || '').trim(),
+        currency: String(country.currency || '').trim().toUpperCase(),
+        operators,
+      };
+    })
+    .filter(country => country.code && country.name && country.currency && country.operators.length);
+}
+
+async function getAshtechCountries() {
+  const now = Date.now();
+  if (ashtechCountriesCache && now - ashtechCountriesCachedAt < COUNTRY_CACHE_TTL_MS) {
+    return ashtechCountriesCache;
+  }
+
+  const apiKey = getAshtechApiKey();
+  if (!apiKey) return fallbackAshtechCountries;
+
+  try {
+    const { data } = await axios.get(`${ASHTECH_API_BASE}/v1/countries`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      timeout: 10000,
+    });
+    const countries = normalizeAshtechCountries(data);
+    if (!countries.length) throw new Error('Catalogue AshTechPay vide ou invalide');
+    ashtechCountriesCache = countries;
+    ashtechCountriesCachedAt = now;
+    return countries;
+  } catch (error) {
+    console.error('AshTechPay countries catalogue error:', error.response?.data || error.message);
+    return ashtechCountriesCache || fallbackAshtechCountries;
+  }
+}
 
 // ── GET /depot ───────────────────────────────────────────────────────────────
 router.get('/depot', requireAuth, async (req, res) => {
@@ -45,8 +103,9 @@ router.get('/depot', requireAuth, async (req, res) => {
     delete req.session.pending_wave_url;
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
+    const countries = await getAshtechCountries();
     res.render('depot', {
-      user, countries: ashtechCountries, error, failed, depotMin,
+      user, countries, error, failed, depotMin,
       pending_depot_id, pending_numero, pending_wave_url, otp_pending,
     });
   } catch (e) {
@@ -80,7 +139,8 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   }
 
   // Validate country & operator against our known list
-  const country = ashtechCountries.find(c => c.code === country_code);
+  const countries = await getAshtechCountries();
+  const country = countries.find(c => c.code === country_code);
   if (!country) {
     req.session.error = 'Pays non supporté';
     return res.redirect('/depot');
@@ -119,7 +179,7 @@ router.post('/depot/process', requireAuth, async (req, res) => {
 // la requête sans otp pour initier une nouvelle session").
 async function initiateCollect(req, res, { depot_id, montant, currency, numero, operateur, country_code, reference, notify_url }) {
   try {
-    const apiKey = process.env.ASHTECHPAY_API_KEY;
+    const apiKey = getAshtechApiKey();
     if (!apiKey) {
       await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
       req.session.error = 'Le service de recharge est temporairement indisponible. Veuillez réessayer plus tard.';
@@ -129,7 +189,7 @@ async function initiateCollect(req, res, { depot_id, montant, currency, numero, 
     const payload = { amount: montant, currency, phone: numero, operator: operateur, country_code, reference, notify_url };
 
     const { data } = await axios.post(
-      'https://ashtechpay.top/v1/collect',
+      `${ASHTECH_API_BASE}/v1/collect`,
       payload,
       { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
     );
@@ -190,14 +250,14 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
   const notify_url = otp_pending.notify_url || buildNotifyUrl(req);
 
   try {
-    const apiKey = process.env.ASHTECHPAY_API_KEY;
+    const apiKey = getAshtechApiKey();
     if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
 
     // Le retry OTP DOIT inclure le `reference` renvoyé par AshtechPay dans la réponse 400
     // otp_required de l'étape 1 (stocké dans payload.reference — PAS notre propre référence
     // interne). Sans lui, AshtechPay renvoie 502 server_error / 400 missing_reference.
     const { data } = await axios.post(
-      'https://ashtechpay.top/v1/collect',
+      `${ASHTECH_API_BASE}/v1/collect`,
       { ...payload, otp, notify_url },
       { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
     );
@@ -317,7 +377,7 @@ function pollTransactionStatus(depot_id, transaction_id, apiKey) {
       if (!depot || depot.statut !== 'en_attente') return; // already finalized (e.g. by webhook)
 
       const { data } = await axios.get(
-        `https://ashtechpay.top/v1/transaction/${transaction_id}`,
+        `${ASHTECH_API_BASE}/v1/transaction/${transaction_id}`,
         { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
       );
 
@@ -400,11 +460,11 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
 
     if (depot.statut === 'en_attente') {
       const transaction_id = (depot.numero_transaction || '').split('|')[1];
-      const apiKey = process.env.ASHTECHPAY_API_KEY;
+      const apiKey = getAshtechApiKey();
       if (transaction_id && apiKey) {
         try {
           const { data } = await axios.get(
-            `https://ashtechpay.top/v1/transaction/${transaction_id}`,
+            `${ASHTECH_API_BASE}/v1/transaction/${transaction_id}`,
             { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
           );
           // Accept both "success"/"completed" for success, "failed"/"rejected"/"cancelled" for failure
@@ -427,6 +487,35 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
   }
 });
 
+function isValidAshtechWebhook(req, rawBody) {
+  const webhookSecret = process.env.ASHTECHPAY_WEBHOOK_SECRET
+    || process.env.ASHTECH_WEBHOOK_SECRET
+    || process.env.WHSEC;
+
+  // Signature verification is enabled automatically once the merchant adds
+  // the documented whsec_... secret. Without it, keep compatibility with
+  // accounts that have not configured signed webhooks yet.
+  if (!webhookSecret) return true;
+
+  const timestamp = req.get('X-Ashtech-Timestamp') || '';
+  const signatureHeader = req.get('X-Ashtech-Signature') || '';
+  const timestampSeconds = Number(timestamp);
+  if (!timestamp || !Number.isFinite(timestampSeconds)
+      || Math.abs(Date.now() / 1000 - timestampSeconds) > 300) {
+    return false;
+  }
+
+  const provided = signatureHeader.replace(/^sha256=/i, '').trim();
+  const expected = crypto
+    .createHmac('sha256', webhookSecret)
+    .update(`${timestamp}.${rawBody}`)
+    .digest('hex');
+  const expectedBuffer = Buffer.from(expected, 'utf8');
+  const providedBuffer = Buffer.from(provided, 'utf8');
+  return expectedBuffer.length === providedBuffer.length
+    && crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
 // ── POST /ashtechpay_callback  (webhook) ─────────────────────────────────────
 // AshtechPay calls this URL when a transaction is completed/failed.
 // Docs webhook payload:
@@ -434,7 +523,22 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
 //     status: "completed"|"failed", amount (net), total_amount (brut), currency, ... }
 // Note: status field is "completed" (not "success") — map accordingly.
 router.post('/ashtechpay_callback', async (req, res) => {
-  const { event, transaction_id, reference, status } = req.body || {};
+  const rawBody = Buffer.isBuffer(req.body)
+    ? req.body.toString('utf8')
+    : JSON.stringify(req.body || {});
+
+  if (!isValidAshtechWebhook(req, rawBody)) {
+    return res.status(401).json({ received: false, error: 'Invalid webhook signature' });
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(rawBody);
+  } catch (error) {
+    return res.status(400).json({ received: false, error: 'Invalid webhook payload' });
+  }
+
+  const { event, transaction_id, reference, status } = payload;
 
   // Always respond 200 first (as recommended by docs) so AshtechPay stops retrying
   res.status(200).json({ received: true });
