@@ -1,0 +1,73 @@
+<div class="gd-language-picker" data-language-picker>
+    <button type="button" class="gd-language-toggle" data-language-toggle aria-label="Choisir la langue" aria-expanded="false">
+        <span class="gd-language-globe" aria-hidden="true">🌐</span>
+        <span data-language-current>FR</span>
+        <span class="gd-language-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="gd-language-menu" data-language-menu role="menu">
+        <button type="button" data-language-option="fr" role="menuitem"><span>🇫🇷</span> Français</button>
+        <button type="button" data-language-option="en" role="menuitem"><span>🇬🇧</span> English</button>
+        <button type="button" data-language-option="es" role="menuitem"><span>🇪🇸</span> Español</button>
+        <button type="button" data-language-option="zh" role="menuitem"><span>🇨🇳</span> 中文</button>
+        <button type="button" data-language-option="ur" role="menuitem"><span>🇵🇰</span> اردو</button>
+    </div>
+</div>
+<style>
+    .gd-language-picker {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 15000;
+        font-family: Arial, sans-serif;
+    }
+    .gd-language-toggle {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 36px;
+        padding: 7px 10px;
+        border: 1px solid rgba(20, 16, 95, 0.18);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.96);
+        color: #14105F;
+        box-shadow: 0 3px 12px rgba(20, 16, 95, 0.16);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 800;
+    }
+    .gd-language-globe { font-size: 15px; line-height: 1; }
+    .gd-language-chevron { font-size: 12px; margin-left: 1px; }
+    .gd-language-menu {
+        display: none;
+        position: absolute;
+        top: 43px;
+        right: 0;
+        width: 172px;
+        padding: 6px;
+        border: 1px solid #E8DED3;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 10px 28px rgba(20, 16, 95, 0.2);
+    }
+    .gd-language-picker.open .gd-language-menu { display: block; }
+    .gd-language-menu button {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 9px 10px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #14105F;
+        cursor: pointer;
+        font: 600 13px Arial, sans-serif;
+        text-align: left;
+    }
+    .gd-language-menu button:hover,
+    .gd-language-menu button.active { background: #FFF0EE; color: #D60000; }
+    @media (max-width: 520px) {
+        .gd-language-picker { top: 10px; right: 10px; }
+    }
+</style>
+<script src="/assets/language.js"></script>
