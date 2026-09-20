@@ -385,6 +385,9 @@ const countryOptions  = Array.from(document.querySelectorAll('.country-option'))
 const countryPicker   = document.getElementById('countryPicker');
 const countryTrigger  = document.getElementById('countryTrigger');
 const countryLabel    = document.getElementById('countrySelectedLabel');
+function translateDynamic(value) {
+    return window.GDLanguage ? window.GDLanguage.translate(value) : value;
+}
 
 if (countrySearch) {
     function toggleCountryMenu(open) {
@@ -394,7 +397,7 @@ if (countrySearch) {
     }
 
     function selectCountry(option) {
-        operateurSelect.innerHTML = '<option value="">Sélectionnez un opérateur</option>';
+        operateurSelect.innerHTML = '<option value="">' + translateDynamic('Sélectionnez un opérateur') + '</option>';
         countryOptions.forEach(item => {
             const selected = item === option;
             item.classList.toggle('active', selected);
@@ -411,7 +414,7 @@ if (countrySearch) {
         countryCodeInput.value = option.dataset.code;
         currencyBadge.textContent = option.dataset.currency;
         currencyBadge.style.display = 'inline-block';
-        countryLabel.textContent = option.dataset.name;
+        countryLabel.textContent = translateDynamic(option.dataset.name);
         toggleCountryMenu(false);
     }
 
@@ -451,7 +454,7 @@ if (depotForm) depotForm.addEventListener('submit', function (e) {
     const countryCode = document.getElementById('countryCode').value;
     if (!countryCode) {
         e.preventDefault();
-        alert('Veuillez sélectionner un pays.');
+        alert(translateDynamic('Veuillez sélectionner un pays.'));
         return;
     }
     document.getElementById('formCard').style.opacity = '0.6';
@@ -484,8 +487,8 @@ if (depotForm) depotForm.addEventListener('submit', function (e) {
         card.classList.add('success');
         spinner.classList.add('done');
         spinner.innerHTML = '✓';
-        title.textContent = 'Paiement confirmé !';
-        note.innerHTML = '<i class="fas fa-check-circle"></i> Votre solde a été crédité automatiquement.';
+        title.textContent = translateDynamic('Paiement confirmé !');
+        note.innerHTML = '<i class="fas fa-check-circle"></i> ' + translateDynamic('Votre solde a été crédité automatiquement.');
         bar.style.width = '100%';
         bar.style.background = '#16A34A';
         clearInterval(pollInterval);
@@ -496,16 +499,16 @@ if (depotForm) depotForm.addEventListener('submit', function (e) {
         card.classList.add('failed');
         spinner.classList.add('failed');
         spinner.innerHTML = '✗';
-        title.textContent = 'Paiement échoué';
-        note.innerHTML = '<i class="fas fa-times-circle"></i> La transaction a été rejetée. Veuillez réessayer.';
+        title.textContent = translateDynamic('Paiement échoué');
+        note.innerHTML = '<i class="fas fa-times-circle"></i> ' + translateDynamic('La transaction a été rejetée. Veuillez réessayer.');
         bar.style.width = '100%';
         bar.style.background = '#DC2626';
         clearInterval(pollInterval);
     }
 
     function setTimeout_() {
-        title.textContent = 'En attente de confirmation…';
-        note.innerHTML = '<i class="fas fa-info-circle"></i> Vérifiez votre téléphone. Le solde sera crédité dès validation.';
+        title.textContent = translateDynamic('En attente de confirmation…');
+        note.innerHTML = '<i class="fas fa-info-circle"></i> ' + translateDynamic('Vérifiez votre téléphone. Le solde sera crédité dès validation.');
         clearInterval(pollInterval);
     }
 

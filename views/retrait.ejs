@@ -396,6 +396,9 @@ const retraitMinimum = <%= parseFloat(locals.params && params.retrait_minimum ? 
 const scheduleMessage = <%- JSON.stringify(locals.schedule && schedule.message ? schedule.message : 'Les retraits ne sont pas disponibles en ce moment.') %>;
 const feeSummary   = document.getElementById('fee-summary');
 const inpMontant   = document.getElementById('inp-montant');
+function translateDynamic(value) {
+    return window.GDLanguage ? window.GDLanguage.translate(value) : value;
+}
 
 function updateFeeSummary() {
     if (!feeSummary) return;
@@ -430,7 +433,7 @@ function updateOperateurs() {
     indicatifBox.textContent = code || '+???';
     selOp.innerHTML = ops.length
         ? ops.map(o => `<option value="${o}">${o}</option>`).join('')
-        : '<option value="">-- Choisissez d\'abord le pays --</option>';
+        : '<option value="">-- ' + translateDynamic("Sélectionnez d'abord un pays") + ' --</option>';
 }
 
 function selectCountry(option) {
@@ -441,7 +444,7 @@ function selectCountry(option) {
     });
     selPays.value = option.dataset.name;
     selPays.dataset.code = option.dataset.code;
-    countryLabel.textContent = option.dataset.name;
+    countryLabel.textContent = translateDynamic(option.dataset.name);
     updateOperateurs();
     toggleCountryMenu(false);
 }
@@ -483,8 +486,8 @@ document.addEventListener('keydown', event => {
 });
 
 function showWithdrawInfo(title, message) {
-    document.getElementById('withdrawInfoTitle').textContent = title;
-    document.getElementById('withdrawInfoMessage').textContent = message;
+    document.getElementById('withdrawInfoTitle').textContent = translateDynamic(title);
+    document.getElementById('withdrawInfoMessage').textContent = translateDynamic(message);
     document.getElementById('withdrawInfoPopup').classList.add('show');
 }
 
@@ -520,7 +523,7 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
     }
 
     if (!pays || !operateur || !numero || !nom || !montant) {
-        notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> Veuillez remplir tous les champs.</div>';
+        notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> ' + translateDynamic('Veuillez remplir tous les champs.') + '</div>';
         notifZone.scrollIntoView({ behavior: 'smooth' });
         return;
     }
@@ -528,13 +531,13 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
     if (montant < retraitMinimum) {
         showWithdrawInfo(
             'Montant minimum non atteint',
-            `Le montant minimum de retrait est de ${retraitMinimum.toLocaleString('fr-FR')} FCFA.`
+            `${translateDynamic('Le montant minimum de retrait est de')} ${retraitMinimum.toLocaleString('fr-FR')} FCFA.`
         );
         return;
     }
 
     this.disabled = true;
-    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + translateDynamic('Traitement...');
 
     try {
         const resp = await fetch('/retrait', {
@@ -575,16 +578,16 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
                     message
                 );
             } else {
-                notifZone.innerHTML = `<div class="notif error"><i class="fas fa-exclamation-circle"></i> ${message}</div>`;
+                notifZone.innerHTML = `<div class="notif error"><i class="fas fa-exclamation-circle"></i> ${translateDynamic(message)}</div>`;
                 notifZone.scrollIntoView({ behavior: 'smooth' });
             }
             this.disabled = false;
-            this.innerHTML = '<i class="fas fa-paper-plane"></i> Demander le retrait';
+            this.innerHTML = '<i class="fas fa-paper-plane"></i> ' + translateDynamic('Demander le retrait');
         }
     } catch (e) {
-        notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> Erreur de connexion.</div>';
+        notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> ' + translateDynamic('Erreur de connexion.') + '</div>';
         this.disabled = false;
-        this.innerHTML = '<i class="fas fa-paper-plane"></i> Demander le retrait';
+        this.innerHTML = '<i class="fas fa-paper-plane"></i> ' + translateDynamic('Demander le retrait');
     }
 });
 </script>
