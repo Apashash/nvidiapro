@@ -86,9 +86,14 @@ router.get('/inscription1', (req, res) => {
 router.post('/inscription1', async (req, res) => {
   try {
     const { nom, pays, indicatif, telephone, mot_de_passe, confirmation } = req.body;
-    const tel = indicatif + (telephone || '').replace(/[^0-9]/g, '');
+    const telLocal = (telephone || '').replace(/[^0-9]/g, '');
+    const tel = indicatif + telLocal;
 
-    if (!nom || !pays || !tel || !mot_de_passe) throw new Error('Tous les champs sont obligatoires');
+    if (!nom || !pays || !indicatif || !telLocal || !mot_de_passe) {
+      throw new Error('Tous les champs sont obligatoires');
+    }
+    if (!paysEligibles[indicatif]) throw new Error('Code pays non valide.');
+    if (!/^\d{5,15}$/.test(telLocal)) throw new Error('Numéro de téléphone invalide.');
     if (mot_de_passe !== confirmation) throw new Error('Les mots de passe ne correspondent pas');
 
     // Check duplicate

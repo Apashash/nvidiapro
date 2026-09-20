@@ -64,13 +64,21 @@ router.get('/retrait', requireAuth, async (req, res) => {
     const suspendu = (params.retraits_actifs === '0');
     const schedule = buildScheduleStatus(params);
     const retrait_bloque = !!(user && user.retrait_bloque);
-    const retraits_disponibles = !suspendu && !retrait_bloque && schedule.disponible;
+    const [[activeCommandRow]] = await db.query(
+      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ? AND date_fin >= CURRENT_DATE AND statut = 'actif'",
+      [user_id]
+    );
+    const hasActiveInvestment = Number(activeCommandRow?.nb) > 0;
+    const retraits_disponibles = !suspendu && !retrait_bloque && schedule.disponible && hasActiveInvestment;
 
     const message = req.session.retrait_message || null;
     delete req.session.retrait_message;
 
     const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
-    res.render('retrait', { user, solde, retraits_disponibles, suspendu, retrait_bloque, schedule, params, fraisPourcentage, message });
+    res.render('retrait', {
+      user, solde, retraits_disponibles, hasActiveInvestment, suspendu,
+      retrait_bloque, schedule, params, fraisPourcentage, message,
+    });
   } catch (e) {
     console.error(e);
     res.redirect('/');
@@ -116,7 +124,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
     const operateur = (req.body.operateur || '').trim();
     const pays      = (req.body.pays     || '').trim();
 
-    if (!montant || !numero || !nom || !operateur || !pays) {
+    if (!Number.isFinite(montant) || montant <= 0 || !numero || !nom || !operateur || !pays) {
       return res.json({ success: false, message: 'Veuillez remplir tous les champs.' });
     }
 

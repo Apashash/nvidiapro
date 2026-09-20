@@ -566,7 +566,9 @@ function rateForAmount(amount) {
     const tier = currentPlan.strategie.find(item =>
         amount >= Number(item.min) && (item.max == null || amount <= Number(item.max))
     );
-    return tier ? Number(tier.rate) : Number(currentPlan.strategie[currentPlan.strategie.length - 1].rate);
+    if (tier) return Number(tier.rate);
+    const previousTier = [...currentPlan.strategie].reverse().find(item => amount >= Number(item.min));
+    return previousTier ? Number(previousTier.rate) : Number(currentPlan.strategie[0].rate);
 }
 
 function updatePurchaseSummary() {
@@ -629,8 +631,9 @@ function updatePurchaseSummary() {
         balanceWarning.style.display = 'block';
         confirmButton.disabled = true;
     } else if (montant > soldeClient) {
+        const missing = montant - soldeClient;
         balanceWarning.textContent =
-            `Votre solde est de ${soldeClient.toLocaleString('fr-FR')} FCFA. Rechargez au moins ${montant.toLocaleString('fr-FR')} FCFA pour confirmer.`;
+            `Votre solde est de ${soldeClient.toLocaleString('fr-FR')} FCFA. Il vous manque ${missing.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} FCFA.`;
         balanceWarning.style.display = 'block';
         confirmButton.disabled = true;
     } else {

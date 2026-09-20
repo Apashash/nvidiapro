@@ -196,7 +196,9 @@ function money(value) {
 }
 function rateForAmount(amount) {
     const tier = plan.strategie.find(item => amount >= Number(item.min) && (item.max == null || amount <= Number(item.max)));
-    return tier ? Number(tier.rate) : Number(plan.strategie[plan.strategie.length - 1].rate);
+    if (tier) return Number(tier.rate);
+    const previousTier = [...plan.strategie].reverse().find(item => amount >= Number(item.min));
+    return previousTier ? Number(previousTier.rate) : Number(plan.strategie[0].rate);
 }
 function switchMode(nextMode) {
     mode = nextMode;
@@ -249,8 +251,9 @@ function updateSummary() {
     }
 }
 function showBalanceModal(amount) {
+    const missing = Math.max(0, amount - solde);
     document.getElementById('balanceModalMessage').textContent =
-        `Votre solde est de ${money(solde)}. Rechargez au moins ${money(amount)} pour confirmer.`;
+        `Votre solde est de ${money(solde)}. Il vous manque ${money(missing)} pour confirmer.`;
     document.getElementById('balanceModal').style.display = 'flex';
 }
 document.querySelectorAll('.mode-btn').forEach(button => button.addEventListener('click', () => switchMode(button.dataset.mode)));

@@ -66,7 +66,7 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   // ── Validations ────────────────────────────────────────────────────────────
   const params = await getParams();
   const depotMin = parseFloat(params.depot_minimum ?? 200);
-  if (montant < depotMin) {
+  if (!Number.isFinite(montant) || montant <= 0 || montant < depotMin) {
     req.session.error = `Le montant minimum de dépôt est de ${depotMin.toLocaleString('fr-FR')} FCFA.`;
     return res.redirect('/depot');
   }
@@ -120,7 +120,11 @@ router.post('/depot/process', requireAuth, async (req, res) => {
 async function initiateCollect(req, res, { depot_id, montant, currency, numero, operateur, country_code, reference, notify_url }) {
   try {
     const apiKey = process.env.ASHTECHPAY_API_KEY;
-    if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
+    if (!apiKey) {
+      await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
+      req.session.error = 'Le service de recharge est temporairement indisponible. Veuillez réessayer plus tard.';
+      return res.redirect('/depot');
+    }
 
     const payload = { amount: montant, currency, phone: numero, operator: operateur, country_code, reference, notify_url };
 

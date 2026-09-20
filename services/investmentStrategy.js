@@ -34,7 +34,13 @@ function rateForAmount(amount, strategy) {
   const matching = tiers.find((tier) =>
     numericAmount >= tier.min && (tier.max == null || numericAmount <= tier.max)
   );
-  return matching ? matching.rate : tiers[tiers.length - 1].rate;
+  if (matching) return matching.rate;
+
+  // Some legacy strategies use integer boundaries such as 6000 then 6001.
+  // For a decimal amount in that gap, keep the previous tier's rate rather
+  // than unexpectedly jumping to the highest published rate.
+  const previousTier = [...tiers].reverse().find((tier) => numericAmount >= tier.min);
+  return previousTier ? previousTier.rate : tiers[0].rate;
 }
 
 function lowestRate(strategy) {
