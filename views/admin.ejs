@@ -266,8 +266,31 @@
     }
   </style>
   <link rel="stylesheet" href="/assets/dangote-theme.css">
+  <style>
+    /* Admin contrast overrides: the shared theme uses !important rules. */
+    .admin-panel .page-header {
+      background:var(--brand-navy) !important;
+      border-bottom:4px solid var(--brand-red) !important;
+      border-radius:2px !important;
+      padding:22px 20px !important;
+    }
+    .admin-panel .page-title { color:#fff !important; }
+    .admin-panel .page-count { color:rgba(255,255,255,0.78) !important; }
+    .admin-panel .page-icon {
+      background:var(--brand-red) !important;
+      color:#fff !important;
+    }
+    .admin-panel .page-icon i { color:#fff !important; }
+    .admin-panel .btn-add {
+      background:var(--brand-red) !important;
+      color:#fff !important;
+    }
+    .admin-panel .user-name { color:var(--brand-navy) !important; }
+    .admin-panel .user-sub { color:var(--brand-muted) !important; }
+    .admin-panel .user-balance { color:var(--brand-red) !important; }
+  </style>
 </head>
-<body>
+<body class="admin-panel">
 
 <!-- Top bar -->
 <div class="topbar">

@@ -132,8 +132,33 @@
     .section-title { font-size:0.78rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 8px; }
   </style>
   <link rel="stylesheet" href="/assets/dangote-theme.css">
+  <style>
+    /* Keep user-management actions readable after the shared theme overrides. */
+    .admin-user-panel .user-header {
+      background:#fff !important;
+      border:1px solid var(--brand-border) !important;
+      border-top:4px solid var(--brand-red) !important;
+    }
+    .admin-user-panel .user-name { color:var(--brand-navy) !important; }
+    .admin-user-panel .user-tel { color:var(--brand-muted) !important; }
+    .admin-user-panel .user-bal { color:var(--brand-red) !important; }
+    .admin-user-panel .action-item {
+      background:#fff !important;
+      color:var(--brand-navy) !important;
+      border-bottom:1px solid var(--brand-border) !important;
+    }
+    .admin-user-panel .action-item:hover { background:#f7f7f8 !important; }
+    .admin-user-panel .action-label { color:var(--brand-navy) !important; }
+    .admin-user-panel .action-item.danger {
+      background:#fff1f1 !important;
+    }
+    .admin-user-panel .action-item.danger .action-label {
+      color:var(--brand-red-dark) !important;
+    }
+    .admin-user-panel .action-chevron { color:var(--brand-navy) !important; }
+  </style>
 </head>
-<body>
+<body class="admin-user-panel">
 
 <div class="topbar">
   <a href="<%= backUrl %>" class="topbar-btn"><i class="fas fa-arrow-left"></i></a>
