@@ -245,7 +245,24 @@
     document.addEventListener('DOMContentLoaded', () => {
         initializePicker();
         translateDom();
-        const observer = new MutationObserver(() => translateDom());
+        let translationQueued = false;
+        let translating = false;
+        const observer = new MutationObserver(() => {
+            if (translationQueued || translating) return;
+            translationQueued = true;
+            window.setTimeout(() => {
+                translationQueued = false;
+                if (translating || !document.body) return;
+                translating = true;
+                observer.disconnect();
+                try {
+                    translateDom();
+                } finally {
+                    translating = false;
+                    observer.observe(document.body, { childList: true, subtree: true });
+                }
+            }, 120);
+        });
         observer.observe(document.body, { childList: true, subtree: true });
     });
 })();
