@@ -1,3 +1,20 @@
+<script>
+    (function () {
+        var supported = ['fr', 'en', 'es', 'zh', 'ur'];
+        var stored = null;
+        try { stored = window.localStorage.getItem('gd_language'); } catch (error) {}
+        var language = supported.indexOf(stored) >= 0 ? stored : 'fr';
+        document.documentElement.lang = language;
+        document.documentElement.dir = language === 'ur' ? 'rtl' : 'ltr';
+        document.documentElement.classList.add('gd-language-pending');
+        window.setTimeout(function () {
+            document.documentElement.classList.remove('gd-language-pending');
+        }, 2500);
+    })();
+</script>
+<style>
+    html.gd-language-pending body { visibility: hidden; }
+</style>
 <div class="gd-language-picker" data-language-picker>
     <button type="button" class="gd-language-toggle" data-language-toggle aria-label="Choisir la langue" aria-expanded="false">
         <span class="gd-language-globe" aria-hidden="true">🌐</span>
@@ -70,4 +87,4 @@
         .gd-language-picker { top: 10px; right: 10px; }
     }
 </style>
-<script src="/assets/language.js?v=4"></script>
+<script src="/assets/language.js?v=5"></script>
