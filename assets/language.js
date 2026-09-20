@@ -25,6 +25,14 @@
             'Numéro de Téléphone': 'Phone number', 'Numéro de téléphone': 'Phone number',
             'Mot de passe': 'Password', 'Votre mot de passe': 'Your password',
             'Se Connecter': 'Log in', 'Créer un compte': 'Create an account', 'ou': 'or',
+            'Rejoignez Groupe Dangote': 'Join Dangote Group', 'Code d’invitation': 'Invitation code',
+            'Nom complet': 'Full name', 'Votre nom complet': 'Your full name', 'Numéro WhatsApp': 'WhatsApp number',
+            'Autre': 'Other', 'Indicatif personnalisé': 'Custom calling code', 'Aucun pays trouvé.': 'No country found.',
+            'Indicatif de pays (ex. +221)': 'Country calling code (e.g. +221)',
+            'Choisissez un mot de passe': 'Choose a password', 'Confirmer le mot de passe': 'Confirm password',
+            'Confirmez le mot de passe': 'Confirm your password', 'Créer mon compte': 'Create my account',
+            'Déjà membre ?': 'Already a member?', 'Se connecter': 'Log in',
+            'Vous êtes invité par un ambassadeur Groupe Dangote (GD)': 'You were invited by a Groupe Dangote (GD) ambassador',
             'Cameroun': 'Cameroon', 'Rechercher un pays': 'Search for a country',
             '« Ensemble, construisons la richesse de demain. »': '“Together, let us build tomorrow’s wealth.”',
             'Cadeaux': 'Gifts', 'Code cadeau': 'Gift code', 'Machine à Sous': 'Slot Machine',
@@ -78,6 +86,14 @@
             'Numéro de Téléphone': 'Número de teléfono', 'Numéro de téléphone': 'Número de teléfono',
             'Mot de passe': 'Contraseña', 'Votre mot de passe': 'Tu contraseña',
             'Se Connecter': 'Iniciar sesión', 'Créer un compte': 'Crear una cuenta', 'ou': 'o',
+            'Rejoignez Groupe Dangote': 'Únete a Grupo Dangote', 'Code d’invitation': 'Código de invitación',
+            'Nom complet': 'Nombre completo', 'Votre nom complet': 'Tu nombre completo', 'Numéro WhatsApp': 'Número de WhatsApp',
+            'Autre': 'Otro', 'Indicatif personnalisé': 'Indicativo personalizado', 'Aucun pays trouvé.': 'No se encontró ningún país.',
+            'Indicatif de pays (ex. +221)': 'Indicativo de país (ej. +221)',
+            'Choisissez un mot de passe': 'Elige una contraseña', 'Confirmer le mot de passe': 'Confirmar contraseña',
+            'Confirmez le mot de passe': 'Confirma tu contraseña', 'Créer mon compte': 'Crear mi cuenta',
+            'Déjà membre ?': '¿Ya eres miembro?', 'Se connecter': 'Iniciar sesión',
+            'Vous êtes invité par un ambassadeur Groupe Dangote (GD)': 'Has sido invitado por un embajador de Grupo Dangote (GD)',
             'Cameroun': 'Camerún', 'Rechercher un pays': 'Buscar un país',
             '« Ensemble, construisons la richesse de demain. »': '« Juntos, construyamos la riqueza del mañana. »',
             'Cadeaux': 'Regalos', 'Code cadeau': 'Código de regalo', 'Machine à Sous': 'Máquina tragamonedas',
@@ -112,6 +128,14 @@
             'Numéro de Téléphone': '电话号码', 'Numéro de téléphone': '电话号码',
             'Mot de passe': '密码', 'Votre mot de passe': '您的密码',
             'Se Connecter': '登录', 'Créer un compte': '创建账户', 'ou': '或',
+            'Rejoignez Groupe Dangote': '加入Dangote集团', 'Code d’invitation': '邀请码',
+            'Nom complet': '姓名', 'Votre nom complet': '您的姓名', 'Numéro WhatsApp': 'WhatsApp号码',
+            'Autre': '其他', 'Indicatif personnalisé': '自定义区号', 'Aucun pays trouvé.': '未找到国家。',
+            'Indicatif de pays (ex. +221)': '国家区号（例如 +221）',
+            'Choisissez un mot de passe': '设置密码', 'Confirmer le mot de passe': '确认密码',
+            'Confirmez le mot de passe': '确认您的密码', 'Créer mon compte': '创建我的账户',
+            'Déjà membre ?': '已经是会员？', 'Se connecter': '登录',
+            'Vous êtes invité par un ambassadeur Groupe Dangote (GD)': '您受Dangote集团（GD）大使邀请',
             'Cameroun': '喀麦隆', 'Rechercher un pays': '搜索国家',
             '« Ensemble, construisons la richesse de demain. »': '“让我们共同建设美好的明天。”',
             'Cadeaux': '礼品', 'Code cadeau': '礼品码', 'Machine à Sous': '老虎机',
@@ -145,6 +169,14 @@
             'Numéro de Téléphone': 'فون نمبر', 'Numéro de téléphone': 'فون نمبر',
             'Mot de passe': 'پاس ورڈ', 'Votre mot de passe': 'آپ کا پاس ورڈ',
             'Se Connecter': 'لاگ ان', 'Créer un compte': 'اکاؤنٹ بنائیں', 'ou': 'یا',
+            'Rejoignez Groupe Dangote': 'ڈانگوٹے گروپ میں شامل ہوں', 'Code d’invitation': 'دعوتی کوڈ',
+            'Nom complet': 'پورا نام', 'Votre nom complet': 'آپ کا پورا نام', 'Numéro WhatsApp': 'واٹس ایپ نمبر',
+            'Autre': 'دیگر', 'Indicatif personnalisé': 'حسب ضرورت کوڈ', 'Aucun pays trouvé.': 'کوئی ملک نہیں ملا۔',
+            'Indicatif de pays (ex. +221)': 'ملکی کوڈ (مثلاً +221)',
+            'Choisissez un mot de passe': 'پاس ورڈ منتخب کریں', 'Confirmer le mot de passe': 'پاس ورڈ کی تصدیق کریں',
+            'Confirmez le mot de passe': 'اپنے پاس ورڈ کی تصدیق کریں', 'Créer mon compte': 'میرا اکاؤنٹ بنائیں',
+            'Déjà membre ?': 'پہلے سے رکن ہیں؟', 'Se connecter': 'لاگ ان',
+            'Vous êtes invité par un ambassadeur Groupe Dangote (GD)': 'آپ کو Groupe Dangote (GD) کے سفیر نے مدعو کیا ہے',
             'Cameroun': 'کیمرون', 'Rechercher un pays': 'ملک تلاش کریں',
             '« Ensemble, construisons la richesse de demain. »': '“آئیں مل کر کل کی دولت بنائیں۔”',
             'Cadeaux': 'تحائف', 'Code cadeau': 'تحفے کا کوڈ', 'Machine à Sous': 'سلاٹ مشین',
@@ -260,8 +292,8 @@
             }
         });
 
-        document.querySelectorAll('[placeholder], [title], [aria-label]').forEach((element) => {
-            ['placeholder', 'title', 'aria-label'].forEach((attribute) => {
+        document.querySelectorAll('[placeholder], [title], [aria-label], [data-name]').forEach((element) => {
+            ['placeholder', 'title', 'aria-label', 'data-name'].forEach((attribute) => {
                 if (element.hasAttribute(attribute)) {
                     if (!originalAttributes.has(element)) originalAttributes.set(element, {});
                     const values = originalAttributes.get(element);
