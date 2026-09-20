@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
+const { drawPrize, parsePrizeTiers } = require('../services/giftCodePrizes');
 
 router.get('/cadeau', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
@@ -36,7 +37,8 @@ router.post('/cadeau', requireAuth, async (req, res) => {
       req.session.cadeau_error = 'Code cadeau invalide ou expiré.';
       return res.redirect('/cadeau');
     }
-    const montant = parseFloat(gift.montant);
+    const tiers = parsePrizeTiers(gift.regles_json, gift.montant);
+    const { amount: montant } = drawPrize(tiers);
     const conn = await db.getConnection();
     try {
       await conn.beginTransaction();
@@ -68,10 +70,14 @@ router.post('/cadeau', requireAuth, async (req, res) => {
         req.session.cadeau_error = 'Vous avez déjà utilisé ce code.';
         return res.redirect('/cadeau');
       }
-      await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [montant, user_id]);
+      if (montant > 0) {
+        await conn.query('UPDATE soldes SET solde = solde + ? WHERE user_id = ?', [montant, user_id]);
+      }
       await conn.query("INSERT INTO historique_revenus (user_id, montant, type) VALUES (?, ?, 'bonus')", [user_id, montant]);
       await conn.commit();
-      req.session.cadeau_success = `Code validé ! Vous avez reçu ${montant} FCFA.`;
+      req.session.cadeau_success = montant > 0
+        ? `Code validé ! Vous avez reçu ${montant} FCFA.`
+        : 'Code validé ! Cette fois, aucun gain n’a été attribué.';
     } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
     res.redirect('/cadeau');
   } catch (e) {

@@ -123,6 +123,38 @@
     .tier-remove { width:34px; height:34px; border:0; border-radius:8px; background:#FEF2F2; color:#DC2626; cursor:pointer; }
     .tier-add { align-self:flex-start; margin-top:10px; background:#FFF7ED; color:#C2410C; border:1px dashed #FDBA74; border-radius:9px; padding:9px 12px; font-size:0.82rem; font-weight:700; cursor:pointer; }
     .tier-help { color:#6B7280; font-size:0.75rem; line-height:1.4; margin-top:8px; }
+    .gift-tier-editor { display:flex; flex-direction:column; gap:10px; }
+    .gift-tier-row {
+      display:grid; grid-template-columns:1fr 1fr 0.85fr auto; gap:8px; align-items:end;
+      padding:10px; background:#FFF8F0; border:1px solid #FED7AA; border-radius:10px;
+    }
+    .gift-tier-field { display:flex; flex-direction:column; gap:5px; }
+    .gift-tier-field label { font-size:0.7rem; color:#6B7280; font-weight:700; }
+    .gift-tier-field input {
+      width:100%; background:#fff; border:1px solid #D1D5DB; border-radius:8px;
+      padding:9px 10px; font-size:0.85rem; color:#1a1a1a; outline:none;
+    }
+    .gift-tier-field input:focus { border-color:#E8931A; }
+    .gift-tier-remove {
+      width:34px; height:34px; border:0; border-radius:8px;
+      background:#FEF2F2; color:#DC2626; cursor:pointer;
+    }
+    .gift-tier-add {
+      align-self:flex-start; margin-top:2px; background:#FFF7ED; color:#C2410C;
+      border:1px dashed #FDBA74; border-radius:9px; padding:9px 12px;
+      font-size:0.82rem; font-weight:700; cursor:pointer;
+    }
+    .gift-tier-help { color:#6B7280; font-size:0.75rem; line-height:1.4; margin:4px 0 12px; }
+    .gift-rules-summary {
+      display:flex; flex-wrap:wrap; gap:5px; margin-top:8px;
+    }
+    .gift-rule-pill {
+      background:#FFF7ED; color:#9A3412; border:1px solid #FED7AA;
+      border-radius:999px; padding:3px 8px; font-size:0.7rem; font-weight:700;
+    }
+    .gift-edit-form { display:none; margin-top:14px; padding-top:14px; border-top:1px solid #f0f0f0; }
+    .gift-edit-form.open { display:block; }
+    .gift-edit-form .form-grid { margin-bottom:10px; }
     .plan-edit-actions { display:flex; gap:10px; margin-top:4px; }
     .plan-edit-actions a, .plan-edit-actions button {
       flex:1; border:none; border-radius:12px; padding:13px; font-size:0.92rem;
@@ -974,19 +1006,51 @@
       <div class="param-icon" style="background:#FFF7ED"><i class="fas fa-plus-circle" style="color:#E8931A"></i></div>
       <div class="param-head-text">
         <h3>Créer un code cadeau</h3>
-        <p>Le code est utilisable par les utilisateurs depuis la page "Cadeaux"</p>
+        <p>Un seul tirage par utilisateur, selon les tranches configurées</p>
       </div>
     </div>
     <div id="codeCadeauError" style="display:none;color:#dc2626;font-size:13px;margin-bottom:10px"></div>
     <form method="POST" action="/adminxyz/codes-cadeaux/create">
+      <div class="gift-tier-help">
+        La somme des probabilités doit être exactement de 100 %. Le montant tiré est un entier compris entre les deux bornes.
+      </div>
+      <div class="gift-tier-editor" id="createGiftTiers">
+        <div class="gift-tier-row">
+          <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" value="25" required></div>
+          <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" value="100" required></div>
+          <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" value="70" required></div>
+          <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="gift-tier-row">
+          <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" value="101" required></div>
+          <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" value="300" required></div>
+          <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" value="10" required></div>
+          <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="gift-tier-row">
+          <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" value="301" required></div>
+          <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" value="400" required></div>
+          <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" value="5" required></div>
+          <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="gift-tier-row">
+          <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" value="401" required></div>
+          <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" value="500" required></div>
+          <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" value="1" required></div>
+          <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="gift-tier-row">
+          <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" value="0" required></div>
+          <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" value="0" required></div>
+          <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" value="14" required></div>
+          <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <button type="button" class="gift-tier-add" data-add-tier="createGiftTiers"><i class="fas fa-plus"></i> Ajouter une tranche</button>
       <div class="form-grid">
         <div class="form-group">
           <label>Code</label>
           <input type="text" name="code" placeholder="Ex: GD2026" required style="text-transform:uppercase">
-        </div>
-        <div class="form-group">
-          <label>Montant à gagner (FCFA)</label>
-          <input type="number" name="montant" min="1" step="0.01" required>
         </div>
       </div>
       <div class="form-grid">
@@ -1014,12 +1078,18 @@
       <div style="flex:1">
         <div style="font-weight:700;font-size:15px;letter-spacing:0.5px"><%= c.code %></div>
         <div class="dep-meta" style="margin:4px 0">
-          <%= parseFloat(c.montant).toLocaleString('fr-FR') %> FCFA · <%= c.places_utilisees %>/<%= c.places_disponibles %> places
+          <%= c.tiers.length %> tranche(s) · <%= c.places_utilisees %>/<%= c.places_disponibles %> places
           <% if (c.date_expiration) { %> · expire le <%= new Date(c.date_expiration).toLocaleDateString('fr-FR') %><% } %>
         </div>
         <span class="badge <%= statutClass %>"><%= statutLabel %></span>
+        <div class="gift-rules-summary">
+          <% c.tiers.forEach(t => { %>
+            <span class="gift-rule-pill"><%= t.min === t.max ? t.min.toLocaleString('fr-FR') : `${t.min.toLocaleString('fr-FR')}–${t.max.toLocaleString('fr-FR')}` %> FCFA · <%= t.probability %>%</span>
+          <% }); %>
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" class="btn-xs btn-e" style="padding:5px 10px" data-toggle-gift-edit="giftEdit<%= c.id %>"><i class="fas fa-pen"></i> Modifier</button>
         <form method="POST" action="/adminxyz/codes-cadeaux/toggle/<%= c.id %>">
           <button type="submit" class="btn-xs btn-v" style="padding:5px 10px"><i class="fas <%= c.actif ? 'fa-pause' : 'fa-play' %>"></i> <%= c.actif ? 'Désactiver' : 'Activer' %></button>
         </form>
@@ -1028,6 +1098,26 @@
         </form>
       </div>
     </div>
+    <form method="POST" action="/adminxyz/codes-cadeaux/edit/<%= c.id %>" class="gift-edit-form" id="giftEdit<%= c.id %>">
+      <div class="gift-tier-editor">
+        <% c.tiers.forEach(t => { %>
+        <div class="gift-tier-row">
+          <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" value="<%= t.min %>" required></div>
+          <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" value="<%= t.max %>" required></div>
+          <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" value="<%= t.probability %>" required></div>
+          <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+        </div>
+        <% }); %>
+      </div>
+      <button type="button" class="gift-tier-add" data-add-tier="<%= 'giftEdit' + c.id %>"><i class="fas fa-plus"></i> Ajouter une tranche</button>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="form-group">
+          <label>Places disponibles</label>
+          <input type="number" name="places_disponibles" min="<%= c.places_utilisees %>" step="1" value="<%= c.places_disponibles %>" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-save"><i class="fas fa-save"></i> Enregistrer les modifications</button>
+    </form>
   </div>
   <% }); %>
   <% if (!codes.length) { %><div class="empty">Aucun code cadeau créé</div><% } %>
@@ -1042,6 +1132,57 @@
         el.style.display = 'block';
       }
     })();
+
+    function createGiftTierRow() {
+      const row = document.createElement('div');
+      row.className = 'gift-tier-row';
+      row.innerHTML = `
+        <div class="gift-tier-field"><label>Minimum (FCFA)</label><input type="number" name="gain_min[]" min="0" step="1" required></div>
+        <div class="gift-tier-field"><label>Maximum (FCFA)</label><input type="number" name="gain_max[]" min="0" step="1" required></div>
+        <div class="gift-tier-field"><label>Chance (%)</label><input type="number" name="gain_probability[]" min="0" max="100" step="0.01" required></div>
+        <button type="button" class="gift-tier-remove" data-remove-tier title="Supprimer"><i class="fas fa-trash"></i></button>
+      `;
+      return row;
+    }
+
+    document.querySelectorAll('[data-add-tier]').forEach(button => {
+      button.addEventListener('click', () => {
+        document.getElementById(button.dataset.addTier).appendChild(createGiftTierRow());
+      });
+    });
+
+    document.querySelectorAll('[data-toggle-gift-edit]').forEach(button => {
+      button.addEventListener('click', () => {
+        const form = document.getElementById(button.dataset.toggleGiftEdit);
+        form.classList.toggle('open');
+        button.innerHTML = form.classList.contains('open')
+          ? '<i class="fas fa-xmark"></i> Fermer'
+          : '<i class="fas fa-pen"></i> Modifier';
+      });
+    });
+
+    document.addEventListener('click', event => {
+      const remove = event.target.closest('[data-remove-tier]');
+      if (!remove) return;
+      const editor = remove.closest('.gift-tier-editor');
+      if (editor.querySelectorAll('.gift-tier-row').length <= 1) {
+        alert('Gardez au moins une tranche.');
+        return;
+      }
+      remove.closest('.gift-tier-row').remove();
+    });
+
+    document.querySelectorAll('.gift-edit-form, form[action="/adminxyz/codes-cadeaux/create"]').forEach(form => {
+      form.addEventListener('submit', event => {
+        const probabilities = [...form.querySelectorAll('input[name="gain_probability[]"]')]
+          .map(input => Number(input.value));
+        const total = probabilities.reduce((sum, value) => sum + (Number.isFinite(value) ? value : 0), 0);
+        if (Math.abs(total - 100) > 0.0001) {
+          event.preventDefault();
+          alert(`La somme des probabilités doit être exactement de 100 % (actuellement ${total} %).`);
+        }
+      });
+    });
   </script>
 
 <%# ══════════════════ TUTO ══════════════════ %>

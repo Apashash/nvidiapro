@@ -10,6 +10,10 @@ const {
   lowestRate,
   highestRate,
 } = require('../services/investmentStrategy');
+const {
+  parsePrizeTiers,
+  validatePrizeTiers,
+} = require('../services/giftCodePrizes');
 
 const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
 if (!fs.existsSync(TUTO_UPLOAD_DIR)) fs.mkdirSync(TUTO_UPLOAD_DIR, { recursive: true });
@@ -70,6 +74,39 @@ const { getParams, invalidateCache } = require('../services/params');
 function asArray(value) {
   if (Array.isArray(value)) return value;
   return value === undefined ? [] : [value];
+}
+
+function parseGiftCodeInput(body) {
+  const mins = asArray(body.gain_min);
+  const maxes = asArray(body.gain_max);
+  const probabilities = asArray(body.gain_probability);
+
+  if (!mins.length && body.montant !== undefined && String(body.montant).trim() !== '') {
+    const montant = Number(String(body.montant).replace(',', '.'));
+    const tiers = parsePrizeTiers(null, montant);
+    return { tiers, montant };
+  }
+
+  if (!mins.length || mins.length !== maxes.length || mins.length !== probabilities.length) {
+    throw new Error('Ajoutez au moins une tranche complète.');
+  }
+
+  const tiers = validatePrizeTiers(mins.map((min, index) => ({
+    min,
+    max: maxes[index],
+    probability: probabilities[index],
+  })));
+  const montant = tiers.length === 1 && tiers[0].min === tiers[0].max ? tiers[0].min : 0;
+  return { tiers, montant };
+}
+
+function enrichGiftCode(code) {
+  try {
+    code.tiers = parsePrizeTiers(code.regles_json, code.montant);
+  } catch {
+    code.tiers = parsePrizeTiers(null, code.montant);
+  }
+  return code;
 }
 
 function parsePlanTiers(body) {
@@ -443,32 +480,54 @@ router.post('/adminxyz/tuto/delete', requireAdminAuth, async (req, res) => {
 router.get('/adminxyz/codes-cadeaux', requireAdminAuth, async (req, res) => {
   try {
     const [codes] = await db.query('SELECT * FROM codes_cadeaux ORDER BY date_creation DESC');
+    codes.forEach(enrichGiftCode);
     res.render('admin', { currentPage: 'codes-cadeaux', pageTitle: 'Code Cadeau', codes });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
 router.post('/adminxyz/codes-cadeaux/create', requireAdminAuth, async (req, res) => {
   try {
-    let { code, montant, places_disponibles, duree_jours } = req.body;
+    let { code, places_disponibles, duree_jours } = req.body;
     code = (code || '').trim().toUpperCase();
-    montant = parseFloat(montant);
     places_disponibles = parseInt(places_disponibles, 10);
-    if (!code || !Number.isFinite(montant) || montant <= 0 || !Number.isInteger(places_disponibles) || places_disponibles <= 0) {
+    if (!code || !Number.isInteger(places_disponibles) || places_disponibles <= 0) {
       return res.redirect('/adminxyz/codes-cadeaux?error=' + encodeURIComponent('Champs invalides.'));
     }
+    const { tiers, montant } = parseGiftCodeInput(req.body);
     const jours = parseInt(duree_jours, 10);
     const date_expiration = Number.isFinite(jours) && jours > 0
       ? new Date(Date.now() + jours * 24 * 60 * 60 * 1000)
       : null;
     await db.query(
-      'INSERT INTO codes_cadeaux (code, montant, places_disponibles, date_expiration) VALUES (?, ?, ?, ?)',
-      [code, montant, places_disponibles, date_expiration]
+      'INSERT INTO codes_cadeaux (code, montant, regles_json, places_disponibles, date_expiration) VALUES (?, ?, ?, ?, ?)',
+      [code, montant, JSON.stringify(tiers), places_disponibles, date_expiration]
     );
     res.redirect('/adminxyz/codes-cadeaux');
   } catch (e) {
     console.error(e);
-    const msg = e.code === '23505' ? 'Ce code existe déjà.' : e.message;
+    const msg = e.code === '23505' ? 'Ce code existe déjà.' : (e.message || 'Champs invalides.');
     res.redirect('/adminxyz/codes-cadeaux?error=' + encodeURIComponent(msg));
+  }
+});
+
+router.post('/adminxyz/codes-cadeaux/edit/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const [[existing]] = await db.query('SELECT * FROM codes_cadeaux WHERE id = ?', [req.params.id]);
+    if (!existing) return res.redirect('/adminxyz/codes-cadeaux?error=' + encodeURIComponent('Code cadeau introuvable.'));
+
+    const places_disponibles = parseInt(req.body.places_disponibles, 10);
+    if (!Number.isInteger(places_disponibles) || places_disponibles < Number(existing.places_utilisees)) {
+      throw new Error(`Les places doivent être au moins égales aux ${existing.places_utilisees} déjà utilisées.`);
+    }
+    const { tiers, montant } = parseGiftCodeInput(req.body);
+    await db.query(
+      'UPDATE codes_cadeaux SET montant = ?, regles_json = ?, places_disponibles = ? WHERE id = ?',
+      [montant, JSON.stringify(tiers), places_disponibles, req.params.id]
+    );
+    res.redirect('/adminxyz/codes-cadeaux');
+  } catch (e) {
+    console.error(e);
+    res.redirect('/adminxyz/codes-cadeaux?error=' + encodeURIComponent(e.message || 'Modification impossible.'));
   }
 });
 
