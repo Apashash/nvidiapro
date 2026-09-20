@@ -176,7 +176,8 @@
                     document.getElementById('soldePrincipal').textContent = slotMoney(data.new_solde);
                     setTimeout(() => window.location.reload(), 3000);
                 } else {
-                    alert(data.message || 'Une erreur est survenue.');
+                    const errorMessage = data.message || 'Une erreur est survenue.';
+                    alert(window.GDLanguage ? window.GDLanguage.translate(errorMessage) : errorMessage);
                     reels.forEach(reel => gsap.killTweensOf(reel));
                     spinButton.disabled = false;
                     spinButton.textContent = 'SPIN';
@@ -196,7 +197,15 @@
             const h = Math.floor((seconds % 86400) / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = seconds % 60;
-            return `${d}j : ${h.toString().padStart(2,'0')}h : ${m.toString().padStart(2,'0')}m : ${s.toString().padStart(2,'0')}s`;
+            const language = window.GDLanguage ? window.GDLanguage.getLanguage() : 'fr';
+            const units = {
+                fr: { d: 'j', h: 'h', m: 'm', s: 's' },
+                en: { d: 'd', h: 'h', m: 'm', s: 's' },
+                es: { d: 'd', h: 'h', m: 'm', s: 's' },
+                zh: { d: '天', h: '时', m: '分', s: '秒' },
+                ur: { d: 'دن', h: 'گھنٹے', m: 'منٹ', s: 'سیکنڈ' }
+            }[language] || { d: 'j', h: 'h', m: 'm', s: 's' };
+            return `${d}${units.d} : ${h.toString().padStart(2,'0')}${units.h} : ${m.toString().padStart(2,'0')}${units.m} : ${s.toString().padStart(2,'0')}${units.s}`;
         }
 
         function updateTimer() {
@@ -219,13 +228,14 @@
             const popup = document.getElementById('resultPopup');
             const title = document.getElementById('resultTitle');
             const message = document.getElementById('resultMessage');
+            const translate = (value) => window.GDLanguage ? window.GDLanguage.translate(value) : value;
             if (gains > 0) {
-                title.textContent = "Félicitations !";
-                message.innerHTML = `Vous avez gagné <span style="color:#C47D1E;font-weight:800;">${slotMoney(gains)}</span>. Le montant a été ajouté à votre solde.`;
+                title.textContent = translate('Félicitations !');
+                message.innerHTML = `${translate('Vous avez gagné')} <span style="color:#C47D1E;font-weight:800;">${slotMoney(gains)}</span>. ${translate('Le montant a été ajouté à votre solde.')}`;
                 document.getElementById('resultIcon').className = 'fas fa-trophy result-icon';
             } else {
-                title.textContent = "Pas de chance...";
-                message.innerHTML = "Aucun gain cette fois. Revenez dans 48 heures pour tenter à nouveau votre chance !";
+                title.textContent = translate('Pas de chance...');
+                message.textContent = translate('Aucun gain cette fois. Revenez dans 48 heures pour tenter à nouveau votre chance !');
                 document.getElementById('resultIcon').className = 'fas fa-sad-cry result-icon';
             }
             popup.style.display = 'flex';
