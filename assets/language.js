@@ -184,7 +184,10 @@
         if (originalTitle === null) originalTitle = document.title;
         document.title = translateValue(originalTitle, language);
 
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        const walker = document.createTreeWalker(
+            document.body,
+            (window.NodeFilter && window.NodeFilter.SHOW_TEXT) || 4
+        );
         const nodes = [];
         while (walker.nextNode()) nodes.push(walker.currentNode);
         nodes.forEach((node) => {
@@ -245,24 +248,5 @@
     document.addEventListener('DOMContentLoaded', () => {
         initializePicker();
         translateDom();
-        let translationQueued = false;
-        let translating = false;
-        const observer = new MutationObserver(() => {
-            if (translationQueued || translating) return;
-            translationQueued = true;
-            window.setTimeout(() => {
-                translationQueued = false;
-                if (translating || !document.body) return;
-                translating = true;
-                observer.disconnect();
-                try {
-                    translateDom();
-                } finally {
-                    translating = false;
-                    observer.observe(document.body, { childList: true, subtree: true });
-                }
-            }, 120);
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
     });
 })();

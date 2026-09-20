@@ -2,3 +2,4 @@
 - [Supabase DB connection](supabase-db-connection.md) — app's real DB is Supabase via SUPABASE_DATABASE_URL secret, takes precedence over Replit's DATABASE_URL.
 - [AshtechPay collect API integration](ashtechpay-integration.md) — notify_url (not callback_url) field, plain XAF/XOF currency codes, OTP retry flow with ussd_code, Wave response quirks.
 - [Deposit referral and withdrawal rules](deposit-referral-and-withdrawal-rules.md) — commissions are based on validated deposits; withdrawals require at least one purchased action.
+- [Mobile language stability](mobile-language-stability.md) — avoid continuous whole-page mutation observers for client-side translation; translate on load and explicit language changes.
