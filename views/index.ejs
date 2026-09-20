@@ -285,7 +285,8 @@
         box-shadow: 0 24px 60px rgba(0,0,0,0.25);
     }
     .popup-header {
-        background: linear-gradient(135deg, #D4921F, #A0631A);
+        background: linear-gradient(135deg, #14105F, #211987);
+        border-top: 4px solid #D60000;
         padding: 18px 20px;
         display: flex; justify-content: space-between; align-items: center;
     }
@@ -319,12 +320,14 @@
     .form-textarea:focus { border-color: var(--amber); }
     .file-upload { position: relative; }
     .file-upload-btn {
-        background: var(--light-bg); border: 2px dashed var(--border);
+        background: #FBFBFF; border: 2px dashed #D60000;
         border-radius: 12px; padding: 20px; text-align: center;
-        color: var(--text-muted); cursor: pointer; font-size: 13px;
+        color: #14105F; cursor: pointer; font-size: 13px; font-weight:600;
         transition: border-color 0.2s;
     }
-    .file-upload-btn:hover { border-color: var(--amber); }
+    .file-upload-btn:hover { border-color: #14105F; }
+    .file-upload-title { color:#14105F; font-weight:600; }
+    .file-upload-hint { color:#6F6B82; font-size:12px; margin-top:4px; font-weight:500; }
     .file-upload-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width:100%; height:100%; }
     .image-preview-small { max-width: 100%; max-height: 80px; border-radius: 8px; margin-top: 8px; display: none; }
     .submit-btn {
@@ -754,9 +757,9 @@
                     <label class="form-label" for="postImage">Image</label>
                     <div class="file-upload">
                         <div class="file-upload-btn">
-                            <i class="fas fa-cloud-upload-alt" style="font-size:24px;margin-bottom:8px;display:block;color:var(--amber)"></i>
-                            <div>Cliquez pour télécharger une image</div>
-                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">PNG, JPG, JPEG max 5MB</div>
+                            <i class="fas fa-cloud-upload-alt" style="font-size:24px;margin-bottom:8px;display:block;color:#D60000"></i>
+                            <div class="file-upload-title">Cliquez pour télécharger une image</div>
+                            <div class="file-upload-hint">PNG, JPG, JPEG max 5MB</div>
                             <img id="imagePreview" class="image-preview-small" alt="Aperçu">
                         </div>
                         <input type="file" id="postImage" name="image" class="file-upload-input"
