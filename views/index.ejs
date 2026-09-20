@@ -290,7 +290,8 @@
         padding: 18px 20px;
         display: flex; justify-content: space-between; align-items: center;
     }
-    .popup-header h3 { color: #fff !important; font-size: 17px; font-weight: 700; }
+    .popup-header h3,
+    .community-popup-title { color: #fff !important; font-size: 17px; font-weight: 700; }
     .popup-close { background: rgba(255,255,255,0.2); border: none; color: #fff;
         width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 18px;
         display: flex; align-items: center; justify-content: center; }
@@ -708,7 +709,7 @@
 <div class="popup" id="telegramPopup">
     <div class="popup-content">
         <div class="popup-header">
-            <h3>Rejoignez notre Communauté</h3>
+            <h3 class="community-popup-title" style="color:#fff !important;">Rejoignez notre Communauté</h3>
             <button class="popup-close" onclick="closePopup('telegramPopup')">&times;</button>
         </div>
         <div class="popup-body">
