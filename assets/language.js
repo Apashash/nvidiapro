@@ -111,7 +111,19 @@
             'Aucune donnée disponible': 'No data available', 'Erreur de connexion.': 'Connection error.',
             'Erreur lors de l’achat': 'Purchase error', 'Choisir la langue': 'Choose language',
             'Français': 'French', 'Anglais': 'English', 'Espagnol': 'Spanish', 'Chinois': 'Chinese',
-            'Pakistan': 'Pakistan'
+            'Pakistan': 'Pakistan',
+            'Gérez vos filleuls et suivez vos gains de parrainage': 'Manage your referrals and track your referral earnings',
+            'Copier': 'Copy', 'Nombre de personnes': 'Number of people', 'Total commission': 'Total commission',
+            'Les commissions sont calculées sur chaque dépôt validé de vos filleuls :': 'Commissions are calculated on each validated deposit from your referrals:',
+            'au niveau 1,': 'at level 1,', 'au niveau 2 et': 'at level 2, and', 'au niveau 3.': 'at level 3.',
+            'Un filleul doit acheter au moins une action pour effectuer un retrait.': 'A referral must purchase at least one share to make a withdrawal.',
+            'Nv': 'Lvl', 'Niveau': 'Level', 'membre(s)': 'member(s)',
+            'Équipe niveau 1': 'Level 1 team', 'Équipe niveau 2': 'Level 2 team', 'Équipe niveau 3': 'Level 3 team',
+            'pour le niveau suivant': 'to reach the next level', 'Niveau maximum atteint 🎉': 'Maximum level reached 🎉',
+            'Aucun filleul au niveau 1.<br>Partagez votre lien !': 'No level 1 referrals.<br>Share your link!',
+            'Aucun filleul au niveau 2': 'No level 2 referrals', 'Aucun filleul au niveau 3': 'No level 3 referrals',
+            'Actif': 'Active', 'Inactif': 'Inactive', 'Page': 'Page', 'Préc.': 'Prev.', 'Suiv.': 'Next',
+            'Lien copié !': 'Link copied!', 'Rejoins-moi sur Groupe Dangote (GD) !': 'Join me on Groupe Dangote (GD)!'
         },
         es: {
             'Accueil': 'Inicio', 'Investir': 'Invertir', 'Salaire': 'Salario', 'Équipe': 'Equipo', 'Profil': 'Perfil',
@@ -187,7 +199,19 @@
             'avant versement': 'para el pago', 'Versement disponible !': '¡Pago disponible!', 'Tuto': 'Guía',
             'Rejoindre': 'Unirse', 'Retrait bloqué': 'Retiro bloqueado', 'Salaire Quotidien': 'Salario diario',
             'Récupérer Mon Salaire': 'Cobrar mi salario', 'Choisir la langue': 'Elegir idioma',
-            'Français': 'Francés', 'Anglais': 'Inglés', 'Espagnol': 'Español', 'Chinois': 'Chino', 'Pakistan': 'Pakistán'
+            'Français': 'Francés', 'Anglais': 'Inglés', 'Espagnol': 'Español', 'Chinois': 'Chino', 'Pakistan': 'Pakistán',
+            'Gérez vos filleuls et suivez vos gains de parrainage': 'Gestiona tus referidos y sigue tus ganancias por referidos',
+            'Copier': 'Copiar', 'Nombre de personnes': 'Número de personas', 'Total commission': 'Comisión total',
+            'Les commissions sont calculées sur chaque dépôt validé de vos filleuls :': 'Las comisiones se calculan sobre cada depósito validado de tus referidos:',
+            'au niveau 1,': 'en el nivel 1,', 'au niveau 2 et': 'en el nivel 2 y', 'au niveau 3.': 'en el nivel 3.',
+            'Un filleul doit acheter au moins une action pour effectuer un retrait.': 'Un referido debe comprar al menos una acción para realizar un retiro.',
+            'Nv': 'Niv.', 'Niveau': 'Nivel', 'membre(s)': 'miembro(s)',
+            'Équipe niveau 1': 'Equipo de nivel 1', 'Équipe niveau 2': 'Equipo de nivel 2', 'Équipe niveau 3': 'Equipo de nivel 3',
+            'pour le niveau suivant': 'para alcanzar el siguiente nivel', 'Niveau maximum atteint 🎉': '¡Nivel máximo alcanzado! 🎉',
+            'Aucun filleul au niveau 1.<br>Partagez votre lien !': 'No hay referidos de nivel 1.<br>¡Comparte tu enlace!',
+            'Aucun filleul au niveau 2': 'No hay referidos de nivel 2', 'Aucun filleul au niveau 3': 'No hay referidos de nivel 3',
+            'Actif': 'Activo', 'Inactif': 'Inactivo', 'Page': 'Página', 'Préc.': 'Ant.', 'Suiv.': 'Sig.',
+            'Lien copié !': '¡Enlace copiado!', 'Rejoins-moi sur Groupe Dangote (GD) !': '¡Únete a mí en Groupe Dangote (GD)!'
         },
         zh: {
             'Accueil': '首页', 'Investir': '投资', 'Salaire': '工资', 'Équipe': '团队', 'Profil': '个人资料',
@@ -262,7 +286,19 @@
             'avant versement': '后支付', 'Versement disponible !': '可以支付！', 'Tuto': '教程',
             'Rejoindre': '加入', 'Retrait bloqué': '提现受限', 'Salaire Quotidien': '每日工资',
             'Récupérer Mon Salaire': '领取我的工资', 'Choisir la langue': '选择语言',
-            'Français': '法语', 'Anglais': '英语', 'Espagnol': '西班牙语', 'Chinois': '中文', 'Pakistan': '巴基斯坦'
+            'Français': '法语', 'Anglais': '英语', 'Espagnol': '西班牙语', 'Chinois': '中文', 'Pakistan': '巴基斯坦',
+            'Gérez vos filleuls et suivez vos gains de parrainage': '管理您的推荐人并跟踪您的推荐收益',
+            'Copier': '复制', 'Nombre de personnes': '人数', 'Total commission': '佣金总额',
+            'Les commissions sont calculées sur chaque dépôt validé de vos filleuls :': '佣金根据推荐人的每笔已验证充值计算：',
+            'au niveau 1,': '第1级，', 'au niveau 2 et': '第2级，', 'au niveau 3.': '第3级。',
+            'Un filleul doit acheter au moins une action pour effectuer un retrait.': '推荐人必须至少购买一股才能进行提现。',
+            'Nv': '级别', 'Niveau': '等级', 'membre(s)': '成员',
+            'Équipe niveau 1': '第1级团队', 'Équipe niveau 2': '第2级团队', 'Équipe niveau 3': '第3级团队',
+            'pour le niveau suivant': '即可达到下一个等级', 'Niveau maximum atteint 🎉': '已达到最高等级 🎉',
+            'Aucun filleul au niveau 1.<br>Partagez votre lien !': '暂无第1级推荐人。<br>分享您的链接！',
+            'Aucun filleul au niveau 2': '暂无第2级推荐人', 'Aucun filleul au niveau 3': '暂无第3级推荐人',
+            'Actif': '活跃', 'Inactif': '不活跃', 'Page': '页', 'Préc.': '上一页', 'Suiv.': '下一页',
+            'Lien copié !': '链接已复制！', 'Rejoins-moi sur Groupe Dangote (GD) !': '加入我在Groupe Dangote（GD）的团队！'
         },
         ur: {
             'Accueil': 'ہوم', 'Investir': 'سرمایہ کاری', 'Salaire': 'تنخواہ', 'Équipe': 'ٹیم', 'Profil': 'پروفائل',
@@ -338,7 +374,19 @@
             'avant versement': 'ادائیگی تک', 'Versement disponible !': 'ادائیگی دستیاب ہے!', 'Tuto': 'رہنما',
             'Rejoindre': 'شامل ہوں', 'Retrait bloqué': 'رقم نکلوانا بند ہے', 'Salaire Quotidien': 'روزانہ تنخواہ',
             'Récupérer Mon Salaire': 'میری تنخواہ حاصل کریں', 'Choisir la langue': 'زبان منتخب کریں',
-            'Français': 'فرانسیسی', 'Anglais': 'انگریزی', 'Espagnol': 'ہسپانوی', 'Chinois': 'چینی', 'Pakistan': 'پاکستان'
+            'Français': 'فرانسیسی', 'Anglais': 'انگریزی', 'Espagnol': 'ہسپانوی', 'Chinois': 'چینی', 'Pakistan': 'پاکستان',
+            'Gérez vos filleuls et suivez vos gains de parrainage': 'اپنے ریفرلز کا نظم کریں اور اپنی ریفرل آمدنی دیکھیں',
+            'Copier': 'کاپی کریں', 'Nombre de personnes': 'افراد کی تعداد', 'Total commission': 'کل کمیشن',
+            'Les commissions sont calculées sur chaque dépôt validé de vos filleuls :': 'کمیشن آپ کے ریفرلز کی ہر تصدیق شدہ جمع رقم پر شمار کیا جاتا ہے:',
+            'au niveau 1,': 'سطح 1 پر،', 'au niveau 2 et': 'سطح 2 پر اور', 'au niveau 3.': 'سطح 3 پر۔',
+            'Un filleul doit acheter au moins une action pour effectuer un retrait.': 'رقم نکلوانے کے لیے ریفرل کو کم از کم ایک شیئر خریدنا ہوگا۔',
+            'Nv': 'سطح', 'Niveau': 'سطح', 'membre(s)': 'رکن',
+            'Équipe niveau 1': 'سطح 1 کی ٹیم', 'Équipe niveau 2': 'سطح 2 کی ٹیم', 'Équipe niveau 3': 'سطح 3 کی ٹیم',
+            'pour le niveau suivant': 'اگلی سطح تک پہنچنے کے لیے', 'Niveau maximum atteint 🎉': 'زیادہ سے زیادہ سطح حاصل ہوگئی 🎉',
+            'Aucun filleul au niveau 1.<br>Partagez votre lien !': 'سطح 1 پر کوئی ریفرل نہیں۔<br>اپنا لنک شیئر کریں!',
+            'Aucun filleul au niveau 2': 'سطح 2 پر کوئی ریفرل نہیں', 'Aucun filleul au niveau 3': 'سطح 3 پر کوئی ریفرل نہیں',
+            'Actif': 'فعال', 'Inactif': 'غیر فعال', 'Page': 'صفحہ', 'Préc.': 'پچھلا', 'Suiv.': 'اگلا',
+            'Lien copié !': 'لنک کاپی ہوگیا!', 'Rejoins-moi sur Groupe Dangote (GD) !': 'Groupe Dangote (GD) میں میرے ساتھ شامل ہوں!'
         }
     };
 
