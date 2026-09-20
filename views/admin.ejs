@@ -699,56 +699,6 @@
   <% }); %>
   <% if (!codes.length) { %><div class="empty">Aucun code cadeau utilisé</div><% } %>
 
-<%# ══════════════════ SALAIRES VIP ══════════════════ %>
-<% } else if (currentPage === 'salaires') { %>
-
-  <div class="page-header">
-    <div class="page-header-left">
-      <div class="page-icon"><i class="fas fa-money-bill-wave"></i></div>
-      <div><div class="page-title">Salaires VIP</div></div>
-    </div>
-  </div>
-
-  <% paliers.forEach(p => { %>
-  <div class="salaire-card">
-    <div class="salaire-head">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div class="vip-star"><i class="fas fa-star"></i></div>
-        <div>
-          <div class="salaire-title">Niveau VIP <%= p.niveau %></div>
-          <div class="salaire-sub">Configuration du palier</div>
-        </div>
-      </div>
-      <button class="icon-btn icon-btn-del" onclick="deletePalier(<%= p.id %>, <%= p.niveau %>)"><i class="fas fa-trash"></i></button>
-    </div>
-    <form onsubmit="savePalier(event, <%= p.id %>)">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Label (nom affiché)</label>
-          <input type="text" name="label" value="<%- p.label %>" placeholder="Ex: Leadeur basic">
-        </div>
-        <div class="form-group">
-          <label>Niveau (numéro)</label>
-          <input type="number" value="<%= p.niveau %>" readonly>
-        </div>
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Filleuls requis</label>
-          <input type="number" name="filleuls_requis" value="<%= p.filleuls_requis %>" min="0">
-        </div>
-        <div class="form-group">
-          <label>Montant cadeau (FCFA)</label>
-          <input type="number" name="montant_cadeau" value="<%= parseFloat(p.montant_cadeau).toFixed(2) %>" step="0.01" min="0">
-        </div>
-      </div>
-      <button type="submit" class="btn-save"><i class="fas fa-save"></i> Enregistrer</button>
-    </form>
-  </div>
-  <% }); %>
-
-  <button class="btn-save" style="margin-top:4px" onclick="openAddPalierModal()"><i class="fas fa-plus"></i> Ajouter un palier VIP</button>
-
 <%# ══════════════════ TRANSACTIONS ══════════════════ %>
 <% } else if (currentPage === 'transactions') { %>
 
@@ -1346,25 +1296,6 @@
   </div>
 </div>
 
-<!-- Add palier modal -->
-<div class="modal-overlay" id="addPalierModal">
-  <div class="modal-box">
-    <h3><i class="fas fa-star" style="color:#22c55e"></i> Nouveau palier VIP</h3>
-    <label>Niveau (numéro unique)</label>
-    <input type="number" id="newPalierNiveau" min="1">
-    <label>Label</label>
-    <input type="text" id="newPalierLabel" placeholder="Ex: Leadeur gold">
-    <label>Filleuls requis</label>
-    <input type="number" id="newPalierFilleuls" min="0">
-    <label>Montant cadeau (FCFA)</label>
-    <input type="number" id="newPalierMontant" step="0.01" min="0">
-    <div class="modal-btns">
-      <button class="m-cancel" onclick="closeModal('addPalierModal')">Annuler</button>
-      <button class="m-confirm" onclick="addPalier()">Ajouter</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1688,43 +1619,6 @@ async function deletePlan(id, nom) {
   const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'delete_plan', id }) });
   const d = await r.json();
   if (d.success) { toast('✓ Plan supprimé', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-
-// ── Salaires / Paliers ──────────────────────────────────────────────────
-async function savePalier(e, id) {
-  e.preventDefault();
-  const form = e.target;
-  const body = new URLSearchParams({
-    action: 'update_palier', id,
-    label: form.label.value,
-    filleuls_requis: form.filleuls_requis.value,
-    montant_cadeau: form.montant_cadeau.value,
-  });
-  const r = await fetch('/adminxyz/action', { method:'POST', body });
-  const d = await r.json();
-  if (d.success) toast('✓ Palier enregistré', 'ok');
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-async function deletePalier(id, niveau) {
-  if (!confirm('Supprimer le palier VIP ' + niveau + ' ?')) return;
-  const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'delete_palier', id }) });
-  const d = await r.json();
-  if (d.success) { toast('✓ Palier supprimé', 'ok'); setTimeout(() => location.reload(), 900); }
-  else toast('✗ ' + (d.message || 'Erreur'), 'err');
-}
-function openAddPalierModal() { openModal('addPalierModal'); }
-async function addPalier() {
-  const body = new URLSearchParams({
-    action: 'add_palier',
-    niveau: document.getElementById('newPalierNiveau').value,
-    label: document.getElementById('newPalierLabel').value,
-    filleuls_requis: document.getElementById('newPalierFilleuls').value,
-    montant_cadeau: document.getElementById('newPalierMontant').value,
-  });
-  const r = await fetch('/adminxyz/action', { method:'POST', body });
-  const d = await r.json();
-  if (d.success) { closeModal('addPalierModal'); toast('✓ Palier ajouté', 'ok'); setTimeout(() => location.reload(), 900); }
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 
