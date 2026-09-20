@@ -4,6 +4,9 @@
     const STORAGE_KEY = 'gd_language';
     const supported = ['fr', 'en', 'es', 'zh', 'ur'];
     const labels = { fr: 'FR', en: 'EN', es: 'ES', zh: '中', ur: 'اردو' };
+    const originalText = new WeakMap();
+    const originalAttributes = new WeakMap();
+    let originalTitle = null;
     const dictionaries = {
         en: {
             'Accueil': 'Home', 'Investir': 'Invest', 'Salaire': 'Salary', 'Équipe': 'Team', 'Profil': 'Profile',
@@ -178,21 +181,30 @@
         document.querySelectorAll('[data-language-option]').forEach((element) => {
             element.classList.toggle('active', element.dataset.languageOption === language);
         });
-        document.title = translateValue(document.title, language);
+        if (originalTitle === null) originalTitle = document.title;
+        document.title = translateValue(originalTitle, language);
 
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         const nodes = [];
         while (walker.nextNode()) nodes.push(walker.currentNode);
         nodes.forEach((node) => {
             if (!shouldSkip(node)) {
-                node.nodeValue = translateValue(node.nodeValue, language);
+                if (!originalText.has(node)) originalText.set(node, node.nodeValue);
+                const translated = translateValue(originalText.get(node), language);
+                if (node.nodeValue !== translated) node.nodeValue = translated;
             }
         });
 
         document.querySelectorAll('[placeholder], [title], [aria-label]').forEach((element) => {
             ['placeholder', 'title', 'aria-label'].forEach((attribute) => {
                 if (element.hasAttribute(attribute)) {
-                    element.setAttribute(attribute, translateValue(element.getAttribute(attribute), language));
+                    if (!originalAttributes.has(element)) originalAttributes.set(element, {});
+                    const values = originalAttributes.get(element);
+                    if (!(attribute in values)) values[attribute] = element.getAttribute(attribute);
+                    const translated = translateValue(values[attribute], language);
+                    if (element.getAttribute(attribute) !== translated) {
+                        element.setAttribute(attribute, translated);
+                    }
                 }
             });
         });
