@@ -114,6 +114,15 @@
     }
     .plan-edit-group textarea { min-height:100px; resize:vertical; }
     .plan-edit-group input:focus, .plan-edit-group textarea:focus { border-color:#E8931A; }
+    .tier-editor { display:flex; flex-direction:column; gap:10px; }
+    .tier-row { display:grid; grid-template-columns:1fr 1fr 0.8fr auto; gap:8px; align-items:end; padding:10px; background:#F8FAFC; border:1px solid #E5E7EB; border-radius:10px; }
+    .tier-field { display:flex; flex-direction:column; gap:5px; }
+    .tier-field label { font-size:0.7rem; color:#6B7280; font-weight:700; }
+    .tier-field input { width:100%; background:#fff; border:1px solid #D1D5DB; border-radius:8px; padding:9px 10px; font-size:0.85rem; color:#1a1a1a; outline:none; }
+    .tier-field input:focus { border-color:#E8931A; }
+    .tier-remove { width:34px; height:34px; border:0; border-radius:8px; background:#FEF2F2; color:#DC2626; cursor:pointer; }
+    .tier-add { align-self:flex-start; margin-top:10px; background:#FFF7ED; color:#C2410C; border:1px dashed #FDBA74; border-radius:9px; padding:9px 12px; font-size:0.82rem; font-weight:700; cursor:pointer; }
+    .tier-help { color:#6B7280; font-size:0.75rem; line-height:1.4; margin-top:8px; }
     .plan-edit-actions { display:flex; gap:10px; margin-top:4px; }
     .plan-edit-actions a, .plan-edit-actions button {
       flex:1; border:none; border-radius:12px; padding:13px; font-size:0.92rem;
@@ -287,6 +296,8 @@
     @media(max-width:599px) {
       .plan-edit-grid { grid-template-columns:1fr; }
       .plan-edit-group.full { grid-column:auto; }
+      .tier-row { grid-template-columns:1fr 1fr 1fr auto; }
+      .tier-field input { padding:9px 7px; }
     }
   </style>
   <link rel="stylesheet" href="/assets/dangote-theme.css">
@@ -490,15 +501,16 @@
   <% const planColors = ['#E8931A','#3b82f6','#22c55e','#7c3aed','#ef4444','#0891b2','#16a34a','#d97706','#6366f1','#ec4899','#14b8a6']; %>
   <% plans.forEach((p, i) => { %>
   <%
-    const gain = (parseFloat(p.prix) * parseFloat(p.rendement_journalier) / 100);
+    const minimumGain = (parseFloat(p.minimum_montant) * parseFloat(p.taux_minimum) / 100);
     const color = planColors[i % planColors.length];
   %>
   <div class="plan-card" style="border-left:4px solid <%= color %><% if (p.bloque) { %>;opacity:0.75<% } %>">
     <div class="plan-body">
       <div class="plan-name" style="color:<%= color %>"><%- p.nom %> <% if (p.bloque) { %><span style="font-size:0.68rem;background:#FEF2F2;color:#dc2626;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle"><i class="fas fa-lock"></i> Bloqué</span><% } %></div>
-      <div class="plan-meta">Prix : <strong><%= parseFloat(p.prix).toLocaleString('fr-FR') %> FCFA</strong> &nbsp; Durée : <strong><%= p.duree_jours %>j</strong></div>
-      <div class="plan-rend" style="color:<%= color %>">Rend. : <%= parseFloat(p.rendement_journalier).toFixed(2) %>%/j</div>
-      <div class="plan-gain">+<%= gain.toLocaleString('fr-FR',{maximumFractionDigits:0}) %> FCFA/jour</div>
+      <div class="plan-meta">Prix/action : <strong><%= parseFloat(p.prix_action).toLocaleString('fr-FR') %> FCFA</strong> &nbsp; Durée : <strong><%= p.duree_jours %>j</strong></div>
+      <div class="plan-meta">Minimum : <strong><%= parseFloat(p.minimum_montant).toLocaleString('fr-FR') %> FCFA</strong> (<%= p.actions_minimum %> actions)</div>
+      <div class="plan-rend" style="color:<%= color %>">Taux : <%= p.taux_minimum %>–<%= p.taux_maximum %>%/j</div>
+      <div class="plan-gain">Gain minimum : +<%= minimumGain.toLocaleString('fr-FR',{maximumFractionDigits:2}) %> FCFA/jour</div>
     </div>
     <div class="card-actions">
       <button class="icon-btn <%= p.bloque ? 'icon-btn-del' : 'icon-btn-edit' %>"
@@ -542,16 +554,20 @@
         <input id="editPlanNom" name="nom" type="text" value="<%= plan.nom %>" required>
       </div>
       <div class="plan-edit-group">
-        <label for="editPlanPrix">Prix (FCFA)</label>
-        <input id="editPlanPrix" name="prix" type="number" step="100" value="<%= plan.prix %>" required>
+        <label for="editPlanPrixAction">Prix par action (FCFA)</label>
+        <input id="editPlanPrixAction" name="prix_action" type="number" step="0.01" min="0.01" value="<%= plan.prix_action %>" required>
+      </div>
+      <div class="plan-edit-group">
+        <label for="editPlanActionsMin">Actions minimum</label>
+        <input id="editPlanActionsMin" name="actions_minimum" type="number" step="1" min="1" value="<%= plan.actions_minimum %>" required>
       </div>
       <div class="plan-edit-group">
         <label for="editPlanDuree">Durée (jours)</label>
         <input id="editPlanDuree" name="duree_jours" type="number" min="1" value="<%= plan.duree_jours %>" required>
       </div>
       <div class="plan-edit-group">
-        <label for="editPlanRend">Rendement journalier (%)</label>
-        <input id="editPlanRend" name="rendement_journalier" type="number" step="0.01" min="0" value="<%= plan.rendement_journalier %>" required>
+        <label for="editPlanRates">Taux appliqués</label>
+        <input id="editPlanRates" type="text" value="<%= plan.taux_minimum %>–<%= plan.taux_maximum %> % selon le montant" readonly>
       </div>
       <div class="plan-edit-group">
         <label for="editPlanImage">URL de l'image du plan</label>
@@ -560,6 +576,30 @@
       <div class="plan-edit-group full">
         <label for="editPlanDescription">Description</label>
         <textarea id="editPlanDescription" name="description"><%= plan.description || '' %></textarea>
+      </div>
+      <div class="plan-edit-group full">
+        <label>Tranches de gain quotidien</label>
+        <div class="tier-editor" id="editTiersEditor">
+          <% plan.tiers.forEach(tier => { %>
+          <div class="tier-row">
+            <div class="tier-field">
+              <label>Montant minimum</label>
+              <input name="tier_min" type="number" min="0" step="0.01" value="<%= tier.min %>" required>
+            </div>
+            <div class="tier-field">
+              <label>Montant maximum</label>
+              <input name="tier_max" type="number" min="0" step="0.01" value="<%= tier.max == null ? '' : tier.max %>" placeholder="Sans limite">
+            </div>
+            <div class="tier-field">
+              <label>Taux / jour (%)</label>
+              <input name="tier_rate" type="number" min="0" max="100" step="0.01" value="<%= tier.rate %>" required>
+            </div>
+            <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+          </div>
+          <% }); %>
+        </div>
+        <button class="tier-add" type="button" onclick="addTierRow('editTiersEditor')"><i class="fas fa-plus"></i> Ajouter une tranche</button>
+        <div class="tier-help">Le taux est appliqué au montant total de l’achat. Laissez le maximum vide pour la dernière tranche sans limite.</div>
       </div>
     </div>
     <div class="plan-edit-actions">
@@ -1301,18 +1341,60 @@
 <div class="modal-overlay" id="addPlanModal">
   <div class="modal-box">
     <h3><i class="fas fa-plus" style="color:#E8931A"></i> Ajouter un plan</h3>
-    <label>Nom du plan</label>
-    <input type="text" id="newPlanNom" placeholder="Ex: Action VIP 12">
-    <label>Prix (FCFA)</label>
-    <input type="number" id="newPlanPrix" step="100" min="0">
-    <label>Durée (jours)</label>
-    <input type="number" id="newPlanDuree" min="1">
-    <label>Rendement journalier (%)</label>
-    <input type="number" id="newPlanRend" step="0.01" min="0">
-    <label>URL de l'image du plan</label>
-    <input type="text" id="newPlanImage" placeholder="https://... (laisser vide pour l'image par défaut)">
-    <label>Description</label>
-    <input type="text" id="newPlanDesc">
+    <form id="addPlanForm">
+      <label>Nom du plan</label>
+      <input type="text" name="nom" placeholder="Ex: Action VIP 12" required>
+      <label>Prix par action (FCFA)</label>
+      <input type="number" name="prix_action" step="0.01" min="0.01" required>
+      <label>Actions minimum</label>
+      <input type="number" name="actions_minimum" step="1" min="1" required>
+      <label>Durée (jours)</label>
+      <input type="number" name="duree_jours" min="1" required>
+      <label>URL de l'image du plan</label>
+      <input type="text" name="image_url" placeholder="https://... (laisser vide pour l'image par défaut)">
+      <label>Description</label>
+      <input type="text" name="description">
+      <label style="margin-top:14px">Tranches de gain quotidien</label>
+      <div class="tier-editor" id="addTiersEditor">
+        <div class="tier-row">
+          <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" value="0" required></div>
+          <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" value="6000" required></div>
+          <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" value="5" required></div>
+          <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="tier-row">
+          <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" value="6001" required></div>
+          <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" value="15000" required></div>
+          <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" value="7" required></div>
+          <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="tier-row">
+          <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" value="15001" required></div>
+          <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" value="40000" required></div>
+          <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" value="10" required></div>
+          <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="tier-row">
+          <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" value="40001" required></div>
+          <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" value="170000" required></div>
+          <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" value="15" required></div>
+          <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="tier-row">
+          <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" value="170001" required></div>
+          <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" value="10000000" required></div>
+          <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" value="20" required></div>
+          <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="tier-row">
+          <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" value="10000001" required></div>
+          <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" placeholder="Sans limite"></div>
+          <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" value="20" required></div>
+          <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <button class="tier-add" type="button" onclick="addTierRow('addTiersEditor')"><i class="fas fa-plus"></i> Ajouter une tranche</button>
+    </form>
     <div class="modal-btns">
       <button class="m-cancel" onclick="closeModal('addPlanModal')">Annuler</button>
       <button class="m-confirm" onclick="addPlan()">Ajouter</button>
@@ -1592,17 +1674,33 @@ async function saveBalance() {
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 
+function addTierRow(editorId) {
+  const editor = document.getElementById(editorId);
+  const row = document.createElement('div');
+  row.className = 'tier-row';
+  row.innerHTML = `
+    <div class="tier-field"><label>Min.</label><input name="tier_min" type="number" min="0" step="0.01" required></div>
+    <div class="tier-field"><label>Max.</label><input name="tier_max" type="number" min="0" step="0.01" placeholder="Sans limite"></div>
+    <div class="tier-field"><label>Taux %</label><input name="tier_rate" type="number" min="0" max="100" step="0.01" required></div>
+    <button class="tier-remove" type="button" onclick="removeTierRow(this)" aria-label="Supprimer cette tranche"><i class="fas fa-trash"></i></button>
+  `;
+  editor.appendChild(row);
+}
+function removeTierRow(button) {
+  const editor = button.closest('.tier-editor');
+  if (editor.querySelectorAll('.tier-row').length <= 1) {
+    toast('Conservez au moins une tranche.', 'err');
+    return;
+  }
+  button.closest('.tier-row').remove();
+}
+
 function openAddPlanModal() { openModal('addPlanModal'); }
 async function addPlan() {
-  const body = new URLSearchParams({
-    action:'add_plan',
-    nom: document.getElementById('newPlanNom').value,
-    prix: document.getElementById('newPlanPrix').value,
-    duree_jours: document.getElementById('newPlanDuree').value,
-    rendement_journalier: document.getElementById('newPlanRend').value,
-    image_url: document.getElementById('newPlanImage').value,
-    description: document.getElementById('newPlanDesc').value,
-  });
+  const form = document.getElementById('addPlanForm');
+  if (!form.reportValidity()) return;
+  const body = new URLSearchParams(new FormData(form));
+  body.set('action', 'add_plan');
   const r = await fetch('/adminxyz/action', { method:'POST', body });
   const d = await r.json();
   if (d.success) { closeModal('addPlanModal'); toast('✓ Plan ajouté', 'ok'); setTimeout(() => location.reload(), 900); }

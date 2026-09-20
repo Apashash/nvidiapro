@@ -4,6 +4,12 @@ const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const {
+  parseStrategy,
+  rateForAmount,
+  lowestRate,
+  highestRate,
+} = require('../services/investmentStrategy');
 
 const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
 if (!fs.existsSync(TUTO_UPLOAD_DIR)) fs.mkdirSync(TUTO_UPLOAD_DIR, { recursive: true });
@@ -60,6 +66,87 @@ function requireAdminAuth(req, res, next) {
 }
 
 const { getParams, invalidateCache } = require('../services/params');
+
+function asArray(value) {
+  if (Array.isArray(value)) return value;
+  return value === undefined ? [] : [value];
+}
+
+function parsePlanTiers(body) {
+  const mins = asArray(body.tier_min);
+  const maxes = asArray(body.tier_max);
+  const rates = asArray(body.tier_rate);
+  if (!mins.length || mins.length !== maxes.length || mins.length !== rates.length) {
+    throw new Error('Ajoutez au moins une tranche complète.');
+  }
+
+  const tiers = mins.map((rawMin, index) => {
+    const min = Number(rawMin);
+    const rawMax = String(maxes[index] ?? '').trim();
+    const max = rawMax === '' ? null : Number(rawMax);
+    const rate = Number(rates[index]);
+    if (!Number.isFinite(min) || min < 0) throw new Error('Chaque seuil minimum doit être un nombre positif.');
+    if (max !== null && (!Number.isFinite(max) || max < min)) {
+      throw new Error('Chaque seuil maximum doit être supérieur ou égal au seuil minimum.');
+    }
+    if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+      throw new Error('Chaque taux doit être compris entre 0 et 100 %.');
+    }
+    return { min, max, rate };
+  });
+
+  for (let index = 1; index < tiers.length; index += 1) {
+    const previous = tiers[index - 1];
+    const current = tiers[index];
+    if (current.min <= previous.min || (previous.max !== null && current.min <= previous.max)) {
+      throw new Error('Les tranches doivent être dans l’ordre et ne pas se chevaucher.');
+    }
+    if (previous.max === null) throw new Error('Une tranche ouverte doit être la dernière.');
+  }
+  return tiers;
+}
+
+function getPlanInput(body) {
+  const prixAction = Number(body.prix_action);
+  const actionsMinimum = Number(body.actions_minimum);
+  const dureeJours = Number(body.duree_jours);
+  const nom = String(body.nom || '').trim();
+  if (!nom || !Number.isFinite(prixAction) || prixAction <= 0) {
+    throw new Error('Le nom et le prix par action sont obligatoires.');
+  }
+  if (!Number.isInteger(actionsMinimum) || actionsMinimum < 1) {
+    throw new Error('Le minimum d’actions doit être un nombre entier positif.');
+  }
+  if (!Number.isInteger(dureeJours) || dureeJours < 1) {
+    throw new Error('La durée doit être un nombre entier positif.');
+  }
+  const tiers = parsePlanTiers(body);
+  const minimumAmount = Math.round(prixAction * actionsMinimum * 100) / 100;
+  return {
+    nom,
+    prix: minimumAmount,
+    prixAction,
+    actionsMinimum,
+    dureeJours,
+    rendementJournalier: rateForAmount(minimumAmount, tiers),
+    strategieJson: JSON.stringify(tiers),
+    imageUrl: String(body.image_url || '').trim() || null,
+    description: String(body.description || '').trim(),
+    tiers,
+  };
+}
+
+function enrichAdminPlan(plan) {
+  const actionsMinimum = Math.max(1, parseInt(plan.actions_minimum, 10) || 1);
+  const prixAction = Number(plan.prix_action ?? (Number(plan.prix) / actionsMinimum));
+  plan.prix_action = Number.isFinite(prixAction) ? prixAction : 0;
+  plan.actions_minimum = actionsMinimum;
+  plan.minimum_montant = Math.round(plan.prix_action * actionsMinimum * 100) / 100;
+  plan.tiers = parseStrategy(plan.strategie_json);
+  plan.taux_minimum = lowestRate(plan.tiers);
+  plan.taux_maximum = highestRate(plan.tiers);
+  return plan;
+}
 
 async function getPendingCounts() {
   const [[d]] = await db.query("SELECT COUNT(*) as c FROM depots WHERE statut='en_attente'");
@@ -184,6 +271,7 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
 router.get('/adminxyz/plans', requireAdminAuth, async (req, res) => {
   try {
     const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY id ASC');
+    plans.forEach(enrichAdminPlan);
     const counts  = await Promise.all(plans.map(async p => {
       const [[c]] = await db.query("SELECT COUNT(*) as total FROM commandes WHERE plan_id=? AND statut='actif'", [p.id]);
       return parseInt(c.total)||0;
@@ -196,22 +284,24 @@ router.get('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
   try {
     const [[plan]] = await db.query('SELECT * FROM planinvestissement WHERE id=?', [req.params.id]);
     if (!plan) return res.status(404).send('Plan non trouvé');
+    enrichAdminPlan(plan);
     res.render('admin', { currentPage: 'plan-edit', pageTitle: 'Modifier le plan', plan });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
 router.post('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
-  const { nom, prix, duree_jours, rendement_journalier, image_url, description } = req.body;
-  if (!nom || !prix || !duree_jours || !rendement_journalier) {
-    return res.status(400).send('Tous les champs obligatoires doivent être renseignés');
-  }
   try {
+    const input = getPlanInput(req.body);
     await db.query(
-      'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, image_url=?, description=? WHERE id=?',
-      [nom, prix, duree_jours, rendement_journalier, image_url || null, description || '', req.params.id]
+      'UPDATE planinvestissement SET nom=?, prix=?, prix_action=?, actions_minimum=?, duree_jours=?, rendement_journalier=?, strategie_json=?, image_url=?, description=? WHERE id=?',
+      [input.nom, input.prix, input.prixAction, input.actionsMinimum, input.dureeJours,
+        input.rendementJournalier, input.strategieJson, input.imageUrl, input.description, req.params.id]
     );
     res.redirect('/adminxyz/plans');
-  } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+  } catch (e) {
+    if (e.message && !e.code) return res.status(400).send(e.message);
+    console.error(e); res.status(500).send('Erreur: ' + e.message);
+  }
 });
 
 // ── Utilisateurs ───────────────────────────────────────────────────────────────
@@ -522,19 +612,17 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         return res.json({ success: true, is_admin: !u.is_admin });
       }
 
-      case 'update_plan':
-        await db.query(
-          'UPDATE planinvestissement SET nom=?, prix=?, duree_jours=?, rendement_journalier=?, image_url=?, description=? WHERE id=?',
-          [nom, prix, duree_jours, rendement_journalier, req.body.image_url || null, description, id]);
-        return res.json({ success: true });
-
       case 'add_plan': {
-        if (!nom || !prix || !duree_jours || !rendement_journalier)
-          return res.json({ success: false, message: 'Tous les champs sont requis' });
-        await db.query(
-          'INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, image_url, description) VALUES (?,?,?,?,?,?)',
-          [nom, prix, duree_jours, rendement_journalier, req.body.image_url || null, description || '']);
-        return res.json({ success: true });
+        try {
+          const input = getPlanInput(req.body);
+          await db.query(
+            'INSERT INTO planinvestissement (nom, prix, prix_action, actions_minimum, duree_jours, rendement_journalier, strategie_json, image_url, description) VALUES (?,?,?,?,?,?,?,?,?)',
+            [input.nom, input.prix, input.prixAction, input.actionsMinimum, input.dureeJours,
+              input.rendementJournalier, input.strategieJson, input.imageUrl, input.description]);
+          return res.json({ success: true });
+        } catch (e) {
+          return res.json({ success: false, message: e.message || 'Données invalides' });
+        }
       }
 
       case 'toggle_plan_lock': {
