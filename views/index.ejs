@@ -863,13 +863,20 @@ let notifIndex = 0;
 function showNotifications() {
     const container = document.getElementById('notificationContainer');
     if (!container || notifications.length === 0) {
-        if (container) container.innerHTML = '<div class="notification-item visible" style="font-size:13px;"><i class="fas fa-bell"></i> Bienvenue sur Groupe Dangote (GD) !</div>';
+        if (container) {
+            const welcome = window.GDLanguage
+                ? window.GDLanguage.translate('Bienvenue sur Groupe Dangote (GD) !')
+                : 'Bienvenue sur Groupe Dangote (GD) !';
+            container.innerHTML = `<div class="notification-item visible" style="font-size:13px;"><i class="fas fa-bell"></i> ${welcome}</div>`;
+        }
         return;
     }
     container.innerHTML = '';
     const item = document.createElement('div');
     item.className = 'notification-item';
-    item.innerHTML = `<i class="fas fa-bell"></i> ${notifications[notifIndex % notifications.length].message || notifications[notifIndex % notifications.length]}`;
+    const rawMessage = notifications[notifIndex % notifications.length].message || notifications[notifIndex % notifications.length];
+    const message = window.GDLanguage ? window.GDLanguage.translate(rawMessage) : rawMessage;
+    item.innerHTML = `<i class="fas fa-bell"></i> ${message}`;
     container.appendChild(item);
     setTimeout(() => item.classList.add('visible'), 50);
     notifIndex++;
