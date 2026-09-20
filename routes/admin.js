@@ -36,7 +36,6 @@ function safeUnlinkTutoFile(filePath) {
   if (resolved.startsWith(resolvedDir)) fs.unlink(resolved, () => {});
 }
 
-const SECURITY_CODE = process.env.ADMIN_CODE || 'Benrich237';
 const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 async function requireAppAdmin(req, res, next) {
@@ -105,7 +104,10 @@ router.get('/adminxyz', requireAppAdmin, (req, res) => {
 });
 
 router.post('/adminxyz', requireAppAdmin, (req, res) => {
-  if (req.body.security_code === SECURITY_CODE) {
+  const submittedCode = String(req.body.security_code || '').trim();
+  const configuredCode = String(process.env.ADMIN_CODE || '').trim();
+
+  if (configuredCode && submittedCode === configuredCode) {
     const uid = req.session.user_id;
     const unom = req.session.user_nom;
     req.session.security_authenticated = true;
@@ -114,8 +116,11 @@ router.post('/adminxyz', requireAppAdmin, (req, res) => {
     req.session.user_nom = unom;
     res.redirect('/adminxyz/dashboard');
   } else {
-    req.session.admin_error = 'Code de sécurité incorrect';
-    res.redirect('/adminxyz');
+    res.status(401).render('admin_login', {
+      error: configuredCode
+        ? 'Code de sécurité incorrect. Vérifiez le code saisi.'
+        : 'Le code de sécurité administrateur n’est pas configuré.'
+    });
   }
 });
 
