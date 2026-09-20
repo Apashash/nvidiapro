@@ -197,8 +197,8 @@
     <div class="content">
         <div class="balance-hero">
             <div class="lbl">Solde disponible</div>
-            <div class="amt"><%= parseFloat(solde).toLocaleString('fr-FR') %></div>
-            <div class="cur">FCFA</div>
+            <div class="amt" data-currency-amount="<%= Number(solde || 0) %>"><%= Number(solde || 0).toLocaleString('fr-FR') %></div>
+            <div class="cur" data-currency-code>FCFA</div>
         </div>
 
         <div id="notif-zone"></div>

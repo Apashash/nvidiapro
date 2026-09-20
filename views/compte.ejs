@@ -49,6 +49,17 @@
         .vip-label { font-size:11px; color:rgba(255,255,255,0.75); margin-bottom:6px; display:flex; justify-content:space-between; }
         .vip-bar-bg { background:rgba(255,255,255,0.2); border-radius:20px; height:6px; overflow:hidden; }
         .vip-bar-fill { background:#fff; height:100%; border-radius:20px; transition:width 0.8s ease; }
+        .currency-switcher {
+            display:flex; align-items:center; justify-content:flex-end; gap:6px;
+            margin-top:8px; color:rgba(255,255,255,0.78); font-size:10px;
+        }
+        .currency-switcher i { font-size:10px; }
+        .currency-switcher select {
+            border:1px solid rgba(255,255,255,0.45); border-radius:7px;
+            background:rgba(255,255,255,0.16); color:#fff; padding:3px 5px;
+            font:600 10px 'Poppins',sans-serif; outline:none; cursor:pointer;
+        }
+        .currency-switcher option { color:#14105F; background:#fff; }
 
         /* Balance grid */
         .content { padding:16px; margin-top:-24px; }
@@ -176,6 +187,15 @@
             <div class="vip-bar-bg">
                 <div class="vip-bar-fill" style="width:<%= vip ? Math.min(100, vip.pourcentage || 0) : 0 %>%"></div>
             </div>
+            <div class="currency-switcher">
+                <i class="fas fa-coins"></i>
+                <span>Devise</span>
+                <select data-currency-selector aria-label="Choisir la devise d'affichage"
+                        onchange="window.GDCurrency.setCurrency(this.value)">
+                    <option value="FCFA">FCFA</option>
+                    <option value="USDT">USDT</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -184,13 +204,13 @@
         <div class="balance-grid">
             <div class="balance-card">
                 <div class="balance-lbl">Solde Principal</div>
-                <div class="balance-val"><%= parseFloat(solde || 0).toLocaleString('fr-FR') %></div>
-                <div class="balance-cur">FCFA</div>
+                <div class="balance-val" data-currency-amount="<%= Number(solde || 0) %>"><%= Number(solde || 0).toLocaleString('fr-FR') %></div>
+                <div class="balance-cur" data-currency-code>FCFA</div>
             </div>
             <div class="balance-card">
                 <div class="balance-lbl">Revenus Totaux</div>
-                <div class="balance-val"><%= parseFloat(revenus && revenus.total ? revenus.total : 0).toLocaleString('fr-FR') %></div>
-                <div class="balance-cur">FCFA</div>
+                <div class="balance-val" data-currency-amount="<%= Number(revenus && revenus.total ? revenus.total : 0) %>"><%= Number(revenus && revenus.total ? revenus.total : 0).toLocaleString('fr-FR') %></div>
+                <div class="balance-cur" data-currency-code>FCFA</div>
             </div>
         </div>
 

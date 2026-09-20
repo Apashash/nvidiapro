@@ -244,7 +244,10 @@
                 <% const c1 = parseFloat(appParams.commission_niveau1 ?? 20) / 100;
                    const c2 = parseFloat(appParams.commission_niveau2 ?? 10) / 100;
                    const c3 = parseFloat(appParams.commission_niveau3 ?? 5)  / 100; %>
-                <div class="stat-num"><%= Math.round((depot_niveau1 * c1) + (depot_niveau2 * c2) + (depot_niveau3 * c3)).toLocaleString('fr-FR') %></div>
+                <div class="stat-num">
+                    <span data-currency-amount="<%= Math.round((depot_niveau1 * c1) + (depot_niveau2 * c2) + (depot_niveau3 * c3)) %>"><%= Math.round((depot_niveau1 * c1) + (depot_niveau2 * c2) + (depot_niveau3 * c3)).toLocaleString('fr-FR') %></span>
+                    <span data-currency-code>FCFA</span>
+                </div>
                 <div class="stat-lbl">Total commission</div>
             </div>
         </div>

@@ -119,7 +119,7 @@
                         </div>
                     </div>
                     <span class="tx-amt <%= (tx.type === 'retrait') ? 'tx-neg' : 'tx-pos' %>">
-                        <%= (tx.type === 'retrait' ? '-' : '+') %><%= parseFloat(tx.montant).toLocaleString('fr-FR') %> FCFA
+                        <%= (tx.type === 'retrait' ? '-' : '+') %><span data-currency-amount="<%= Number(tx.montant || 0) %>"><%= Number(tx.montant || 0).toLocaleString('fr-FR') %></span> <span data-currency-code>FCFA</span>
                     </span>
                 </li>
                 <% }); %>
@@ -154,7 +154,10 @@ async function verifierDepot(btn, depotId) {
         icon.classList.remove('fa-spin');
         if (d.statut === 'valide') {
             btn.classList.add('ok');
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> Validé — ' + parseFloat(d.montant).toLocaleString('fr-FR') + ' FCFA crédités';
+            const verificationAmount = window.GDCurrency
+                ? window.GDCurrency.formatAmount(d.montant, window.GDCurrency.getCurrency()) + ' ' + window.GDCurrency.getCurrency()
+                : parseFloat(d.montant).toLocaleString('fr-FR') + ' FCFA';
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Validé — ' + verificationAmount + ' crédités';
             // Refresh after 1.5s so the row reflects the new status
             setTimeout(() => location.reload(), 1500);
         } else if (d.statut === 'rejete') {

@@ -561,12 +561,15 @@ router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
     return res.json({ success: false, message: 'Le lien doit commencer par https://' });
   }
   // Validate numeric params — must be a finite, non-negative number within a sane bound
-  const numericKeys = ['welcome_bonus', 'depot_minimum', 'retrait_minimum', 'retrait_max_par_jour'];
+  const numericKeys = ['welcome_bonus', 'depot_minimum', 'retrait_minimum', 'retrait_max_par_jour', 'taux_usdt_fcfa'];
   if (numericKeys.includes(cle)) {
     const n = Number(valeur);
     if (!Number.isFinite(n) || n < 0 || n > 10000000) {
       return res.json({ success: false, message: 'Valeur numérique invalide' });
     }
+  }
+  if (cle === 'taux_usdt_fcfa' && Number(valeur) <= 0) {
+    return res.json({ success: false, message: 'Le taux USDT/FCFA doit être supérieur à zéro' });
   }
   // Fee percentage — separate bound (0–100)
   if (cle === 'retrait_frais_pourcentage') {

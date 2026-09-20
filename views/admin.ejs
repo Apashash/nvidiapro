@@ -1332,6 +1332,24 @@
     <button class="btn-save" onclick="saveParam('welcome_bonus', document.getElementById('welcomeBonus').value)"><i class="fas fa-save"></i> Enregistrer</button>
   </div>
 
+  <!-- Taux USDT / FCFA -->
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#ECFEFF"><i class="fas fa-coins" style="color:#0891B2"></i></div>
+      <div class="param-head-text">
+        <h3>Taux de conversion USDT</h3>
+        <p>Définit combien de FCFA vaut 1 USDT pour l'affichage des soldes</p>
+      </div>
+    </div>
+    <label class="param-label">1 USDT = combien de FCFA ?</label>
+    <input type="number" class="param-input" id="usdtRate"
+           value="<%= params.taux_usdt_fcfa || 600 %>" min="0.0001" step="0.01"
+           placeholder="Ex : 600">
+    <button class="btn-save" onclick="saveParam('taux_usdt_fcfa', document.getElementById('usdtRate').value)">
+      <i class="fas fa-save"></i> Enregistrer le taux
+    </button>
+  </div>
+
   <!-- Dépôt minimum -->
   <div class="param-card">
     <div class="param-head">

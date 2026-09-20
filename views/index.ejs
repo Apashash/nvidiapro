@@ -514,11 +514,17 @@
                 </div>
             </div>
             <div class="balance-container">
-                <div class="balance-amount"><%= user.solde.toLocaleString() %> <%= devise %></div>
+                <div class="balance-amount">
+                    <span data-currency-amount="<%= Number(user.solde || 0) %>"><%= Number(user.solde || 0).toLocaleString('fr-FR') %></span>
+                    <span data-currency-code><%= devise %></span>
+                </div>
             </div>
             <div class="revenue-info">
                 <div class="revenue-label">Revenus Totaux</div>
-                <div class="revenue-amount"><%= (revenus.total || 0).toLocaleString() %> <%= devise %></div>
+                <div class="revenue-amount">
+                    <span data-currency-amount="<%= Number(revenus.total || 0) %>"><%= Number(revenus.total || 0).toLocaleString('fr-FR') %></span>
+                    <span data-currency-code><%= devise %></span>
+                </div>
             </div>
         </div>
 
