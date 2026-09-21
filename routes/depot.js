@@ -354,7 +354,7 @@ async function initiateSoleasCollect(req, res, {
     };
 
     const { data, status } = await axios.post(
-      `${SOLEASPAY_API_BASE}/api/agent/bills/V3`,
+      `${SOLEASPAY_API_BASE}/api/agent/bills/v3`,
       payload,
       {
         headers: {
