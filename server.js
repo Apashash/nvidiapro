@@ -13,6 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 // Keep the raw webhook body available for AshTechPay HMAC verification.
 // This must run before express.json() consumes the request body.
 app.use('/ashtechpay_callback', express.raw({ type: 'application/json' }));
+// SoleasPay signs callbacks with the x-private-key header.
+app.use('/soleaspay_callback', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 app.use(session({

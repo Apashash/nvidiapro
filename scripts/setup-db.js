@@ -88,6 +88,9 @@ CREATE TABLE IF NOT EXISTS depots (
   methode VARCHAR(100),
   numero_transaction VARCHAR(255),
   pays VARCHAR(100),
+  fournisseur VARCHAR(50) DEFAULT 'ashtechpay',
+  provider_transaction_id VARCHAR(255),
+  provider_service_id INTEGER,
   statut VARCHAR(50) DEFAULT 'en_attente',
   date_depot TIMESTAMP DEFAULT NOW(),
   date_validation TIMESTAMP

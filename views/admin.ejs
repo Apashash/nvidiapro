@@ -391,6 +391,7 @@
       { page:'plans',        href:'/adminxyz/plans',        icon:'fas fa-chart-line',          bg:'#F0FDF4', color:'#22c55e', label:'Plans VIP' },
       { page:'utilisateurs', href:'/adminxyz/utilisateurs', icon:'fas fa-users',               bg:'#EFF6FF', color:'#3b82f6', label:'Utilisateurs' },
       { page:'depots',       href:'/adminxyz/depots',       icon:'fas fa-arrow-down',          bg:'#F0FDF4', color:'#22c55e', label:'Dépôts',       countKey:'depots' },
+      { page:'fournisseurs', href:'/adminxyz/fournisseurs', icon:'fas fa-shuffle',             bg:'#ECFEFF', color:'#0891B2', label:'Fournisseurs' },
       { page:'retraits',     href:'/adminxyz/retraits',     icon:'fas fa-hand-holding-dollar', bg:'#EEF2FF', color:'#6366f1', label:'Retraits',     countKey:'retraits' },
       { page:'cadeaux',      href:'/adminxyz/cadeaux',      icon:'fas fa-gift',                bg:'#FFF7ED', color:'#E8931A', label:'Cadeaux VIP' },
       { page:'transactions', href:'/adminxyz/transactions', icon:'fas fa-receipt',             bg:'#F5F3FF', color:'#7c3aed', label:'Transactions' },
@@ -1291,6 +1292,93 @@
       }
     }
   </script>
+
+<%# ══════════════════ FOURNISSEURS ══════════════════ %>
+<% } else if (currentPage === 'fournisseurs') { %>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-icon"><i class="fas fa-shuffle"></i></div>
+      <div>
+        <div class="page-title">Fournisseurs de paiement</div>
+        <div class="page-count">Choisissez le fournisseur pour chaque opérateur</div>
+      </div>
+    </div>
+  </div>
+
+  <% if (providerError) { %>
+    <div class="alert-box alert-error" style="background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <i class="fas fa-circle-exclamation"></i> <%= providerError %>
+    </div>
+  <% } %>
+
+  <div class="param-card">
+    <div class="param-head">
+      <div class="param-icon" style="background:#ECFEFF"><i class="fas fa-circle-info" style="color:#0891B2"></i></div>
+      <div class="param-head-text">
+        <h3>Routage des dépôts</h3>
+        <p>Le choix s’applique au prochain dépôt de l’opérateur sélectionné.</p>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:#555;line-height:1.5;">
+      Les pays et opérateurs affichés viennent du catalogue AshTechPay.
+      La documentation SoleasPay expose des services génériques : choisissez aussi le service SoleasPay
+      correspondant lorsque vous activez SoleasPay pour un opérateur.
+    </p>
+  </div>
+
+  <form method="POST" action="/adminxyz/fournisseurs/save">
+    <% countries.forEach(function(country) { %>
+      <div class="param-card" style="padding:0;overflow:hidden;">
+        <div style="padding:16px 18px;background:#F8FAFC;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <strong style="color:#0F172A;"><i class="fas fa-globe-africa" style="color:#0891B2;margin-right:8px;"></i><%= country.name %></strong>
+          <span style="font-size:.75rem;color:#64748B;font-weight:700;"><%= country.code %> · <%= country.currency %></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:520px;">
+            <thead>
+              <tr style="font-size:.72rem;color:#64748B;text-align:left;background:#fff;">
+                <th style="padding:11px 18px;">Opérateur</th>
+                <th style="padding:11px 8px;">Fournisseur</th>
+                <th style="padding:11px 18px 11px 8px;">Service SoleasPay</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% country.operators.forEach(function(operator) {
+                   const selected = (providerMappings[country.code] && providerMappings[country.code][operator]) || {};
+                   const selectedProvider = selected.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
+                   const selectedService = selected.service_id ? String(selected.service_id) : '';
+              %>
+                <tr style="border-top:1px solid #F1F5F9;">
+                  <td style="padding:12px 18px;font-size:.85rem;font-weight:700;color:#1E293B;"><%= operator %></td>
+                  <td style="padding:12px 8px;">
+                    <select name="provider[<%= country.code %>][<%= operator %>]" class="filter-sel" style="min-width:150px;">
+                      <option value="ashtechpay" <%= selectedProvider === 'ashtechpay' ? 'selected' : '' %>>AshTechPay</option>
+                      <option value="soleaspay" <%= selectedProvider === 'soleaspay' ? 'selected' : '' %>>SoleasPay</option>
+                    </select>
+                  </td>
+                  <td style="padding:12px 18px 12px 8px;">
+                    <select name="service[<%= country.code %>][<%= operator %>]" class="filter-sel" style="min-width:190px;">
+                      <option value="">Choisir un service</option>
+                      <% soleasServices.forEach(function(service) { %>
+                        <option value="<%= service.id %>" <%= selectedService === String(service.id) ? 'selected' : '' %>>
+                          <%= service.name %> (#<%= service.id %>)
+                        </option>
+                      <% }); %>
+                    </select>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% }); %>
+
+    <button type="submit" class="btn-save" style="margin-bottom:18px;">
+      <i class="fas fa-save"></i> Enregistrer le routage des dépôts
+    </button>
+  </form>
 
 <%# ══════════════════ PARAMÈTRES ══════════════════ %>
 <% } else if (currentPage === 'parametres') { %>

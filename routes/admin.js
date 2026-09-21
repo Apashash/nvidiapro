@@ -14,6 +14,11 @@ const {
   parsePrizeTiers,
   validatePrizeTiers,
 } = require('../services/giftCodePrizes');
+const {
+  getAshtechCountries,
+  getSoleasServices,
+  parseProviderMappings,
+} = require('../services/paymentProviders');
 
 const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
 if (!fs.existsSync(TUTO_UPLOAD_DIR)) fs.mkdirSync(TUTO_UPLOAD_DIR, { recursive: true });
@@ -378,6 +383,76 @@ router.get('/adminxyz/retraits', requireAdminAuth, async (req, res) => {
       ORDER BY r.date_demande DESC LIMIT 300`);
     res.render('admin', { currentPage: 'retraits', pageTitle: 'Retraits', retraits });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+// ── Fournisseurs de paiement ─────────────────────────────────────────────────
+router.get('/adminxyz/fournisseurs', requireAdminAuth, async (req, res) => {
+  try {
+    const params = await getParams();
+    const [countries, soleasServices] = await Promise.all([
+      getAshtechCountries(),
+      getSoleasServices(),
+    ]);
+    res.render('admin', {
+      currentPage: 'fournisseurs',
+      pageTitle: 'Fournisseurs de paiement',
+      countries,
+      soleasServices,
+      providerMappings: parseProviderMappings(params.payment_provider_mappings),
+      providerError: req.query.error || null,
+    });
+  } catch (e) {
+    console.error('Admin payment providers page error:', e);
+    res.status(500).send('Erreur: ' + e.message);
+  }
+});
+
+router.post('/adminxyz/fournisseurs/save', requireAdminAuth, async (req, res) => {
+  try {
+    const [countries, soleasServices] = await Promise.all([
+      getAshtechCountries(),
+      getSoleasServices(),
+    ]);
+    const rawProviders = req.body.provider || {};
+    const rawServices = req.body.service || {};
+    const mappings = {};
+    const serviceIds = new Set(soleasServices.map(service => service.id));
+
+    for (const country of countries) {
+      mappings[country.code] = {};
+      for (const operator of country.operators) {
+        const selectedProvider = String(rawProviders[country.code]?.[operator] || 'ashtechpay');
+        if (!['ashtechpay', 'soleaspay'].includes(selectedProvider)) {
+          throw new Error('Fournisseur de paiement invalide.');
+        }
+
+        const rawServiceId = rawServices[country.code]?.[operator];
+        const serviceId = rawServiceId === undefined || rawServiceId === ''
+          ? null
+          : Number(rawServiceId);
+        if (selectedProvider === 'soleaspay'
+            && (!Number.isInteger(serviceId) || !serviceIds.has(serviceId))) {
+          throw new Error(`Service SoleasPay invalide pour ${operator} (${country.name}).`);
+        }
+
+        mappings[country.code][operator] = {
+          provider: selectedProvider,
+          service_id: selectedProvider === 'soleaspay' ? serviceId : null,
+        };
+      }
+    }
+
+    const value = JSON.stringify(mappings);
+    await db.query(
+      'INSERT INTO app_parametres (cle, valeur) VALUES (?, ?) ON CONFLICT (cle) DO UPDATE SET valeur = ?',
+      ['payment_provider_mappings', value, value]
+    );
+    invalidateCache();
+    res.redirect('/adminxyz/fournisseurs');
+  } catch (e) {
+    console.error('Admin payment providers save error:', e);
+    res.redirect('/adminxyz/fournisseurs?error=' + encodeURIComponent(e.message || 'Enregistrement impossible.'));
+  }
 });
 
 // ── Cadeaux VIP ────────────────────────────────────────────────────────────────

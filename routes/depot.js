@@ -5,9 +5,15 @@ const { requireAuth } = require('../middleware/auth');
 const axios = require('axios');
 const crypto = require('crypto');
 const { getParams } = require('../services/params');
+const {
+  ASHTECH_API_BASE,
+  SOLEASPAY_API_BASE,
+  getAshtechApiKey,
+  getAshtechCountries,
+  getOperatorProvider,
+  getSoleasApiKey,
+} = require('../services/paymentProviders');
 
-const ASHTECH_API_BASE = process.env.ASHTECH_API_BASE || 'https://www.ashtechpay.com';
-const COUNTRY_CACHE_TTL_MS = 5 * 60 * 1000;
 const countryDialCodes = {
   CM: '237',
   TG: '228',
@@ -21,9 +27,8 @@ const countryDialCodes = {
   SN: '221',
 };
 
-// Fallback only for the period before the Direct API key is configured or when
-// AshTechPay is temporarily unavailable. With a configured key, the live
-// /v1/countries catalogue is always preferred and cached for five minutes.
+// Legacy fallback moved to services/paymentProviders.js.
+/*
 const fallbackAshtechCountries = [
   { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
   { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
@@ -35,20 +40,13 @@ const fallbackAshtechCountries = [
   { code: 'NE', name: 'Niger',            currency: 'XOF', operators: ['Airtel Money'] },
   { code: 'ML', name: 'Mali',             currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
 ];
+*/
 
 // Operators that AshtechPay may ask an OTP for, per the docs' "OTP requis" table.
 // Used only to decide whether to show a short "un code peut vous être demandé"
 // hint up front — the actual otp_required signal always comes from the API
 // response, so this list is informational, not authoritative.
 const otpProneOperators = new Set(['Orange Money', 'Wave']);
-let ashtechCountriesCache = null;
-let ashtechCountriesCachedAt = 0;
-
-function getAshtechApiKey() {
-  // ASHTECH_API_KEY is the current documented name. Keep the legacy name as a
-  // compatibility fallback so existing deployments do not stop working.
-  return process.env.ASHTECH_API_KEY || process.env.ASHTECHPAY_API_KEY || null;
-}
 
 function formatAshtechError(error) {
   const status = error.response?.status;
@@ -79,6 +77,7 @@ function formatAshtechError(error) {
   return 'AshTechPay : erreur inconnue du serveur de paiement.';
 }
 
+/*
 function normalizeAshtechCountries(payload) {
   const countries = Array.isArray(payload)
     ? payload
@@ -126,6 +125,7 @@ async function getAshtechCountries() {
     return ashtechCountriesCache || fallbackAshtechCountries;
   }
 }
+*/
 
 // ── GET /depot ───────────────────────────────────────────────────────────────
 router.get('/depot', requireAuth, async (req, res) => {
@@ -198,6 +198,12 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     return res.redirect('/depot');
   }
 
+  const providerConfig = await getOperatorProvider(country_code, operateur);
+  if (providerConfig.provider === 'soleaspay' && !providerConfig.serviceId) {
+    req.session.error = 'SoleasPay : le service de paiement n’est pas configuré pour cet opérateur.';
+    return res.redirect('/depot');
+  }
+
   const numero = normalizeInternationalPhone(numeroInput, country_code);
   if (!/^[0-9]{8,15}$/.test(numero)) {
     req.session.error = 'Numéro de téléphone invalide pour le pays sélectionné';
@@ -211,8 +217,9 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   let depot_id;
   try {
     const [result] = await db.query(
-      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, statut) VALUES (?, ?, ?, ?, ?, 'en_attente')",
-      [user_id, montant, `${operateur} (${country.name})`, reference, country.name]
+      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, fournisseur, provider_service_id, statut) VALUES (?, ?, ?, ?, ?, ?, ?, 'en_attente')",
+      [user_id, montant, `${operateur} (${country.name})`, reference, country.name,
+        providerConfig.provider, providerConfig.serviceId]
     );
     depot_id = result.insertId;
   } catch (e) {
@@ -224,14 +231,21 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   const notify_url = buildNotifyUrl(req);
   await initiateCollect(req, res, {
     depot_id, montant, currency, numero, operateur, country_code, reference, notify_url,
+    provider: providerConfig.provider, service_id: providerConfig.serviceId,
   });
 });
+
+// Route the deposit through the provider selected for this country/operator.
+async function initiateCollect(req, res, args) {
+  if (args.provider === 'soleaspay') return initiateSoleasCollect(req, res, args);
+  return initiateAshtechCollect(req, res, args);
+}
 
 // Shared "step 1" /v1/collect call — used both for the initial deposit
 // submission and to restart a fresh OTP session when AshtechPay reports
 // otp_expired/missing_reference on the confirmation step (per docs: "relancez
 // la requête sans otp pour initier une nouvelle session").
-async function initiateCollect(req, res, { depot_id, montant, currency, numero, operateur, country_code, reference, notify_url }) {
+async function initiateAshtechCollect(req, res, { depot_id, montant, currency, numero, operateur, country_code, reference, notify_url }) {
   try {
     const apiKey = getAshtechApiKey();
     if (!apiKey) {
@@ -284,6 +298,105 @@ async function initiateCollect(req, res, { depot_id, montant, currency, numero, 
     req.session.error = formatAshtechError(e);
     res.redirect('/depot');
   }
+}
+
+function formatSoleasError(error) {
+  const status = error.response?.status;
+  const body = error.response?.data;
+  const prefix = status ? `SoleasPay (HTTP ${status})` : 'SoleasPay';
+
+  if (typeof body === 'string' && body.trim()) {
+    return `${prefix} : ${body.trim().slice(0, 300)}`;
+  }
+  if (body && typeof body === 'object' && body.message) {
+    return `${prefix}${body.code ? ` [${body.code}]` : ''} : ${String(body.message).slice(0, 300)}`;
+  }
+  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+    return 'SoleasPay : délai d’attente dépassé, le serveur n’a pas répondu.';
+  }
+  if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
+    return 'SoleasPay : serveur de paiement introuvable.';
+  }
+  if (error.message) return `SoleasPay : ${error.message}`;
+  return 'SoleasPay : erreur inconnue du serveur de paiement.';
+}
+
+function createSoleasResponseError(data, status) {
+  const error = new Error(data?.message || 'SoleasPay a refusé la demande.');
+  error.response = { status, data };
+  return error;
+}
+
+async function initiateSoleasCollect(req, res, {
+  depot_id, montant, currency, numero, reference, notify_url, service_id,
+}) {
+  try {
+    const apiKey = getSoleasApiKey();
+    if (!apiKey) {
+      await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
+      req.session.error = 'SoleasPay : clé API absente du serveur.';
+      return res.redirect('/depot');
+    }
+
+    const [[user]] = await db.query('SELECT nom FROM utilisateurs WHERE id = ?', [req.session.user_id]);
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const baseUrl = `${protocol}://${host}`;
+    const payload = {
+      wallet: numero,
+      amount: montant,
+      currency,
+      order_id: reference,
+      description: `Dépôt Groupe Dangote ${reference}`,
+      payer: user?.nom || 'Client Groupe Dangote',
+      successUrl: `${baseUrl}/depot?payment=success`,
+      failureUrl: `${baseUrl}/depot?payment=failed`,
+    };
+
+    const { data, status } = await axios.post(
+      `${SOLEASPAY_API_BASE}/api/agent/bills/V3`,
+      payload,
+      {
+        headers: {
+          'x-api-key': apiKey,
+          operation: '2',
+          service: String(service_id),
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+      }
+    );
+
+    if (!data || data.success !== true || !data.data?.reference) {
+      throw createSoleasResponseError(data, status);
+    }
+
+    await onSoleasCollectAccepted(req, depot_id, data, {
+      apiKey, serviceId: service_id, reference, notify_url, numero,
+    });
+    delete req.session.depot_form;
+    res.redirect('/depot');
+  } catch (error) {
+    console.error('SoleasPay collect error:', error.response?.data || error.message);
+    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
+    req.session.error = formatSoleasError(error);
+    res.redirect('/depot');
+  }
+}
+
+async function onSoleasCollectAccepted(req, depot_id, data, {
+  apiKey, serviceId, reference, numero,
+}) {
+  const payId = String(data.data.reference || data.data.transaction_reference || '').trim();
+  await db.query(
+    'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ? WHERE id = ?',
+    [`${reference}|${payId}`, payId, depot_id]
+  );
+
+  pollSoleasTransactionStatus(depot_id, reference, payId, serviceId, apiKey);
+  req.session.pending_depot_id = depot_id;
+  req.session.pending_numero = numero;
+  req.session.pending_wave_url = null;
 }
 
 // ── POST /depot/otp/verify — soumission du code OTP pour les opérateurs
@@ -406,8 +519,8 @@ async function onCollectAccepted(req, depot_id, data, apiKey) {
   const reference = (depot?.numero_transaction || '').split('|')[0];
 
   await db.query(
-    "UPDATE depots SET numero_transaction = ? WHERE id = ?",
-    [`${reference}|${data.transaction_id}`, depot_id]
+    "UPDATE depots SET numero_transaction = ?, provider_transaction_id = ? WHERE id = ?",
+    [`${reference}|${data.transaction_id}`, data.transaction_id, depot_id]
   );
 
   // Poll AshtechPay every 3s as a backup to the webhook, until the status changes.
@@ -461,6 +574,53 @@ function pollTransactionStatus(depot_id, transaction_id, apiKey) {
     } catch (e) {
       console.error(`AshtechPay polling error (depot ${depot_id}):`, e.response?.data || e.message);
       // keep retrying until timeout, in case of a transient network/API error
+      setTimeout(tick, POLL_INTERVAL_MS);
+    }
+  };
+
+  setTimeout(tick, POLL_INTERVAL_MS);
+}
+
+function soleasStatus(data) {
+  const status = String(data?.status || data?.data?.status || '').toUpperCase();
+  const message = String(data?.message || '').toLowerCase();
+  if (['SUCCESS', 'COMPLETED', 'VALIDATED', 'APPROVED'].includes(status)
+      || /completed|successfully|approved|validated/.test(message)) return 'success';
+  if (['FAILURE', 'FAILED', 'REFUND', 'REJECTED', 'CANCELLED'].includes(status)
+      || /failed|failure|refund|reject|cancel/.test(message)) return 'failed';
+  return 'pending';
+}
+
+function pollSoleasTransactionStatus(depot_id, orderId, payId, serviceId, apiKey) {
+  const startedAt = Date.now();
+
+  const tick = async () => {
+    if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
+      console.warn(`⏱ SoleasPay polling timeout pour depot ${depot_id} (${payId})`);
+      return;
+    }
+
+    try {
+      const [[depot]] = await db.query('SELECT * FROM depots WHERE id = ?', [depot_id]);
+      if (!depot || depot.statut !== 'en_attente') return;
+
+      const { data } = await axios.get(`${SOLEASPAY_API_BASE}/api/agent/verif-pay`, {
+        params: { orderId, payId },
+        headers: {
+          'x-api-key': apiKey,
+          operation: '2',
+          service: String(serviceId),
+        },
+        timeout: 10000,
+      });
+      const status = soleasStatus(data);
+      if (status !== 'pending') {
+        await finalizeDepot(depot, status);
+        return;
+      }
+      setTimeout(tick, POLL_INTERVAL_MS);
+    } catch (error) {
+      console.error(`SoleasPay polling error (depot ${depot_id}):`, error.response?.data || error.message);
       setTimeout(tick, POLL_INTERVAL_MS);
     }
   };
@@ -525,9 +685,30 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
     if (!depot) return res.status(404).json({ error: 'Introuvable' });
 
     if (depot.statut === 'en_attente') {
-      const transaction_id = (depot.numero_transaction || '').split('|')[1];
-      const apiKey = getAshtechApiKey();
-      if (transaction_id && apiKey) {
+      const transaction_id = depot.provider_transaction_id || (depot.numero_transaction || '').split('|')[1];
+      const provider = depot.fournisseur || 'ashtechpay';
+      const apiKey = provider === 'soleaspay' ? getSoleasApiKey() : getAshtechApiKey();
+      if (transaction_id && apiKey && provider === 'soleaspay') {
+        try {
+          const orderId = (depot.numero_transaction || '').split('|')[0];
+          const { data } = await axios.get(`${SOLEASPAY_API_BASE}/api/agent/verif-pay`, {
+            params: { orderId, payId: transaction_id },
+            headers: {
+              'x-api-key': apiKey,
+              operation: '2',
+              service: String(depot.provider_service_id || ''),
+            },
+            timeout: 10000,
+          });
+          const status = soleasStatus(data);
+          if (status !== 'pending') {
+            await finalizeDepot(depot, status);
+            depot.statut = status === 'success' ? 'valide' : 'rejete';
+          }
+        } catch (e) {
+          console.error(`SoleasPay live status check error (depot ${depot_id}):`, e.response?.data || e.message);
+        }
+      } else if (transaction_id && apiKey) {
         try {
           const { data } = await axios.get(
             `${ASHTECH_API_BASE}/v1/transaction/${transaction_id}`,
@@ -652,6 +833,73 @@ router.post('/ashtechpay_callback', async (req, res) => {
 
   } catch (e) {
     console.error('AshtechPay callback error:', e);
+  }
+});
+
+function isValidSoleasCallback(req) {
+  const configuredKey = process.env.SOLEASPAY_CALLBACK_PRIVATE_KEY
+    || process.env.SOLEAS_CALLBACK_PRIVATE_KEY;
+  if (!configuredKey) return true;
+
+  const providedKey = String(req.get('x-private-key') || '').trim();
+  const configuredBuffer = Buffer.from(configuredKey, 'utf8');
+  const providedBuffer = Buffer.from(providedKey, 'utf8');
+  return providedBuffer.length > 0
+    && configuredBuffer.length === providedBuffer.length
+    && crypto.timingSafeEqual(configuredBuffer, providedBuffer);
+}
+
+// ── POST /soleaspay_callback ─────────────────────────────────────────────────
+// SoleasPay callback payload: success, status, data.external_reference,
+// data.reference, data.transaction_reference, amount and currency.
+router.post('/soleaspay_callback', async (req, res) => {
+  if (!isValidSoleasCallback(req)) {
+    return res.status(401).json({ received: false, error: 'Invalid callback signature' });
+  }
+
+  const rawBody = Buffer.isBuffer(req.body)
+    ? req.body.toString('utf8')
+    : JSON.stringify(req.body || {});
+  let payload;
+  try {
+    payload = JSON.parse(rawBody);
+  } catch {
+    return res.status(400).json({ received: false, error: 'Invalid callback payload' });
+  }
+
+  // Acknowledge before database work so SoleasPay does not retry a valid callback
+  // just because the application took longer to finalize the deposit.
+  res.status(200).json({ received: true });
+
+  const callbackData = payload.data || {};
+  const orderId = String(callbackData.external_reference || '').trim();
+  const payId = String(
+    callbackData.transaction_reference || callbackData.reference || ''
+  ).trim();
+  if (!orderId && !payId) {
+    console.warn('SoleasPay callback: missing external_reference and payment reference');
+    return;
+  }
+
+  try {
+    const [[depot]] = await db.query(
+      `SELECT * FROM depots
+       WHERE fournisseur = 'soleaspay'
+         AND (
+           numero_transaction LIKE ?
+           OR provider_transaction_id = ?
+         )
+       LIMIT 1`,
+      [`${orderId}|%`, payId]
+    );
+    if (!depot) {
+      console.warn(`SoleasPay callback: depot not found for order="${orderId}" pay="${payId}"`);
+      return;
+    }
+
+    await finalizeDepot(depot, soleasStatus(payload));
+  } catch (error) {
+    console.error('SoleasPay callback error:', error);
   }
 });
 
