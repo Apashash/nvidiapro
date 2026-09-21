@@ -1317,19 +1317,6 @@
     </div>
   <% } %>
 
-  <div class="param-card" style="background:linear-gradient(135deg,#fff 0%,#F8FAFC 100%);">
-    <div class="param-head">
-      <div class="param-icon" style="background:#ECFEFF"><i class="fas fa-shuffle" style="color:#0891B2"></i></div>
-      <div class="param-head-text">
-        <h3>Routage des paiements</h3>
-        <p>Ouvrez un pays, puis utilisez le crayon pour choisir le fournisseur de chaque opérateur.</p>
-      </div>
-    </div>
-    <p style="font-size:.8rem;color:#64748B;line-height:1.5;margin:0;">
-      AshTechPay reste le choix par défaut. SoleasPay nécessite la sélection du service Mobile Money correspondant.
-    </p>
-  </div>
-
   <div class="provider-country-list">
     <% countries.forEach(function(country, countryIndex) {
          const countryMappings = providerMappings[country.code] || {};
@@ -1435,8 +1422,8 @@
   <style>
     .provider-country-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
     .provider-country-card { background:#fff; border:1px solid #E2E8F0; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(15,23,42,.04); }
-    .provider-country-head { width:100%; border:0; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 18px; cursor:pointer; text-align:left; }
-    .provider-country-head:hover { background:#F8FAFC; }
+    .provider-country-head { width:100%; border:0; background:#fff !important; color:#172033 !important; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 18px; cursor:pointer; text-align:left; }
+    .provider-country-head:hover { background:#F8FAFC !important; }
     .provider-country-main, .provider-country-summary, .provider-operator-meta { display:flex; align-items:center; gap:10px; }
     .provider-country-main { min-width:0; }
     .provider-country-flag { font-size:1.25rem; line-height:1; }
@@ -1454,13 +1441,13 @@
     .provider-operator-row:last-child { border-bottom:0; }
     .provider-operator-name { color:#1E293B; font-size:.88rem; font-weight:700; margin-bottom:7px; }
     .provider-service-label { color:#64748B; font-size:.72rem; }
-    .provider-edit-button { width:34px; height:34px; border:0; border-radius:50%; background:#F0F9FF; color:#0786A1; cursor:pointer; }
-    .provider-edit-button:hover { background:#CFFAFE; }
+    .provider-edit-button { width:34px; height:34px; border:0; border-radius:50%; background:#F0F9FF !important; color:#0786A1 !important; cursor:pointer; }
+    .provider-edit-button:hover { background:#CFFAFE !important; color:#0786A1 !important; }
     .provider-modal { display:none; position:fixed; inset:0; z-index:1200; }
     .provider-modal.is-visible { display:block; }
     .provider-modal-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.48); backdrop-filter:blur(3px); }
     .provider-modal-card { position:relative; width:min(92vw,440px); margin:12vh auto 0; background:#fff; border-radius:20px; padding:26px; box-shadow:0 24px 70px rgba(15,23,42,.25); }
-    .provider-modal-close { position:absolute; top:15px; right:15px; border:0; background:#F1F5F9; color:#64748B; width:30px; height:30px; border-radius:50%; cursor:pointer; }
+    .provider-modal-close { position:absolute; top:15px; right:15px; border:0; background:#F1F5F9 !important; color:#64748B !important; width:30px; height:30px; border-radius:50%; cursor:pointer; }
     .provider-modal-kicker { color:#0786A1; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
     .provider-modal-card h3 { margin:9px 0 5px; color:#172033; }
     .provider-modal-card p { color:#64748B; font-size:.82rem; margin:0 0 20px; }
@@ -1468,8 +1455,8 @@
     .provider-modal-select { width:100%; border:1px solid #CBD5E1; border-radius:10px; padding:11px 12px; background:#fff; color:#1E293B; font:inherit; }
     .provider-modal-help { display:block; color:#64748B; font-size:.7rem; margin-top:7px; line-height:1.4; }
     .provider-auto-match { display:flex; align-items:center; gap:8px; color:#166B76; background:#E7F8F7; border:1px solid #B7E9E5; border-radius:10px; padding:11px 12px; margin-top:14px; font-size:.78rem; line-height:1.35; }
-    .provider-modal-save { width:100%; border:0; border-radius:11px; background:#0B3156; color:#fff; padding:12px; margin-top:22px; font-weight:700; cursor:pointer; }
-    .provider-modal-save:hover { background:#082542; }
+    .provider-modal-save { width:100%; border:0; border-radius:11px; background:#0B3156 !important; color:#fff !important; padding:12px; margin-top:22px; font-weight:700; cursor:pointer; }
+    .provider-modal-save:hover { background:#082542 !important; }
     @media (max-width:640px) { .provider-country-head { padding:14px; align-items:flex-start; } .provider-country-summary { gap:5px; } .provider-count-badge { font-size:.66rem; padding:4px 6px; } .provider-operator-row { padding:13px 14px; } }
   </style>
 
