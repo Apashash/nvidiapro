@@ -16,6 +16,7 @@ const {
 } = require('../services/giftCodePrizes');
 const {
   getAshtechCountries,
+  findSoleasServiceForOperator,
   getSoleasServices,
   parseProviderMappings,
 } = require('../services/paymentProviders');

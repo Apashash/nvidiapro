@@ -143,6 +143,34 @@ function parseProviderMappings(rawValue) {
   }
 }
 
+function normalizeOperatorLabel(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .trim();
+}
+
+function findSoleasServiceForOperator(countryCode, operator, services) {
+  const code = String(countryCode || '').trim().toUpperCase();
+  const operatorLabel = normalizeOperatorLabel(operator);
+  const countryServices = (services || []).filter(service => service.countryCode === code);
+  let aliases = [];
+
+  if (operatorLabel.includes('ORANGE')) aliases = ['OM'];
+  else if (operatorLabel.includes('MTN')) aliases = ['MOMO'];
+  else if (operatorLabel.includes('MOOV') || operatorLabel.includes('FLOOZ')) aliases = ['MOOV'];
+  else if (operatorLabel.includes('WAVE')) aliases = ['WAVE'];
+  else if (operatorLabel.includes('T MONEY')) aliases = ['T MONEY'];
+  else if (operatorLabel.includes('AIRTEL')) aliases = ['AIRTEL'];
+
+  return countryServices.find(service => {
+    const serviceLabel = normalizeOperatorLabel(service.name);
+    return aliases.some(alias => serviceLabel.startsWith(alias + ' ') || serviceLabel === alias);
+  }) || null;
+}
+
 async function getOperatorProvider(countryCode, operator) {
   const params = await getParams();
   const mappings = parseProviderMappings(params.payment_provider_mappings);
@@ -168,5 +196,7 @@ module.exports = {
   getOperatorProvider,
   getSoleasApiKey,
   getSoleasServices,
+  findSoleasServiceForOperator,
+  normalizeOperatorLabel,
   parseProviderMappings,
 };
