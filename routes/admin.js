@@ -394,11 +394,19 @@ router.get('/adminxyz/fournisseurs', requireAdminAuth, async (req, res) => {
       getAshtechCountries(),
       getSoleasServices(),
     ]);
+    const autoServiceMappings = {};
+    countries.forEach(country => {
+      country.operators.forEach(operator => {
+        const service = findSoleasServiceForOperator(country.code, operator, soleasServices);
+        if (service) autoServiceMappings[`${country.code}::${operator}`] = service;
+      });
+    });
     res.render('admin', {
       currentPage: 'fournisseurs',
       pageTitle: 'Fournisseurs de paiement',
       countries,
       soleasServices,
+      autoServiceMappings,
       providerMappings: parseProviderMappings(params.payment_provider_mappings),
       providerError: req.query.error || null,
       providerSaved: req.query.saved === '1',
@@ -429,8 +437,9 @@ router.post('/adminxyz/fournisseurs/save', requireAdminAuth, async (req, res) =>
         }
 
         const rawServiceId = rawServices[country.code]?.[operator];
+        const autoService = findSoleasServiceForOperator(country.code, operator, soleasServices);
         const serviceId = rawServiceId === undefined || rawServiceId === ''
-          ? null
+          ? (autoService?.id || null)
           : Number(rawServiceId);
         if (selectedProvider === 'soleaspay'
             && (!Number.isInteger(serviceId) || !serviceIds.has(serviceId))) {
@@ -476,7 +485,8 @@ router.post('/adminxyz/fournisseurs/save-one', requireAdminAuth, async (req, res
       throw new Error('Fournisseur de paiement invalide.');
     }
 
-    const serviceId = rawServiceId ? Number(rawServiceId) : null;
+    const autoService = findSoleasServiceForOperator(countryCode, operator, soleasServices);
+    const serviceId = rawServiceId ? Number(rawServiceId) : (autoService?.id || null);
     if (provider === 'soleaspay'
         && (!Number.isInteger(serviceId) || !soleasServices.some(service => service.id === serviceId))) {
       throw new Error(`Service SoleasPay invalide pour ${operator} (${country.name}).`);

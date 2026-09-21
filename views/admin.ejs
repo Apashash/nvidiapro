@@ -1361,7 +1361,8 @@
           <% country.operators.forEach(function(operator) {
                const selected = countryMappings[operator] || {};
                const selectedProvider = selected.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
-               const selectedService = soleasServices.find(service => String(service.id) === String(selected.service_id));
+               const autoService = autoServiceMappings[`${country.code}::${operator}`] || null;
+               const selectedService = soleasServices.find(service => String(service.id) === String(selected.service_id || autoService?.id));
                const providerLabel = selectedProvider === 'soleaspay' ? 'SoleasPay' : 'AshTechPay';
           %>
             <div class="provider-operator-row">
@@ -1382,6 +1383,8 @@
                 data-operator="<%= operator %>"
                 data-provider="<%= selectedProvider %>"
                 data-service-id="<%= selected.service_id || '' %>"
+                data-auto-service-id="<%= autoService?.id || '' %>"
+                data-auto-service-name="<%= autoService?.name || '' %>"
                 onclick="openProviderEditor(this)" aria-label="Modifier <%= operator %>">
                 <i class="fas fa-pencil"></i>
               </button>
@@ -1407,6 +1410,11 @@
           <option value="ashtechpay">AshTechPay</option>
           <option value="soleaspay">SoleasPay</option>
         </select>
+        <input type="hidden" id="providerAutoServiceId">
+        <div id="soleasAutoMatch" class="provider-auto-match" style="display:none;">
+          <i class="fas fa-link"></i>
+          <span>Service associé automatiquement : <strong id="providerAutoServiceName"></strong></span>
+        </div>
         <div id="soleasServiceField" style="display:none;">
           <label class="provider-modal-label" for="providerService">Service SoleasPay</label>
           <select class="provider-modal-select" name="service_id" id="providerService">
@@ -1417,7 +1425,7 @@
               </option>
             <% }); %>
           </select>
-          <small class="provider-modal-help">Sélectionnez le service actif correspondant au pays et à l’opérateur.</small>
+          <small class="provider-modal-help">Aucune correspondance automatique fiable n’a été trouvée. Choisissez le service actif correspondant.</small>
         </div>
         <button type="submit" class="provider-modal-save"><i class="fas fa-save"></i> Enregistrer</button>
       </form>
@@ -1459,6 +1467,7 @@
     .provider-modal-label { display:block; color:#334155; font-size:.78rem; font-weight:700; margin:14px 0 7px; }
     .provider-modal-select { width:100%; border:1px solid #CBD5E1; border-radius:10px; padding:11px 12px; background:#fff; color:#1E293B; font:inherit; }
     .provider-modal-help { display:block; color:#64748B; font-size:.7rem; margin-top:7px; line-height:1.4; }
+    .provider-auto-match { display:flex; align-items:center; gap:8px; color:#166B76; background:#E7F8F7; border:1px solid #B7E9E5; border-radius:10px; padding:11px 12px; margin-top:14px; font-size:.78rem; line-height:1.35; }
     .provider-modal-save { width:100%; border:0; border-radius:11px; background:#0B3156; color:#fff; padding:12px; margin-top:22px; font-weight:700; cursor:pointer; }
     .provider-modal-save:hover { background:#082542; }
     @media (max-width:640px) { .provider-country-head { padding:14px; align-items:flex-start; } .provider-country-summary { gap:5px; } .provider-count-badge { font-size:.66rem; padding:4px 6px; } .provider-operator-row { padding:13px 14px; } }
@@ -1478,7 +1487,9 @@
       document.getElementById('providerCountryCode').value = button.dataset.countryCode || '';
       document.getElementById('providerOperator').value = button.dataset.operator || '';
       document.getElementById('providerChoice').value = button.dataset.provider || 'ashtechpay';
-      document.getElementById('providerService').value = button.dataset.serviceId || '';
+      document.getElementById('providerAutoServiceId').value = button.dataset.autoServiceId || '';
+      document.getElementById('providerAutoServiceName').textContent = button.dataset.autoServiceName || '';
+      document.getElementById('providerService').value = button.dataset.serviceId || button.dataset.autoServiceId || '';
       filterProviderServices(button.dataset.countryCode || '');
       toggleSoleasServiceField();
       modal.classList.add('is-visible');
@@ -1497,8 +1508,12 @@
     }
     function toggleSoleasServiceField() {
       const isSoleas = document.getElementById('providerChoice').value === 'soleaspay';
-      document.getElementById('soleasServiceField').style.display = isSoleas ? 'block' : 'none';
-      document.getElementById('providerService').required = isSoleas;
+      const autoServiceId = document.getElementById('providerAutoServiceId').value;
+      const hasAutomaticMatch = isSoleas && autoServiceId;
+      document.getElementById('soleasAutoMatch').style.display = hasAutomaticMatch ? 'flex' : 'none';
+      document.getElementById('soleasServiceField').style.display = isSoleas && !hasAutomaticMatch ? 'block' : 'none';
+      document.getElementById('providerService').required = isSoleas && !hasAutomaticMatch;
+      if (hasAutomaticMatch) document.getElementById('providerService').value = autoServiceId;
     }
     document.addEventListener('keydown', event => { if (event.key === 'Escape') closeProviderEditor(); });
   </script>
