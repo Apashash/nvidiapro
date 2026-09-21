@@ -400,6 +400,7 @@ router.get('/adminxyz/fournisseurs', requireAdminAuth, async (req, res) => {
       soleasServices,
       providerMappings: parseProviderMappings(params.payment_provider_mappings),
       providerError: req.query.error || null,
+      providerSaved: req.query.saved === '1',
     });
   } catch (e) {
     console.error('Admin payment providers page error:', e);
@@ -452,6 +453,52 @@ router.post('/adminxyz/fournisseurs/save', requireAdminAuth, async (req, res) =>
   } catch (e) {
     console.error('Admin payment providers save error:', e);
     res.redirect('/adminxyz/fournisseurs?error=' + encodeURIComponent(e.message || 'Enregistrement impossible.'));
+  }
+});
+
+router.post('/adminxyz/fournisseurs/save-one', requireAdminAuth, async (req, res) => {
+  const countryCode = String(req.body.country_code || '').trim().toUpperCase();
+  const operator = String(req.body.operator || '').trim();
+  const provider = String(req.body.provider || '').trim().toLowerCase();
+  const rawServiceId = String(req.body.service_id || '').trim();
+
+  try {
+    const [countries, soleasServices] = await Promise.all([
+      getAshtechCountries(),
+      getSoleasServices(),
+    ]);
+    const country = countries.find(item => item.code === countryCode);
+    if (!country || !country.operators.includes(operator)) {
+      throw new Error('Pays ou opérateur invalide.');
+    }
+    if (!['ashtechpay', 'soleaspay'].includes(provider)) {
+      throw new Error('Fournisseur de paiement invalide.');
+    }
+
+    const serviceId = rawServiceId ? Number(rawServiceId) : null;
+    if (provider === 'soleaspay'
+        && (!Number.isInteger(serviceId) || !soleasServices.some(service => service.id === serviceId))) {
+      throw new Error(`Service SoleasPay invalide pour ${operator} (${country.name}).`);
+    }
+
+    const params = await getParams();
+    const mappings = parseProviderMappings(params.payment_provider_mappings);
+    mappings[countryCode] = mappings[countryCode] || {};
+    mappings[countryCode][operator] = {
+      provider,
+      service_id: provider === 'soleaspay' ? serviceId : null,
+    };
+    const value = JSON.stringify(mappings);
+
+    await db.query(
+      'INSERT INTO app_parametres (cle, valeur) VALUES (?, ?) ON CONFLICT (cle) DO UPDATE SET valeur = ?',
+      ['payment_provider_mappings', value, value]
+    );
+    invalidateCache();
+    res.redirect('/adminxyz/fournisseurs?saved=1');
+  } catch (error) {
+    console.error('Admin single payment provider save error:', error);
+    res.redirect('/adminxyz/fournisseurs?error=' + encodeURIComponent(error.message || 'Enregistrement impossible.'));
   }
 });
 
