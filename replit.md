@@ -55,6 +55,9 @@ Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, 
 | `ASHTECHPAY_API_KEY` | Legacy fallback | Previous name accepted for existing deployments |
 | `ASHTECHPAY_WEBHOOK_SECRET` | Optional | AshTechPay webhook secret (`whsec_...`) |
 | `ASHTECH_API_BASE` | Optional | API base override; defaults to `https://www.ashtechpay.com` |
+| `SOLEASPAY_API_KEY` | Required for SoleasPay | SoleasPay API ACCESS key used for catalogue and collection |
+| `SOLEASPAY_PRIVATE_SECRET_KEY` | Required for SoleasPay payouts | SoleasPay generated secret used to obtain the payout Bearer Token |
+| `SOLEASPAY_API_BASE` | Optional | API base override; defaults to `https://soleaspay.com` |
 
 ## Security Notes
 - Passwords stored plaintext in DB (matches original PHP — do not add bcrypt without a migration)

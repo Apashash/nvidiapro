@@ -850,7 +850,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         );
         if (locked.affectedRows === 0) return res.json({ success: false, message: 'Ce retrait a déjà été traité.' });
 
-        const providerOrderId = `RET_${id}_${Date.now()}`;
+        const localOrderId = `RET_${id}_${Date.now()}`;
         try {
           const data = await initiateSoleasDisbursement({
             wallet: ret.numero_compte,
@@ -859,6 +859,11 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
             serviceId: service.id,
           });
           const providerReference = String(data.data.reference || data.data.transaction_reference || '').trim();
+          const providerOrderId = String(
+            data.data.external_reference
+              || data.data.transaction_reference
+              || localOrderId
+          ).trim();
           await db.query(
             'UPDATE retraits SET provider_transaction_id=?, provider_order_id=? WHERE id=?',
             [providerReference, providerOrderId, id]
