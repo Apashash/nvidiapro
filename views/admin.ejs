@@ -1306,79 +1306,202 @@
     </div>
   </div>
 
+  <% const providerFlags = { BJ:'🇧🇯', BF:'🇧🇫', CM:'🇨🇲', CF:'🇨🇫', CG:'🇨🇬', CI:'🇨🇮', ET:'🇪🇹', GA:'🇬🇦', ML:'🇲🇱', NE:'🇳🇪', SN:'🇸🇳', TG:'🇹🇬' }; %>
   <% if (providerError) { %>
     <div class="alert-box alert-error" style="background:#FEF2F2;border:1px solid #FECACA;color:#B91C1C;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
       <i class="fas fa-circle-exclamation"></i> <%= providerError %>
     </div>
+  <% } else if (providerSaved) { %>
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;color:#047857;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <i class="fas fa-circle-check"></i> La configuration de l’opérateur a été enregistrée.
+    </div>
   <% } %>
 
-  <div class="param-card">
+  <div class="param-card" style="background:linear-gradient(135deg,#fff 0%,#F8FAFC 100%);">
     <div class="param-head">
-      <div class="param-icon" style="background:#ECFEFF"><i class="fas fa-circle-info" style="color:#0891B2"></i></div>
+      <div class="param-icon" style="background:#ECFEFF"><i class="fas fa-shuffle" style="color:#0891B2"></i></div>
       <div class="param-head-text">
-        <h3>Routage des dépôts</h3>
-        <p>Le choix s’applique au prochain dépôt de l’opérateur sélectionné.</p>
+        <h3>Routage des paiements</h3>
+        <p>Ouvrez un pays, puis utilisez le crayon pour choisir le fournisseur de chaque opérateur.</p>
       </div>
     </div>
-    <p style="font-size:.8rem;color:#555;line-height:1.5;">
-      Les pays et opérateurs affichés viennent du catalogue AshTechPay.
-      La documentation SoleasPay expose des services génériques : choisissez aussi le service SoleasPay
-      correspondant lorsque vous activez SoleasPay pour un opérateur.
+    <p style="font-size:.8rem;color:#64748B;line-height:1.5;margin:0;">
+      AshTechPay reste le choix par défaut. SoleasPay nécessite la sélection du service Mobile Money correspondant.
     </p>
   </div>
 
-  <form method="POST" action="/adminxyz/fournisseurs/save">
-    <% countries.forEach(function(country) { %>
-      <div class="param-card" style="padding:0;overflow:hidden;">
-        <div style="padding:16px 18px;background:#F8FAFC;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <strong style="color:#0F172A;"><i class="fas fa-globe-africa" style="color:#0891B2;margin-right:8px;"></i><%= country.name %></strong>
-          <span style="font-size:.75rem;color:#64748B;font-weight:700;"><%= country.code %> · <%= country.currency %></span>
-        </div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;min-width:520px;">
-            <thead>
-              <tr style="font-size:.72rem;color:#64748B;text-align:left;background:#fff;">
-                <th style="padding:11px 18px;">Opérateur</th>
-                <th style="padding:11px 8px;">Fournisseur</th>
-                <th style="padding:11px 18px 11px 8px;">Service SoleasPay</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% country.operators.forEach(function(operator) {
-                   const selected = (providerMappings[country.code] && providerMappings[country.code][operator]) || {};
-                   const selectedProvider = selected.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
-                   const selectedService = selected.service_id ? String(selected.service_id) : '';
-              %>
-                <tr style="border-top:1px solid #F1F5F9;">
-                  <td style="padding:12px 18px;font-size:.85rem;font-weight:700;color:#1E293B;"><%= operator %></td>
-                  <td style="padding:12px 8px;">
-                    <select name="provider[<%= country.code %>][<%= operator %>]" class="filter-sel" style="min-width:150px;">
-                      <option value="ashtechpay" <%= selectedProvider === 'ashtechpay' ? 'selected' : '' %>>AshTechPay</option>
-                      <option value="soleaspay" <%= selectedProvider === 'soleaspay' ? 'selected' : '' %>>SoleasPay</option>
-                    </select>
-                  </td>
-                  <td style="padding:12px 18px 12px 8px;">
-                    <select name="service[<%= country.code %>][<%= operator %>]" class="filter-sel" style="min-width:190px;">
-                      <option value="">Choisir un service</option>
-                      <% soleasServices.forEach(function(service) { %>
-                        <option value="<%= service.id %>" <%= selectedService === String(service.id) ? 'selected' : '' %>>
-                          <%= service.name %><%= service.countryCode ? ` · ${service.countryCode}` : '' %> (#<%= service.id %>)<%= service.description ? ` — ${service.description}` : '' %>
-                        </option>
-                      <% }); %>
-                    </select>
-                  </td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    <% }); %>
+  <div class="provider-country-list">
+    <% countries.forEach(function(country, countryIndex) {
+         const countryMappings = providerMappings[country.code] || {};
+         const providerCounts = country.operators.reduce(function(counts, operator) {
+           const provider = countryMappings[operator]?.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
+           counts[provider] += 1;
+           return counts;
+         }, { ashtechpay: 0, soleaspay: 0 });
+    %>
+      <section class="provider-country-card <%= countryIndex === 0 ? 'is-open' : '' %>" data-country-card>
+        <button type="button" class="provider-country-head" onclick="toggleProviderCountry(this)">
+          <span class="provider-country-main">
+            <span class="provider-country-flag"><%= providerFlags[country.code] || '🌐' %></span>
+            <span class="provider-country-name"><%= country.name %></span>
+            <span class="provider-country-code"><%= country.code %></span>
+          </span>
+          <span class="provider-country-summary">
+            <% if (providerCounts.ashtechpay > 0) { %>
+              <span class="provider-count-badge ashtech"><i class="fas fa-bolt"></i> <%= providerCounts.ashtechpay %> AshTechPay</span>
+            <% } %>
+            <% if (providerCounts.soleaspay > 0) { %>
+              <span class="provider-count-badge soleas"><i class="fas fa-diamond"></i> <%= providerCounts.soleaspay %> SoleasPay</span>
+            <% } %>
+            <i class="fas fa-chevron-down provider-chevron"></i>
+          </span>
+        </button>
 
-    <button type="submit" class="btn-save" style="margin-bottom:18px;">
-      <i class="fas fa-save"></i> Enregistrer le routage des dépôts
-    </button>
-  </form>
+        <div class="provider-country-body">
+          <% country.operators.forEach(function(operator) {
+               const selected = countryMappings[operator] || {};
+               const selectedProvider = selected.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
+               const selectedService = soleasServices.find(service => String(service.id) === String(selected.service_id));
+               const providerLabel = selectedProvider === 'soleaspay' ? 'SoleasPay' : 'AshTechPay';
+          %>
+            <div class="provider-operator-row">
+              <div class="provider-operator-info">
+                <div class="provider-operator-name"><%= operator %></div>
+                <div class="provider-operator-meta">
+                  <span class="provider-pill <%= selectedProvider %>">
+                    <i class="fas <%= selectedProvider === 'soleaspay' ? 'fa-diamond' : 'fa-bolt' %>"></i> <%= providerLabel %>
+                  </span>
+                  <% if (selectedProvider === 'soleaspay' && selectedService) { %>
+                    <span class="provider-service-label"><%= selectedService.name %></span>
+                  <% } %>
+                </div>
+              </div>
+              <button type="button" class="provider-edit-button"
+                data-country-code="<%= country.code %>"
+                data-country-name="<%= country.name %>"
+                data-operator="<%= operator %>"
+                data-provider="<%= selectedProvider %>"
+                data-service-id="<%= selected.service_id || '' %>"
+                onclick="openProviderEditor(this)" aria-label="Modifier <%= operator %>">
+                <i class="fas fa-pencil"></i>
+              </button>
+            </div>
+          <% }); %>
+        </div>
+      </section>
+    <% }); %>
+  </div>
+
+  <div class="provider-modal" id="providerEditor" aria-hidden="true">
+    <div class="provider-modal-backdrop" onclick="closeProviderEditor()"></div>
+    <div class="provider-modal-card" role="dialog" aria-modal="true" aria-labelledby="providerEditorTitle">
+      <button type="button" class="provider-modal-close" onclick="closeProviderEditor()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+      <div class="provider-modal-kicker"><i class="fas fa-shuffle"></i> Configuration paiement</div>
+      <h3 id="providerEditorTitle">Modifier l’opérateur</h3>
+      <p id="providerEditorSubtitle">Choisissez le fournisseur utilisé pour les prochains dépôts.</p>
+      <form method="POST" action="/adminxyz/fournisseurs/save-one">
+        <input type="hidden" name="country_code" id="providerCountryCode">
+        <input type="hidden" name="operator" id="providerOperator">
+        <label class="provider-modal-label" for="providerChoice">Fournisseur</label>
+        <select class="provider-modal-select" name="provider" id="providerChoice" onchange="toggleSoleasServiceField()">
+          <option value="ashtechpay">AshTechPay</option>
+          <option value="soleaspay">SoleasPay</option>
+        </select>
+        <div id="soleasServiceField" style="display:none;">
+          <label class="provider-modal-label" for="providerService">Service SoleasPay</label>
+          <select class="provider-modal-select" name="service_id" id="providerService">
+            <option value="">Choisir le service</option>
+            <% soleasServices.forEach(function(service) { %>
+              <option value="<%= service.id %>" data-service-country="<%= service.countryCode || '' %>">
+                <%= service.name %><%= service.countryCode ? ` · ${service.countryCode}` : '' %> — <%= service.description || 'Mobile Money' %>
+              </option>
+            <% }); %>
+          </select>
+          <small class="provider-modal-help">Sélectionnez le service actif correspondant au pays et à l’opérateur.</small>
+        </div>
+        <button type="submit" class="provider-modal-save"><i class="fas fa-save"></i> Enregistrer</button>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .provider-country-list { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .provider-country-card { background:#fff; border:1px solid #E2E8F0; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(15,23,42,.04); }
+    .provider-country-head { width:100%; border:0; background:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 18px; cursor:pointer; text-align:left; }
+    .provider-country-head:hover { background:#F8FAFC; }
+    .provider-country-main, .provider-country-summary, .provider-operator-meta { display:flex; align-items:center; gap:10px; }
+    .provider-country-main { min-width:0; }
+    .provider-country-flag { font-size:1.25rem; line-height:1; }
+    .provider-country-name { color:#172033; font-weight:700; font-size:.94rem; }
+    .provider-country-code { color:#64748B; font-weight:700; font-size:.82rem; }
+    .provider-country-summary { flex-wrap:wrap; justify-content:flex-end; }
+    .provider-count-badge, .provider-pill { display:inline-flex; align-items:center; gap:5px; border-radius:8px; padding:5px 9px; font-size:.72rem; font-weight:700; white-space:nowrap; }
+    .provider-count-badge.ashtech, .provider-pill.ashtech { color:#936D00; background:#FFF7D6; border:1px solid #F5E5A0; }
+    .provider-count-badge.soleas, .provider-pill.soleaspay { color:#166B76; background:#E7F8F7; border:1px solid #B7E9E5; }
+    .provider-chevron { color:#64748B; transition:transform .2s; margin-left:4px; }
+    .provider-country-card.is-open .provider-chevron { transform:rotate(180deg); }
+    .provider-country-body { display:none; border-top:1px solid #E2E8F0; }
+    .provider-country-card.is-open .provider-country-body { display:block; }
+    .provider-operator-row { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:14px 18px; border-bottom:1px solid #F1F5F9; }
+    .provider-operator-row:last-child { border-bottom:0; }
+    .provider-operator-name { color:#1E293B; font-size:.88rem; font-weight:700; margin-bottom:7px; }
+    .provider-service-label { color:#64748B; font-size:.72rem; }
+    .provider-edit-button { width:34px; height:34px; border:0; border-radius:50%; background:#F0F9FF; color:#0786A1; cursor:pointer; }
+    .provider-edit-button:hover { background:#CFFAFE; }
+    .provider-modal { display:none; position:fixed; inset:0; z-index:1200; }
+    .provider-modal.is-visible { display:block; }
+    .provider-modal-backdrop { position:absolute; inset:0; background:rgba(15,23,42,.48); backdrop-filter:blur(3px); }
+    .provider-modal-card { position:relative; width:min(92vw,440px); margin:12vh auto 0; background:#fff; border-radius:20px; padding:26px; box-shadow:0 24px 70px rgba(15,23,42,.25); }
+    .provider-modal-close { position:absolute; top:15px; right:15px; border:0; background:#F1F5F9; color:#64748B; width:30px; height:30px; border-radius:50%; cursor:pointer; }
+    .provider-modal-kicker { color:#0786A1; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+    .provider-modal-card h3 { margin:9px 0 5px; color:#172033; }
+    .provider-modal-card p { color:#64748B; font-size:.82rem; margin:0 0 20px; }
+    .provider-modal-label { display:block; color:#334155; font-size:.78rem; font-weight:700; margin:14px 0 7px; }
+    .provider-modal-select { width:100%; border:1px solid #CBD5E1; border-radius:10px; padding:11px 12px; background:#fff; color:#1E293B; font:inherit; }
+    .provider-modal-help { display:block; color:#64748B; font-size:.7rem; margin-top:7px; line-height:1.4; }
+    .provider-modal-save { width:100%; border:0; border-radius:11px; background:#0B3156; color:#fff; padding:12px; margin-top:22px; font-weight:700; cursor:pointer; }
+    .provider-modal-save:hover { background:#082542; }
+    @media (max-width:640px) { .provider-country-head { padding:14px; align-items:flex-start; } .provider-country-summary { gap:5px; } .provider-count-badge { font-size:.66rem; padding:4px 6px; } .provider-operator-row { padding:13px 14px; } }
+  </style>
+
+  <script>
+    function toggleProviderCountry(button) {
+      const card = button.closest('[data-country-card]');
+      if (card) card.classList.toggle('is-open');
+    }
+    function openProviderEditor(button) {
+      const modal = document.getElementById('providerEditor');
+      document.getElementById('providerEditorTitle').textContent =
+        `${button.dataset.countryName} — ${button.dataset.operator}`;
+      document.getElementById('providerEditorSubtitle').textContent =
+        'Choisissez le fournisseur utilisé pour les prochains dépôts de cet opérateur.';
+      document.getElementById('providerCountryCode').value = button.dataset.countryCode || '';
+      document.getElementById('providerOperator').value = button.dataset.operator || '';
+      document.getElementById('providerChoice').value = button.dataset.provider || 'ashtechpay';
+      document.getElementById('providerService').value = button.dataset.serviceId || '';
+      filterProviderServices(button.dataset.countryCode || '');
+      toggleSoleasServiceField();
+      modal.classList.add('is-visible');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeProviderEditor() {
+      const modal = document.getElementById('providerEditor');
+      modal.classList.remove('is-visible');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    function filterProviderServices(countryCode) {
+      document.querySelectorAll('#providerService option[data-service-country]').forEach(option => {
+        const match = !option.dataset.serviceCountry || option.dataset.serviceCountry === countryCode;
+        option.hidden = !match;
+      });
+    }
+    function toggleSoleasServiceField() {
+      const isSoleas = document.getElementById('providerChoice').value === 'soleaspay';
+      document.getElementById('soleasServiceField').style.display = isSoleas ? 'block' : 'none';
+      document.getElementById('providerService').required = isSoleas;
+    }
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeProviderEditor(); });
+  </script>
 
 <%# ══════════════════ PARAMÈTRES ══════════════════ %>
 <% } else if (currentPage === 'parametres') { %>
