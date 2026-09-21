@@ -783,6 +783,9 @@
         <div style="font-weight:700"><%- r.nom || '—' %></div>
         <div class="dep-meta"><%- r.telephone || '—' %></div>
         <div class="ret-amount"><%= parseFloat(r.montant||0).toLocaleString('fr-FR') %> FCFA</div>
+        <% if (r.montant_net != null && parseFloat(r.montant_net) !== parseFloat(r.montant || 0)) { %>
+        <div class="dep-meta">Net à payer : <%= parseFloat(r.montant_net).toLocaleString('fr-FR') %> FCFA</div>
+        <% } %>
         <div class="dep-meta" style="margin-bottom:6px"><%- r.methode || '—' %> · <%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
         <% if (r.numero_compte) { %>
         <div style="margin-bottom:4px">
@@ -791,15 +794,21 @@
         </div>
         <% } %>
         <% if (r.statut === 'en_attente') { %>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> Valider</button>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> Valider manuellement</button>
+          <button class="btn-xs btn-v" onclick="doAction('pay_retrait_soleaspay',<%= r.id %>)"><i class="fas fa-money-bill-transfer"></i> Payer avec SoleasPay</button>
           <button class="btn-xs btn-r" onclick="doAction('reject_retrait',<%= r.id %>)"><i class="fas fa-times"></i> Rejeter</button>
+        </div>
+        <% } else if (r.statut === 'en_cours') { %>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-xs btn-v" onclick="doAction('check_retrait_soleaspay',<%= r.id %>)"><i class="fas fa-rotate"></i> Vérifier SoleasPay</button>
         </div>
         <% } %>
       </div>
       <div>
         <% if (r.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
-        <% } else if (r.statut === 'valide') { %><span class="badge badge-valid">Validé</span>
+        <% } else if (r.statut === 'en_cours') { %><span class="badge badge-pending">SoleasPay en cours</span>
+        <% } else if (r.statut === 'valide') { %><span class="badge badge-valid"><%= r.fournisseur === 'soleaspay' ? 'Payé SoleasPay' : 'Validé' %></span>
         <% } else { %><span class="badge badge-rejected">Rejeté</span><% } %>
       </div>
     </div>
@@ -2017,7 +2026,10 @@ function filterTx() {
 // ── AJAX action ─────────────────────────────────────────────────────────
 const actionLabels = {
   validate_deposit:'Valider ce dépôt ?', reject_deposit:'Rejeter ce dépôt ?',
-  validate_retrait:'Valider ce retrait ?', reject_retrait:'Rejeter ce retrait ?',
+  validate_retrait:'Valider ce retrait manuellement sans appeler SoleasPay ?',
+  pay_retrait_soleaspay:'Lancer le paiement de ce retrait via SoleasPay ?',
+  check_retrait_soleaspay:'Vérifier le statut du paiement SoleasPay ?',
+  reject_retrait:'Rejeter ce retrait et rembourser le solde ?',
   validate_post:'Valider cette affiche ?', reject_post:'Rejeter cette affiche ?', delete_post:'Supprimer définitivement cette affiche ?',
   toggle_admin:'Changer le statut administrateur ?'
 };

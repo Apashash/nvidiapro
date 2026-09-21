@@ -177,8 +177,8 @@ router.post('/retrait', requireAuth, async (req, res) => {
       }
 
       await conn.query(
-        "INSERT INTO retraits (user_id, montant, methode, numero_compte, statut) VALUES (?, ?, ?, ?, 'en_attente')",
-        [user_id, montant, methode, numero]
+        "INSERT INTO retraits (user_id, montant, montant_net, frais, operateur, pays, methode, numero_compte, fournisseur, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'manuel', 'en_attente')",
+        [user_id, montant, montantNet, frais, operateur, pays, methode, numero]
       );
       await conn.commit();
     } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }

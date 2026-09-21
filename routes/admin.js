@@ -18,7 +18,9 @@ const {
   getAshtechCountries,
   findSoleasServiceForOperator,
   getSoleasServices,
+  initiateSoleasDisbursement,
   parseProviderMappings,
+  verifySoleasDisbursement,
 } = require('../services/paymentProviders');
 
 const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
@@ -743,6 +745,52 @@ router.post('/adminxyz/verser-revenus', requireAdminAuth, async (req, res) => {
   }
 });
 
+function parseRetraitRouting(ret, countries) {
+  const methode = String(ret.methode || '');
+  const operator = String(ret.operateur || methode.match(/^(.+?)\s*\(/)?.[1] || '').trim();
+  const rawCountry = String(ret.pays || methode.match(/\(([^)]+)\)/)?.[1] || '').trim();
+  const country = countries.find(item =>
+    item.code === rawCountry.toUpperCase()
+    || item.name.toUpperCase() === rawCountry.toUpperCase()
+  );
+  return { country, operator };
+}
+
+async function refundRetraitIfPending(id, expectedStatus = 'en_attente') {
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [[ret]] = await conn.query('SELECT * FROM retraits WHERE id=? FOR UPDATE', [id]);
+    if (!ret) {
+      await conn.rollback();
+      return { ok: false, message: 'Retrait non trouvé' };
+    }
+    if (ret.statut !== expectedStatus) {
+      await conn.rollback();
+      return { ok: false, message: 'Ce retrait a déjà été traité.' };
+    }
+    await conn.query('UPDATE soldes SET solde=solde+? WHERE user_id=?', [ret.montant, ret.user_id]);
+    await conn.query("UPDATE retraits SET statut='rejete', fournisseur='manuel', date_traitement=NOW() WHERE id=?", [id]);
+    await conn.commit();
+    return { ok: true };
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
+function soleasPayoutStatus(data) {
+  const status = String(data?.status || data?.data?.status || '').toUpperCase();
+  const message = String(data?.message || '').toLowerCase();
+  if (['SUCCESS', 'COMPLETED', 'VALIDATED', 'APPROVED'].includes(status)
+      || /completed|successfully|approved|validated/.test(message)) return 'success';
+  if (['FAILLURE', 'FAILURE', 'FAILED', 'REFUND', 'REJECTED', 'CANCELLED'].includes(status)
+      || /failed|failure|refund|reject|cancel/.test(message)) return 'failed';
+  return 'pending';
+}
+
 // ── AJAX: Actions ──────────────────────────────────────────────────────────────
 router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
   const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description } = req.body;
@@ -769,19 +817,88 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         return res.json({ success: true });
 
       case 'validate_retrait': {
-        const [[ret]] = await db.query('SELECT * FROM retraits WHERE id=?', [id]);
-        if (!ret) return res.json({ success: false, message: 'Retrait non trouvé' });
-        await db.query("UPDATE retraits SET statut='valide', date_traitement=NOW() WHERE id=?", [id]);
+        const [result] = await db.query(
+          "UPDATE retraits SET statut='valide', fournisseur='manuel', date_traitement=NOW() WHERE id=? AND statut='en_attente'",
+          [id]
+        );
+        if (result.affectedRows === 0) return res.json({ success: false, message: 'Retrait introuvable ou déjà traité.' });
         return res.json({ success: true });
       }
 
-      case 'reject_retrait': {
+      case 'pay_retrait_soleaspay': {
         const [[ret]] = await db.query('SELECT * FROM retraits WHERE id=?', [id]);
-        if (!ret) return res.json({ success: false });
-        if (ret.statut === 'en_attente')
-          await db.query('UPDATE soldes SET solde=solde+? WHERE user_id=?', [ret.montant, ret.user_id]);
-        await db.query("UPDATE retraits SET statut='rejete', date_traitement=NOW() WHERE id=?", [id]);
-        return res.json({ success: true });
+        if (!ret) return res.json({ success: false, message: 'Retrait non trouvé' });
+        if (ret.statut !== 'en_attente') return res.json({ success: false, message: 'Ce retrait a déjà été traité.' });
+
+        const countries = await getAshtechCountries();
+        const { country, operator } = parseRetraitRouting(ret, countries);
+        if (!country || !operator) {
+          return res.json({ success: false, message: 'Pays ou opérateur introuvable pour ce retrait.' });
+        }
+        const services = await getSoleasServices();
+        const service = findSoleasServiceForOperator(country.code, operator, services);
+        if (!service) {
+          return res.json({ success: false, message: `Aucun service SoleasPay trouvé pour ${operator} (${country.name}).` });
+        }
+        if (service.withdrawable === false) {
+          return res.json({ success: false, message: `Le service ${service.name} n’autorise pas les retraits SoleasPay.` });
+        }
+
+        const [locked] = await db.query(
+          "UPDATE retraits SET statut='en_cours', fournisseur='soleaspay', provider_service_id=? WHERE id=? AND statut='en_attente'",
+          [service.id, id]
+        );
+        if (locked.affectedRows === 0) return res.json({ success: false, message: 'Ce retrait a déjà été traité.' });
+
+        const providerOrderId = `RET_${id}_${Date.now()}`;
+        try {
+          const data = await initiateSoleasDisbursement({
+            wallet: ret.numero_compte,
+            amount: ret.montant_net ?? ret.montant,
+            currency: country.currency,
+            serviceId: service.id,
+          });
+          const providerReference = String(data.data.reference || data.data.transaction_reference || '').trim();
+          await db.query(
+            'UPDATE retraits SET provider_transaction_id=?, provider_order_id=? WHERE id=?',
+            [providerReference, providerOrderId, id]
+          );
+          return res.json({ success: true, status: 'en_cours', message: 'Retrait envoyé à SoleasPay et placé en traitement.' });
+        } catch (error) {
+          await db.query(
+            "UPDATE retraits SET statut='en_attente', fournisseur='manuel', provider_service_id=NULL, provider_transaction_id=NULL, provider_order_id=NULL WHERE id=? AND statut='en_cours'",
+            [id]
+          );
+          throw error;
+        }
+      }
+
+      case 'check_retrait_soleaspay': {
+        const [[ret]] = await db.query('SELECT * FROM retraits WHERE id=?', [id]);
+        if (!ret) return res.json({ success: false, message: 'Retrait non trouvé' });
+        if (ret.statut !== 'en_cours' || !ret.provider_transaction_id || !ret.provider_order_id) {
+          return res.json({ success: false, message: 'Ce retrait n’est pas un paiement SoleasPay en cours.' });
+        }
+        const data = await verifySoleasDisbursement({
+          orderId: ret.provider_order_id,
+          payId: ret.provider_transaction_id,
+          serviceId: ret.provider_service_id,
+        });
+        const status = soleasPayoutStatus(data);
+        if (status === 'success') {
+          await db.query("UPDATE retraits SET statut='valide', date_traitement=NOW() WHERE id=? AND statut='en_cours'", [id]);
+          return res.json({ success: true, message: 'Paiement SoleasPay confirmé.' });
+        }
+        if (status === 'failed') {
+          const refund = await refundRetraitIfPending(id, 'en_cours');
+          return res.json({ success: refund.ok, message: refund.ok ? 'Paiement SoleasPay échoué, solde remboursé.' : refund.message });
+        }
+        return res.json({ success: true, message: 'Paiement SoleasPay toujours en traitement.' });
+      }
+
+      case 'reject_retrait': {
+        const result = await refundRetraitIfPending(id);
+        return res.json({ success: result.ok, message: result.message });
       }
 
       case 'update_balance':

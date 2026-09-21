@@ -28,6 +28,8 @@ let ashtechCountriesCache = null;
 let ashtechCountriesCachedAt = 0;
 let soleasServicesCache = null;
 let soleasServicesCachedAt = 0;
+let soleasBearerToken = null;
+let soleasBearerTokenExpiresAt = 0;
 
 function getAshtechApiKey() {
   return process.env.ASHTECH_API_KEY || process.env.ASHTECHPAY_API_KEY || null;
@@ -38,6 +40,73 @@ function getSoleasApiKey() {
     || process.env.SOLEAS_API_KEY
     || process.env.SOLEASPAY_PUBLIC_API_KEY
     || null;
+}
+
+function getSoleasPrivateSecret() {
+  return process.env.SOLEASPAY_PRIVATE_SECRET_KEY
+    || process.env.SOLEASPAY_PRIVATE_SECRET
+    || process.env.SOLEAS_PRIVATE_SECRET_KEY
+    || null;
+}
+
+async function getSoleasBearerToken() {
+  const now = Date.now();
+  if (soleasBearerToken && now < soleasBearerTokenExpiresAt) return soleasBearerToken;
+
+  const apiKey = getSoleasApiKey();
+  const privateSecret = getSoleasPrivateSecret();
+  if (!apiKey) throw new Error('SoleasPay : clé API absente du serveur.');
+  if (!privateSecret) throw new Error('SoleasPay : clé privée de paiement absente du serveur.');
+
+  const { data } = await axios.post(`${SOLEASPAY_API_BASE}/api/action/auth`, {
+    public_apikey: apiKey,
+    private_secretkey: privateSecret,
+  }, { headers: { 'Content-Type': 'application/json' }, timeout: 15000 });
+
+  if (!data?.token) throw new Error(data?.message || 'SoleasPay : authentification impossible.');
+  soleasBearerToken = String(data.token);
+  soleasBearerTokenExpiresAt = now + 55 * 60 * 1000;
+  return soleasBearerToken;
+}
+
+async function initiateSoleasDisbursement({ wallet, amount, currency, serviceId }) {
+  const token = await getSoleasBearerToken();
+  const { data, status } = await axios.post(
+    `${SOLEASPAY_API_BASE}/api/action/account/withdraw`,
+    { wallet: String(wallet), amount: Number(amount), currency: String(currency) },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'X-SP-AUTH-TOKEN': `Bearer ${token}`,
+        operation: '4',
+        service: String(serviceId),
+        'Content-Type': 'application/json',
+      },
+      timeout: 15000,
+    }
+  );
+
+  if (!data?.success || !data?.data?.reference) {
+    const error = new Error(data?.message || 'SoleasPay a refusé le retrait.');
+    error.response = { status, data };
+    throw error;
+  }
+  return data;
+}
+
+async function verifySoleasDisbursement({ orderId, payId, serviceId }) {
+  const apiKey = getSoleasApiKey();
+  if (!apiKey) throw new Error('SoleasPay : clé API absente du serveur.');
+  const { data } = await axios.get(`${SOLEASPAY_API_BASE}/api/agent/verif-pay`, {
+    params: { orderId: String(orderId), payId: String(payId) },
+    headers: {
+      'x-api-key': apiKey,
+      operation: '4',
+      service: String(serviceId),
+    },
+    timeout: 10000,
+  });
+  return data;
 }
 
 function normalizeAshtechCountries(payload) {
@@ -116,6 +185,7 @@ async function getSoleasServices() {
           countryCode: String(service.country?.code || '').trim().toUpperCase(),
           countryName: String(service.country?.name || '').trim(),
           is_active: service.is_active !== false,
+          withdrawable: service.withdrawable !== false,
           isMobileMoney,
         };
       })
@@ -195,7 +265,11 @@ module.exports = {
   getAshtechCountries,
   getOperatorProvider,
   getSoleasApiKey,
+  getSoleasPrivateSecret,
+  getSoleasBearerToken,
   getSoleasServices,
+  initiateSoleasDisbursement,
+  verifySoleasDisbursement,
   findSoleasServiceForOperator,
   normalizeOperatorLabel,
   parseProviderMappings,
