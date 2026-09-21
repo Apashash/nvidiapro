@@ -4,3 +4,4 @@
 - [SoleasPay service catalogue](soleaspay-services.md) — services-list returns {success,data[]} with active country-specific Mobile Money service IDs; do not rely on a type field.
 - [Deposit referral and withdrawal rules](deposit-referral-and-withdrawal-rules.md) — commissions are based on validated deposits; withdrawals require at least one purchased action.
 - [Mobile language stability](mobile-language-stability.md) — avoid continuous whole-page mutation observers for client-side translation; translate on load and explicit language changes.
+- [SoleasPay payout authentication](soleaspay-payout-auth.md) — payouts require the API ACCESS key and generated secret from the same account; callback keys do not work.
