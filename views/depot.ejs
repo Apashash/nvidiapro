@@ -257,7 +257,8 @@
                     <br>Composez ce code sur votre téléphone pour recevoir votre OTP :
                     <br><span class="otp-ussd-code"><%= otp_pending.ussd_code %></span>
                 <% } else { %>
-                    <br>Un SMS contenant le code vient d'être envoyé au <strong><%= otp_pending.payload.phone %></strong>.
+                    <br>Un SMS contenant le code vient d'être envoyé au
+                    <strong><%= otp_pending.payload?.phone || pending_numero || 'votre numéro' %></strong>.
                 <% } %>
             </div>
             <form method="POST" action="/depot/otp/verify">

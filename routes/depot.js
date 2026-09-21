@@ -12,6 +12,12 @@ const {
   getAshtechCountries,
   getOperatorProvider,
   getSoleasApiKey,
+  getSoleasServices,
+  findSoleasServiceForOperator,
+  initiateSoleasCollection,
+  executeSoleasCollection,
+  verifySoleasCollection,
+  normalizeSoleasCountryCode,
 } = require('../services/paymentProviders');
 
 const countryDialCodes = {
@@ -308,8 +314,13 @@ function formatSoleasError(error) {
   if (typeof body === 'string' && body.trim()) {
     return `${prefix} : ${body.trim().slice(0, 300)}`;
   }
-  if (body && typeof body === 'object' && body.message) {
-    return `${prefix}${body.code ? ` [${body.code}]` : ''} : ${String(body.message).slice(0, 300)}`;
+  if (body && typeof body === 'object') {
+    const code = body.code || body.error?.code;
+    const message = body.message || body.error?.message || body.error?.details;
+    if (message) {
+      const readable = typeof message === 'string' ? message : JSON.stringify(message);
+      return `${prefix}${code ? ` [${code}]` : ''} : ${readable.slice(0, 500)}`;
+    }
   }
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
     return 'SoleasPay : délai d’attente dépassé, le serveur n’a pas répondu.';
@@ -331,53 +342,50 @@ async function initiateSoleasCollect(req, res, {
   depot_id, montant, currency, numero, reference, notify_url, service_id,
 }) {
   try {
-    const apiKey = getSoleasApiKey();
-    if (!apiKey) {
-      await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
-      req.session.error = 'SoleasPay : clé API absente du serveur.';
-      return res.redirect('/depot');
+    const services = await getSoleasServices(country_code, currency);
+    const configuredService = services.find(service =>
+      Number(service.id) === Number(service_id) && service.is_can_collect
+    );
+    const service = configuredService
+      || findSoleasServiceForOperator(country_code, operateur, services);
+    if (!service || !service.is_can_collect) {
+      throw new Error(`Aucun service MySoleas actif pour ${operateur} (${country_code}).`);
     }
 
-    const [[user]] = await db.query('SELECT nom FROM utilisateurs WHERE id = ?', [req.session.user_id]);
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host = req.headers['x-forwarded-host'] || req.headers.host;
-    const baseUrl = `${protocol}://${host}`;
-    const payload = {
-      wallet: numero,
+    const data = await initiateSoleasCollection({
+      wallet: normalizeProviderWallet(numero, country_code),
       amount: montant,
       currency,
-      order_id: reference,
-      description: 'AshTechPay',
-      payer: user?.nom || 'Client Groupe Dangote',
-      successUrl: `${baseUrl}/depot?payment=success`,
-      failureUrl: `${baseUrl}/depot?payment=failed`,
-    };
-
-    const { data, status } = await axios.post(
-      `${SOLEASPAY_API_BASE}/api/agent/bills/v3`,
-      payload,
-      {
-        headers: {
-          'x-api-key': apiKey,
-          operation: '2',
-          service: String(service_id),
-          'Content-Type': 'application/json',
-        },
-        timeout: 15000,
-      }
-    );
-
-    if (!data || data.success !== true || !data.data?.reference) {
-      throw createSoleasResponseError(data, status);
-    }
-
-    await onSoleasCollectAccepted(req, depot_id, data, {
-      apiKey, serviceId: service_id, reference, notify_url, numero,
+      provider: service.code,
+      transactionUuid: crypto.randomUUID(),
+      invoiceReference: reference,
+      description: `Dépôt ${operateur}`,
     });
+
+    await onSoleasCollectAccepted(req, depot_id, data, { reference, numero });
     delete req.session.depot_form;
     res.redirect('/depot');
   } catch (error) {
-    console.error('SoleasPay collect error:', error.response?.data || error.message);
+    const providerMessage = String(error?.response?.data?.message || error?.message || '');
+    if (error.transactionReference && /otp|required.*code|code.*required/i.test(providerMessage)) {
+      const transactionId = String(error.transactionReference);
+      await db.query(
+        'UPDATE depots SET numero_transaction=?, provider_transaction_id=? WHERE id=? AND statut=?',
+        [`${reference}|${transactionId}`, transactionId, depot_id, 'en_attente']
+      );
+      req.session.otp_pending = {
+        provider: 'soleaspay',
+        depot_id,
+        transaction_reference: transactionId,
+        invoice_reference: reference,
+        notify_url,
+        message: providerMessage || 'Un code OTP est requis pour confirmer ce dépôt.',
+      };
+      req.session.pending_numero = numero;
+      return res.redirect('/depot');
+    }
+
+    console.error('MySoleas collect error:', error.response?.data || error.message);
     await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
     req.session.error = formatSoleasError(error);
     res.redirect('/depot');
@@ -385,18 +393,19 @@ async function initiateSoleasCollect(req, res, {
 }
 
 async function onSoleasCollectAccepted(req, depot_id, data, {
-  apiKey, serviceId, reference, numero,
+  reference, numero,
 }) {
-  const payId = String(data.data.reference || data.data.transaction_reference || '').trim();
+  const transactionId = String(data?.data?.transaction_reference || data?.transaction_reference || '').trim();
+  const providerId = String(data?.data?.provider_reference || data?.provider_reference || '').trim();
   await db.query(
-    'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ? WHERE id = ?',
-    [`${reference}|${payId}`, payId, depot_id]
+    'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ?, provider_order_id = ? WHERE id = ?',
+    [`${reference}|${transactionId}`, transactionId, providerId || reference, depot_id]
   );
 
-  pollSoleasTransactionStatus(depot_id, reference, payId, serviceId, apiKey);
+  pollSoleasTransactionStatus(depot_id, transactionId);
   req.session.pending_depot_id = depot_id;
   req.session.pending_numero = numero;
-  req.session.pending_wave_url = null;
+  req.session.pending_wave_url = data?.data?.confirmation_url || data?.confirmation_url || null;
 }
 
 // ── POST /depot/otp/verify — soumission du code OTP pour les opérateurs
@@ -416,6 +425,28 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
 
   const { depot_id, payload } = otp_pending;
   const notify_url = otp_pending.notify_url || buildNotifyUrl(req);
+
+  if (otp_pending.provider === 'soleaspay') {
+    try {
+      const data = await executeSoleasCollection({
+        transactionReference: otp_pending.transaction_reference,
+        invoiceReference: otp_pending.invoice_reference,
+        otp,
+      });
+      delete req.session.otp_pending;
+      await onSoleasCollectAccepted(req, depot_id, data, {
+        reference: otp_pending.invoice_reference,
+        numero: req.session.pending_numero,
+      });
+      delete req.session.pending_numero;
+      return res.redirect('/depot');
+    } catch (error) {
+      console.error('MySoleas OTP verify error:', error.response?.data || error.message);
+      req.session.otp_pending = otp_pending;
+      req.session.error = formatSoleasError(error);
+      return res.redirect('/depot');
+    }
+  }
 
   try {
     const apiKey = getAshtechApiKey();
@@ -510,6 +541,16 @@ function normalizeInternationalPhone(phone, countryCode) {
   return `${dialCode}${digits}`;
 }
 
+// MySoleas V4 expects the provider wallet without the country calling code.
+function normalizeProviderWallet(phone, countryCode) {
+  const dialCode = countryDialCodes[countryCode];
+  let digits = String(phone || '').replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (dialCode && digits.startsWith(dialCode)) digits = digits.slice(dialCode.length);
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return digits;
+}
+
 // Shared handling for any AshtechPay /v1/collect call that came back 202 —
 // whether that happened on the first try (USSD push / Wave) or after
 // resubmitting with an `otp`. Stores the transaction id, kicks off the
@@ -591,7 +632,7 @@ function soleasStatus(data) {
   return 'pending';
 }
 
-function pollSoleasTransactionStatus(depot_id, orderId, payId, serviceId, apiKey) {
+function pollSoleasTransactionStatus(depot_id, transactionId) {
   const startedAt = Date.now();
 
   const tick = async () => {
@@ -604,15 +645,7 @@ function pollSoleasTransactionStatus(depot_id, orderId, payId, serviceId, apiKey
       const [[depot]] = await db.query('SELECT * FROM depots WHERE id = ?', [depot_id]);
       if (!depot || depot.statut !== 'en_attente') return;
 
-      const { data } = await axios.get(`${SOLEASPAY_API_BASE}/api/agent/verif-pay`, {
-        params: { orderId, payId },
-        headers: {
-          'x-api-key': apiKey,
-          operation: '2',
-          service: String(serviceId),
-        },
-        timeout: 10000,
-      });
+      const data = await verifySoleasCollection({ transactionReference: transactionId });
       const status = soleasStatus(data);
       if (status !== 'pending') {
         await finalizeDepot(depot, status);
@@ -687,19 +720,10 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
     if (depot.statut === 'en_attente') {
       const transaction_id = depot.provider_transaction_id || (depot.numero_transaction || '').split('|')[1];
       const provider = depot.fournisseur || 'ashtechpay';
-      const apiKey = provider === 'soleaspay' ? getSoleasApiKey() : getAshtechApiKey();
-      if (transaction_id && apiKey && provider === 'soleaspay') {
+      const apiKey = provider === 'ashtechpay' ? getAshtechApiKey() : null;
+      if (transaction_id && provider === 'soleaspay') {
         try {
-          const orderId = (depot.numero_transaction || '').split('|')[0];
-          const { data } = await axios.get(`${SOLEASPAY_API_BASE}/api/agent/verif-pay`, {
-            params: { orderId, payId: transaction_id },
-            headers: {
-              'x-api-key': apiKey,
-              operation: '2',
-              service: String(depot.provider_service_id || ''),
-            },
-            timeout: 10000,
-          });
+          const data = await verifySoleasCollection({ transactionReference: transaction_id });
           const status = soleasStatus(data);
           if (status !== 'pending') {
             await finalizeDepot(depot, status);

@@ -4,6 +4,7 @@ const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const {
   parseStrategy,
   rateForAmount,
@@ -807,6 +808,19 @@ function formatSoleasAdminError(error) {
     : `SoleasPay : ${providerMessage}`;
 }
 
+function normalizeAdminProviderWallet(phone, countryCode) {
+  const dialCodes = {
+    CM: '237', TG: '228', BJ: '229', CI: '225', BF: '226',
+    GA: '241', CG: '242', NE: '227', ML: '223', SN: '221',
+  };
+  const dialCode = dialCodes[String(countryCode || '').toUpperCase()];
+  let digits = String(phone || '').replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (dialCode && digits.startsWith(dialCode)) digits = digits.slice(dialCode.length);
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return digits;
+}
+
 // ── AJAX: Actions ──────────────────────────────────────────────────────────────
 router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
   const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description } = req.body;
@@ -851,13 +865,16 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         if (!country || !operator) {
           return res.json({ success: false, message: 'Pays ou opérateur introuvable pour ce retrait.' });
         }
-        const services = await getSoleasServices();
-        const service = findSoleasServiceForOperator(country.code, operator, services);
+        const services = await getSoleasServices(country.code, country.currency);
+        const service = services.find(candidate =>
+          Number(candidate.id) === Number(ret.provider_service_id)
+          && candidate.is_can_disburse
+        ) || findSoleasServiceForOperator(country.code, operator, services);
         if (!service) {
-          return res.json({ success: false, message: `Aucun service SoleasPay trouvé pour ${operator} (${country.name}).` });
+          return res.json({ success: false, message: `Aucun service MySoleas trouvé pour ${operator} (${country.name}).` });
         }
-        if (service.withdrawable === false) {
-          return res.json({ success: false, message: `Le service ${service.name} n’autorise pas les retraits SoleasPay.` });
+        if (!service.is_can_disburse) {
+          return res.json({ success: false, message: `Le service ${service.name} n’autorise pas les retraits MySoleas.` });
         }
 
         const [locked] = await db.query(
@@ -869,22 +886,20 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         const localOrderId = `RET_${id}_${Date.now()}`;
         try {
           const data = await initiateSoleasDisbursement({
-            wallet: ret.numero_compte,
+            wallet: normalizeAdminProviderWallet(ret.numero_compte, country.code),
             amount: ret.montant_net ?? ret.montant,
             currency: country.currency,
-            serviceId: service.id,
+            provider: service.code,
+            transactionUuid: crypto.randomUUID(),
+            invoiceReference: localOrderId,
           });
-          const providerReference = String(data.data.reference || data.data.transaction_reference || '').trim();
-          const providerOrderId = String(
-            data.data.external_reference
-              || data.data.transaction_reference
-              || localOrderId
-          ).trim();
+          const providerReference = String(data.data?.provider_reference || data.provider_reference || '').trim();
+          const providerTransaction = String(data.data?.transaction_reference || data.transaction_reference || '').trim();
           await db.query(
             'UPDATE retraits SET provider_transaction_id=?, provider_order_id=? WHERE id=?',
-            [providerReference, providerOrderId, id]
+            [providerTransaction, providerReference || localOrderId, id]
           );
-          return res.json({ success: true, status: 'en_cours', message: 'Retrait envoyé à SoleasPay et placé en traitement.' });
+          return res.json({ success: true, status: 'en_cours', message: 'Retrait envoyé à MySoleas et placé en traitement.' });
         } catch (error) {
           await db.query(
             "UPDATE retraits SET statut='en_attente', fournisseur='manuel', provider_service_id=NULL, provider_transaction_id=NULL, provider_order_id=NULL WHERE id=? AND statut='en_cours'",
@@ -903,9 +918,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         let data;
         try {
           data = await verifySoleasDisbursement({
-            orderId: ret.provider_order_id,
-            payId: ret.provider_transaction_id,
-            serviceId: ret.provider_service_id,
+            transactionReference: ret.provider_transaction_id,
           });
         } catch (error) {
           return res.json({ success: false, message: formatSoleasAdminError(error) });
@@ -913,13 +926,13 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         const status = soleasPayoutStatus(data);
         if (status === 'success') {
           await db.query("UPDATE retraits SET statut='valide', date_traitement=NOW() WHERE id=? AND statut='en_cours'", [id]);
-          return res.json({ success: true, message: 'Paiement SoleasPay confirmé.' });
+          return res.json({ success: true, message: 'Paiement MySoleas confirmé.' });
         }
         if (status === 'failed') {
           const refund = await refundRetraitIfPending(id, 'en_cours');
           return res.json({ success: refund.ok, message: refund.ok ? 'Paiement SoleasPay échoué, solde remboursé.' : refund.message });
         }
-        return res.json({ success: true, message: 'Paiement SoleasPay toujours en traitement.' });
+        return res.json({ success: true, message: 'Paiement MySoleas toujours en traitement.' });
       }
 
       case 'reject_retrait': {

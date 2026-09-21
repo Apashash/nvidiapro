@@ -55,9 +55,14 @@ Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, 
 | `ASHTECHPAY_API_KEY` | Legacy fallback | Previous name accepted for existing deployments |
 | `ASHTECHPAY_WEBHOOK_SECRET` | Optional | AshTechPay webhook secret (`whsec_...`) |
 | `ASHTECH_API_BASE` | Optional | API base override; defaults to `https://www.ashtechpay.com` |
-| `SOLEASPAY_API_KEY` | Required for SoleasPay | SoleasPay API ACCESS key used for catalogue and collection |
-| `SOLEASPAY_PRIVATE_SECRET_KEY` | Required for SoleasPay payouts | SoleasPay generated secret used to obtain the payout Bearer Token |
-| `SOLEASPAY_API_BASE` | Optional | API base override; defaults to `https://soleaspay.com` |
+| `SOLEASPAY_API_KEY` | Optional | MySoleas merchant API key, used for public phone verification |
+| `MYSOLEAS_CLIENT_ID` | Required for MySoleas deposits/withdrawals | OAuth2 server-to-server client ID |
+| `MYSOLEAS_CLIENT_SECRET` | Required for MySoleas deposits/withdrawals | OAuth2 server-to-server client secret |
+| `MYSOLEAS_API_BASE` | Optional | MySoleas gateway base; defaults to `https://api.mysoleas.com` |
+| `MYSOLEAS_AUTH_BASE` | Optional | MySoleas Identity base; defaults to `https://account.mysoleas.com` |
+| `SOLEASPAY_API_BASE` | Legacy alias | Accepted as a gateway base override during migration |
+| `SOLEASPAY_CLIENT_ID` | Legacy alias | Accepted as an alias for `MYSOLEAS_CLIENT_ID` |
+| `SOLEASPAY_CLIENT_SECRET` | Legacy alias | Accepted as an alias for `MYSOLEAS_CLIENT_SECRET` |
 
 ## Security Notes
 - Passwords stored plaintext in DB (matches original PHP — do not add bcrypt without a migration)

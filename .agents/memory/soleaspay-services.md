@@ -1,10 +1,10 @@
 ---
-name: SoleasPay service catalogue
-description: External SoleasPay services-list response shape and service selection constraint.
+name: MySoleas V4 service catalogue
+description: Current MySoleas gateway service catalogue and provider selection rules.
 ---
 
-SoleasPay’s services-list endpoint returns a successful object with a `data` array. Active Mobile Money entries are country-specific and identify the service by numeric `id` and names such as MOMO CM, OM CI, MOOV TG, or WAVE CI. The response does not consistently include the previously documented `type` field.
+The current MySoleas V4 gateway uses `GET https://api.mysoleas.com/service/list` with an OAuth Bearer JWT in `x-sp-auth-token`. Services are filtered by ISO alpha-3 country (`CMR`, not `CM`) and currency, then selected by their string `code` such as `mtn_cmr` or `orange_cmr`. Only `is_active`/`is_public` services with `is_can_collect` or `is_can_disburse` should be used.
 
-**Why:** Filtering only on `type === TRUSTEECURRENCY` makes a valid merchant catalogue appear empty and silently replaces it with the generic fallback services.
+**Why:** The former `/api/services-list` V3 contract and numeric service headers were replaced by the V4 gateway contract; sending a numeric ID to a V4 transaction is not sufficient.
 
-**How to apply:** Accept `data[]`, filter active Mobile Money entries from the service name/description when type is absent, and persist the selected numeric service ID per country/operator. Map known operator labels automatically by country (Orange→OM, MTN→MOMO, Moov/Flooz→MOOV, Wave→WAVE, T-Money→T-MONEY, Airtel→AIRTEL); show manual selection only when no exact active service exists.
+**How to apply:** Keep the admin mapping compatible with stored numeric catalogue IDs, resolve each selected ID against the live V4 catalogue, and send the resolved string `service.code` in collection/disbursement intents. Normalize country codes before matching operators.
