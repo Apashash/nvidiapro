@@ -791,6 +791,22 @@ function soleasPayoutStatus(data) {
   return 'pending';
 }
 
+function formatSoleasAdminError(error) {
+  const providerMessage = String(
+    error?.response?.data?.message
+      || error?.response?.data?.error
+      || error?.message
+      || 'Erreur inconnue'
+  ).trim();
+  if (/bad credentials|credentials/i.test(providerMessage)) {
+    return 'SoleasPay a refusé l’authentification.\nVérifiez que API ACCESS et Secret Key générée proviennent du même compte.';
+  }
+  const status = error?.response?.status;
+  return status
+    ? `SoleasPay (${status}) : ${providerMessage}`
+    : `SoleasPay : ${providerMessage}`;
+}
+
 // ── AJAX: Actions ──────────────────────────────────────────────────────────────
 router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
   const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description } = req.body;
@@ -874,7 +890,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
             "UPDATE retraits SET statut='en_attente', fournisseur='manuel', provider_service_id=NULL, provider_transaction_id=NULL, provider_order_id=NULL WHERE id=? AND statut='en_cours'",
             [id]
           );
-          throw error;
+          return res.json({ success: false, message: formatSoleasAdminError(error) });
         }
       }
 
@@ -884,11 +900,16 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         if (ret.statut !== 'en_cours' || !ret.provider_transaction_id || !ret.provider_order_id) {
           return res.json({ success: false, message: 'Ce retrait n’est pas un paiement SoleasPay en cours.' });
         }
-        const data = await verifySoleasDisbursement({
-          orderId: ret.provider_order_id,
-          payId: ret.provider_transaction_id,
-          serviceId: ret.provider_service_id,
-        });
+        let data;
+        try {
+          data = await verifySoleasDisbursement({
+            orderId: ret.provider_order_id,
+            payId: ret.provider_transaction_id,
+            serviceId: ret.provider_service_id,
+          });
+        } catch (error) {
+          return res.json({ success: false, message: formatSoleasAdminError(error) });
+        }
         const status = soleasPayoutStatus(data);
         if (status === 'success') {
           await db.query("UPDATE retraits SET statut='valide', date_traitement=NOW() WHERE id=? AND statut='en_cours'", [id]);

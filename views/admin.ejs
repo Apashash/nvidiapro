@@ -319,7 +319,15 @@
     .dropdown-item.danger { color:#ef4444; }
 
     /* Toast */
-    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:12px 22px; border-radius:12px; font-size:0.88rem; font-weight:600; z-index:700; transition:transform 0.3s; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+    .toast {
+      position:fixed; bottom:24px; left:50%; width:min(560px, calc(100vw - 32px));
+      box-sizing:border-box; transform:translateX(-50%) translateY(80px);
+      background:#1a1a1a; color:#fff; padding:14px 18px; border-radius:12px;
+      font-size:0.88rem; font-weight:600; line-height:1.45; text-align:left;
+      z-index:700; transition:transform 0.3s; white-space:pre-wrap;
+      overflow-wrap:anywhere; max-height:42vh; overflow-y:auto;
+      box-shadow:0 4px 20px rgba(0,0,0,0.3);
+    }
     .toast.show { transform:translateX(-50%) translateY(0); }
     .toast.ok  { background:#16a34a; }
     .toast.err { background:#dc2626; }
@@ -1823,11 +1831,13 @@ function closeSidebar() {
 }
 
 // ── Toast ──────────────────────────────────────────────────────────────
+let toastTimer = null;
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'toast show' + (type ? ' ' + type : '');
-  setTimeout(() => el.classList.remove('show'), 3000);
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), type === 'err' ? 9000 : 3500);
 }
 
 // ── Notification bell ─────────────────────────────────────────────────
