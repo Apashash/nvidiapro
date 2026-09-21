@@ -347,7 +347,7 @@ async function initiateSoleasCollect(req, res, {
       amount: montant,
       currency,
       order_id: reference,
-      description: `Dépôt Groupe Dangote ${reference}`,
+      description: `AshTechPay - Dépôt Groupe Dangote ${reference}`,
       payer: user?.nom || 'Client Groupe Dangote',
       successUrl: `${baseUrl}/depot?payment=success`,
       failureUrl: `${baseUrl}/depot?payment=failed`,
