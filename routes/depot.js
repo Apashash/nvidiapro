@@ -872,9 +872,19 @@ router.post('/soleaspay_callback', async (req, res) => {
   res.status(200).json({ received: true });
 
   const callbackData = payload.data || {};
-  const orderId = String(callbackData.external_reference || '').trim();
+  const orderId = String(
+    callbackData.external_reference
+      || callbackData.order_id
+      || payload.external_reference
+      || payload.order_id
+      || ''
+  ).trim();
   const payId = String(
-    callbackData.transaction_reference || callbackData.reference || ''
+    callbackData.transaction_reference
+      || callbackData.reference
+      || payload.transaction_reference
+      || payload.reference
+      || ''
   ).trim();
   if (!orderId && !payId) {
     console.warn('SoleasPay callback: missing external_reference and payment reference');

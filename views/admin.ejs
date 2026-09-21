@@ -1362,7 +1362,7 @@
                       <option value="">Choisir un service</option>
                       <% soleasServices.forEach(function(service) { %>
                         <option value="<%= service.id %>" <%= selectedService === String(service.id) ? 'selected' : '' %>>
-                          <%= service.name %> (#<%= service.id %>)
+                          <%= service.name %><%= service.countryCode ? ` · ${service.countryCode}` : '' %> (#<%= service.id %>)<%= service.description ? ` — ${service.description}` : '' %>
                         </option>
                       <% }); %>
                     </select>

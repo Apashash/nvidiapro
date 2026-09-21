@@ -20,8 +20,8 @@ const fallbackAshtechCountries = [
 // SoleasPay's documented services-list is generic rather than country/operator
 // specific. These are the two Mobile Money services documented by SoleasPay V3.
 const fallbackSoleasServices = [
-  { id: 1, name: 'MOMO', type: 'TRUSTEECURRENCY', is_active: true },
-  { id: 2, name: 'OM', type: 'TRUSTEECURRENCY', is_active: true },
+  { id: 1, name: 'MOMO', description: 'Mobile Money', type: 'TRUSTEECURRENCY', is_active: true },
+  { id: 2, name: 'OM', description: 'Orange Money', type: 'TRUSTEECURRENCY', is_active: true },
 ];
 
 let ashtechCountriesCache = null;
@@ -101,14 +101,27 @@ async function getSoleasServices() {
       timeout: 10000,
     });
     const services = (Array.isArray(data) ? data : data?.data)
-      ?.map(service => ({
-        id: Number(service.id),
-        name: String(service.name || '').trim(),
-        type: String(service.type || '').trim(),
-        is_active: service.is_active !== false,
-      }))
-      .filter(service => Number.isInteger(service.id) && service.id > 0 && service.name && service.is_active)
-      .filter(service => service.type === 'TRUSTEECURRENCY');
+      ?.map(service => {
+        const name = String(service.name || '').trim();
+        const description = String(service.description || '').trim();
+        const searchable = `${name} ${description}`.toUpperCase();
+        const type = String(service.type || '').trim();
+        const isMobileMoney = type === 'TRUSTEECURRENCY'
+          || /\b(MOMO|MONEY|MOOV|WAVE|AIRTEL|FLOOZ|OM)\b/.test(searchable);
+        return {
+          id: Number(service.id),
+          name,
+          description,
+          type,
+          countryCode: String(service.country?.code || '').trim().toUpperCase(),
+          countryName: String(service.country?.name || '').trim(),
+          is_active: service.is_active !== false,
+          isMobileMoney,
+        };
+      })
+      .filter(service => Number.isInteger(service.id) && service.id > 0
+        && service.name && service.is_active && service.isMobileMoney)
+      .map(({ isMobileMoney, ...service }) => service);
 
     if (!services?.length) throw new Error('Catalogue SoleasPay vide ou invalide');
     soleasServicesCache = services;
