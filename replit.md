@@ -29,7 +29,7 @@ The workflow is configured in `.replit` and waits for port 5000 before marking t
 
 ## Key Features
 - Mobile Money deposits via AshTechPay Direct API
-- Investment plans (Action VIP 1–11) with daily yield over 125 days
+- Investment plan (Action VIP 1) with daily yield over 125 days
 - 3-level MLM referral system (20% / 10% / 5% commissions)
 - VIP tiers with daily salary
 - Lucky wheel (roue) — spin every 48h

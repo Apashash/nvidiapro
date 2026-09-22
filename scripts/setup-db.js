@@ -201,17 +201,7 @@ CREATE TABLE IF NOT EXISTS codes_cadeaux (
 const SEED_PLANS = `
 INSERT INTO planinvestissement (nom, prix, duree_jours, rendement_journalier, image_url, description)
 VALUES
-  ('Action VIP 1',        1000,    125, 1.60,  NULL, 'Plan d''entrée — 1 000 FCFA'),
-  ('Action VIP 2',        3000,    125, 1.667, NULL, 'Plan standard — 3 000 FCFA'),
-  ('Action VIP 3',        5000,    125, 1.68,  NULL, 'Plan avancé — 5 000 FCFA'),
-  ('Action VIP 4',        10000,   125, 1.70,  NULL, 'Plan pro — 10 000 FCFA'),
-  ('Action VIP 5',        20000,   125, 1.70,  NULL, 'Plan premium — 20 000 FCFA'),
-  ('Action VIP 6',        50000,   125, 1.72,  NULL, 'Plan élite — 50 000 FCFA'),
-  ('Action VIP 7',        100000,  125, 1.72,  NULL, 'Plan or — 100 000 FCFA'),
-  ('Action VIP 8',        200000,  125, 1.72,  NULL, 'Plan platine — 200 000 FCFA'),
-  ('Action VIP 9',        500000,  125, 1.72,  NULL, 'Plan diamant — 500 000 FCFA'),
-  ('Action VIP 10',       1000000, 125, 1.72,  NULL, 'Plan royal — 1 000 000 FCFA'),
-  ('Action VIP 11',       2000000, 125, 1.72,  NULL, 'Plan légende — 2 000 000 FCFA')
+  ('Action VIP 1',        1000,    125, 1.60,  NULL, 'Plan d''entrée — 1 000 FCFA')
 ON CONFLICT (nom) DO NOTHING;
 `;
 
