@@ -339,7 +339,8 @@ function createSoleasResponseError(data, status) {
 }
 
 async function initiateSoleasCollect(req, res, {
-  depot_id, montant, currency, numero, reference, notify_url, service_id,
+  depot_id, montant, currency, numero, operateur, country_code,
+  reference, notify_url, service_id,
 }) {
   try {
     const services = await getSoleasServices(country_code, currency);
