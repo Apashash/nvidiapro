@@ -793,19 +793,21 @@ function soleasPayoutStatus(data) {
 }
 
 function formatSoleasAdminError(error) {
-  const providerMessage = String(
-    error?.response?.data?.message
-      || error?.response?.data?.error
-      || error?.message
-      || 'Erreur inconnue'
-  ).trim();
+  const body = error?.response?.data;
+  const code = body?.code || body?.error?.code;
+  const rawMessage = body?.message || body?.error?.message || error?.message || 'Erreur inconnue';
+  const providerMessage = String(rawMessage).trim();
+  const details = body?.error?.details;
+  const readableDetails = details
+    ? ` — ${typeof details === 'string' ? details : JSON.stringify(details)}`
+    : '';
   if (/bad credentials|credentials/i.test(providerMessage)) {
-    return 'SoleasPay a refusé l’authentification.\nVérifiez que API ACCESS et Secret Key générée proviennent du même compte.';
+    return 'MySoleas a refusé l’authentification OAuth2. Vérifiez les identifiants Gateway configurés.';
   }
   const status = error?.response?.status;
   return status
-    ? `SoleasPay (${status}) : ${providerMessage}`
-    : `SoleasPay : ${providerMessage}`;
+    ? `MySoleas (${status})${code ? ` [${code}]` : ''} : ${providerMessage}${readableDetails}`.slice(0, 700)
+    : `MySoleas${code ? ` [${code}]` : ''} : ${providerMessage}${readableDetails}`.slice(0, 700);
 }
 
 function normalizeAdminProviderWallet(phone, countryCode) {
