@@ -56,8 +56,8 @@ Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, 
 | `ASHTECHPAY_WEBHOOK_SECRET` | Optional | AshTechPay webhook secret (`whsec_...`) |
 | `ASHTECH_API_BASE` | Optional | API base override; defaults to `https://www.ashtechpay.com` |
 | `SOLEASPAY_API_KEY` | Optional | MySoleas merchant API key, used for public phone verification |
-| `MYSOLEAS_CLIENT_ID` | Required for MySoleas deposits/withdrawals | OAuth2 server-to-server client ID |
-| `MYSOLEAS_CLIENT_SECRET` | Required for MySoleas deposits/withdrawals | OAuth2 server-to-server client secret |
+| `MYSOLEAS_CLIENT_ID` | Required for MySoleas deposits/withdrawals | Gateway OAuth2 application ID sent as `sp_client_id` |
+| `MYSOLEAS_CLIENT_SECRET` | Required for MySoleas deposits/withdrawals | Gateway OAuth2 application secret sent as `sp_client_secret` |
 | `MYSOLEAS_API_BASE` | Optional | MySoleas gateway base; defaults to `https://api.mysoleas.com` |
 | `MYSOLEAS_AUTH_BASE` | Optional | MySoleas Identity base; defaults to `https://account.mysoleas.com` |
 | `SOLEASPAY_API_BASE` | Legacy alias | Accepted as a gateway base override during migration |

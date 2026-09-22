@@ -56,17 +56,19 @@ function getSoleasPrivateSecret() {
 }
 
 function getSoleasClientId() {
-  return process.env.MYSOLEAS_CLIENT_ID
+  const value = process.env.MYSOLEAS_CLIENT_ID
     || process.env.SOLEASPAY_CLIENT_ID
     || process.env.SOLEAS_CLIENT_ID
     || null;
+  return value ? String(value).trim() : null;
 }
 
 function getSoleasClientSecret() {
-  return process.env.MYSOLEAS_CLIENT_SECRET
+  const value = process.env.MYSOLEAS_CLIENT_SECRET
     || process.env.SOLEASPAY_CLIENT_SECRET
     || process.env.SOLEAS_CLIENT_SECRET
     || null;
+  return value ? String(value).trim() : null;
 }
 
 async function getSoleasBearerToken() {
@@ -78,19 +80,23 @@ async function getSoleasBearerToken() {
   if (!clientId) throw new Error('MySoleas : client_id OAuth2 absent du serveur.');
   if (!clientSecret) throw new Error('MySoleas : client_secret OAuth2 absent du serveur.');
 
-  const { data } = await axios.post(`${SOLEASPAY_AUTH_BASE}/oauth/v2/token`, {
+  const { data } = await axios.post(`${SOLEASPAY_AUTH_BASE}/oauth/token`, {
     grant_type: 'client_credentials',
-    client_id: clientId,
-    client_secret: clientSecret,
-    scope: 'payments services countries providers',
+    sp_client_id: clientId,
+    sp_client_secret: clientSecret,
   }, { headers: { 'Content-Type': 'application/json' }, timeout: 15000 });
 
   if (!data?.access_token) throw new Error(data?.message || 'MySoleas : génération du token impossible.');
   soleasBearerToken = String(data.access_token);
+  const expiresAt = Date.parse(data.token_expired_at || data.expires_at || '');
   const expiresIn = Number(data.expires_in);
-  soleasBearerTokenExpiresAt = now + (Number.isFinite(expiresIn) && expiresIn > 60
-    ? Math.max(60, expiresIn - 60) * 1000
-    : 55 * 60 * 1000);
+  if (Number.isFinite(expiresAt) && expiresAt > now) {
+    soleasBearerTokenExpiresAt = Math.max(now + 60 * 1000, expiresAt - 60 * 1000);
+  } else {
+    soleasBearerTokenExpiresAt = now + (Number.isFinite(expiresIn) && expiresIn > 60
+      ? Math.max(60, expiresIn - 60) * 1000
+      : 55 * 60 * 1000);
+  }
   return soleasBearerToken;
 }
 
