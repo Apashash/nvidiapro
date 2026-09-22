@@ -220,11 +220,8 @@ VALUES
    '1 action = 450 FCFA — minimum 50 actions',
    450, 50, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
   ('Dangote Sugar — DANGSUGAR', 60000, 125, 5, '/images/dashboard-hero-5.jpeg',
-   '1 action = 30 FCFA — minimum 2 000 actions',
-   30, 2000, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]'),
-  ('NASCON', 345000, 125, 5, '/images/dashboard-hero-4.jpeg',
-   '1 action = 69 FCFA — minimum 5 000 actions',
-   69, 5000, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]')
+    '1 action = 30 FCFA — minimum 2 000 actions',
+    30, 2000, '[{"min":0,"max":6000,"rate":5},{"min":6001,"max":15000,"rate":7},{"min":15001,"max":40000,"rate":10},{"min":40001,"max":170000,"rate":15},{"min":170001,"max":10000000,"rate":20},{"min":10000001,"max":null,"rate":20}]')
 ON CONFLICT (nom) DO NOTHING;
 `;
 

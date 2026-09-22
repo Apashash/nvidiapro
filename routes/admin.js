@@ -265,7 +265,7 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
     const [[stats_retraits]]         = await db.query("SELECT COALESCE(SUM(montant),0) as somme FROM retraits WHERE statut='valide'");
     const [[stats_pending_depots]]   = await db.query("SELECT COUNT(*) as total FROM depots WHERE statut='en_attente'");
     const [[stats_pending_retraits]] = await db.query("SELECT COUNT(*) as total FROM retraits WHERE statut='en_attente'");
-    const [[stats_plans_actifs]]     = await db.query('SELECT COUNT(*) as total FROM planinvestissement');
+    const [[stats_plans_actifs]]     = await db.query('SELECT COUNT(*) as total FROM planinvestissement WHERE COALESCE(bloque, false) = false');
     const [[stats_avec_invest]]      = await db.query("SELECT COUNT(DISTINCT user_id) as total FROM commandes WHERE statut='actif'");
 
     const today     = new Date(); today.setHours(0,0,0,0);
@@ -316,7 +316,7 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
 // ── Plans VIP ──────────────────────────────────────────────────────────────────
 router.get('/adminxyz/plans', requireAdminAuth, async (req, res) => {
   try {
-    const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY id ASC');
+    const [plans] = await db.query('SELECT * FROM planinvestissement WHERE COALESCE(bloque, false) = false ORDER BY id ASC');
     plans.forEach(enrichAdminPlan);
     const counts  = await Promise.all(plans.map(async p => {
       const [[c]] = await db.query("SELECT COUNT(*) as total FROM commandes WHERE plan_id=? AND statut='actif'", [p.id]);

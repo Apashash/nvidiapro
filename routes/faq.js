@@ -12,7 +12,7 @@ router.get('/faq', requireAuth, async (req, res) => {
       `SELECT nom, prix, prix_action, actions_minimum, rendement_journalier,
               duree_jours, bloque
        FROM planinvestissement
-       WHERE prix_action IS NOT NULL
+       WHERE COALESCE(bloque, false) = false AND prix_action IS NOT NULL
        ORDER BY id ASC`
     );
     res.render('faq', {
@@ -36,7 +36,7 @@ router.get('/tuto', requireAuth, async (req, res) => {
       `SELECT nom, prix, prix_action, actions_minimum, rendement_journalier,
               duree_jours
        FROM planinvestissement
-       WHERE prix_action IS NOT NULL
+       WHERE COALESCE(bloque, false) = false AND prix_action IS NOT NULL
        ORDER BY id ASC`
     );
     res.render('tuto', {

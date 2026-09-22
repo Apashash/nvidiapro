@@ -20,7 +20,7 @@ router.get('/investissement', requireAuth, async (req, res) => {
     const menu_actif = ['vip', 'commande'].includes(req.query.menu) ? req.query.menu : 'vip';
 
     const [plans] = await db.query(
-      'SELECT *, COALESCE(bloque, false) as bloque FROM planinvestissement WHERE prix_action IS NOT NULL ORDER BY id ASC'
+      'SELECT *, COALESCE(bloque, false) as bloque FROM planinvestissement WHERE COALESCE(bloque, false) = false AND prix_action IS NOT NULL ORDER BY id ASC'
     );
     const plans_corriges = [];
     const seenIds = new Set();
