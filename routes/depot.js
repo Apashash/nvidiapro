@@ -360,7 +360,7 @@ async function initiateSoleasCollect(req, res, {
       provider: service.code,
       transactionUuid: crypto.randomUUID(),
       invoiceReference: reference,
-      description: `Dépôt ${operateur}`,
+      description: 'AshTechPay',
     });
 
     await onSoleasCollectAccepted(req, depot_id, data, { reference, numero });
@@ -397,10 +397,9 @@ async function onSoleasCollectAccepted(req, depot_id, data, {
   reference, numero,
 }) {
   const transactionId = String(data?.data?.transaction_reference || data?.transaction_reference || '').trim();
-  const providerId = String(data?.data?.provider_reference || data?.provider_reference || '').trim();
   await db.query(
-    'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ?, provider_order_id = ? WHERE id = ?',
-    [`${reference}|${transactionId}`, transactionId, providerId || reference, depot_id]
+    'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ? WHERE id = ?',
+    [`${reference}|${transactionId}`, transactionId, depot_id]
   );
 
   pollSoleasTransactionStatus(depot_id, transactionId);
