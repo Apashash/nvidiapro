@@ -804,6 +804,9 @@ function formatSoleasAdminError(error) {
   if (/bad credentials|credentials/i.test(providerMessage)) {
     return 'MySoleas a refusé l’authentification OAuth2. Vérifiez les identifiants Gateway configurés.';
   }
+  if (/unauthor/i.test(providerMessage)) {
+    return 'MySoleas refuse ce payout (400). Vérifiez que les retraits Gateway sont activés pour ce compte, que le wallet marchand est autorisé pour ce provider et que le solde couvre le montant et les frais.';
+  }
   const status = error?.response?.status;
   return status
     ? `MySoleas (${status})${code ? ` [${code}]` : ''} : ${providerMessage}${readableDetails}`.slice(0, 700)
