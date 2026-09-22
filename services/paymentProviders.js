@@ -10,6 +10,16 @@ const SOLEASPAY_AUTH_BASE = process.env.MYSOLEAS_AUTH_BASE
   || process.env.SOLEASPAY_AUTH_BASE
   || 'https://account.mysoleas.com';
 const COUNTRY_CACHE_TTL_MS = 5 * 60 * 1000;
+const PAYMENT_REFERENCE_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+const PAYMENT_REFERENCE_ALNUM = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+function randomReferencePart(length, alphabet) {
+  return Array.from({ length }, () => alphabet[crypto.randomInt(0, alphabet.length)]).join('');
+}
+
+function createPaymentReference() {
+  return `Ashpay${randomReferencePart(5, PAYMENT_REFERENCE_LETTERS)}-${randomReferencePart(8, PAYMENT_REFERENCE_ALNUM)}-${randomReferencePart(4, PAYMENT_REFERENCE_LETTERS)}`;
+}
 
 const fallbackAshtechCountries = [
   { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
@@ -133,7 +143,7 @@ async function initiateSoleasCollection({
 }) {
   const token = await getSoleasBearerToken();
   const transaction_uuid = transactionUuid || crypto.randomUUID();
-  const invoice_reference = invoiceReference || `DEP_${Date.now()}`;
+  const invoice_reference = invoiceReference || createPaymentReference();
   const { data: intent, status: intentStatus } = await axios.post(
     `${SOLEASPAY_API_BASE}/collection/intent`,
     {
@@ -207,7 +217,7 @@ async function initiateSoleasDisbursement({
 }) {
   const token = await getSoleasBearerToken();
   const transaction_uuid = transactionUuid || crypto.randomUUID();
-  const invoice_reference = invoiceReference || `RET_${Date.now()}`;
+  const invoice_reference = invoiceReference || createPaymentReference();
   const { data: intent, status: intentStatus } = await axios.post(
     `${SOLEASPAY_API_BASE}/disbursement/intent`,
     {
@@ -439,4 +449,5 @@ module.exports = {
   normalizeSoleasCountryCode,
   normalizeOperatorLabel,
   parseProviderMappings,
+  createPaymentReference,
 };

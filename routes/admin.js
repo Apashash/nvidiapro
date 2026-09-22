@@ -22,6 +22,7 @@ const {
   initiateSoleasDisbursement,
   parseProviderMappings,
   verifySoleasDisbursement,
+  createPaymentReference,
 } = require('../services/paymentProviders');
 
 const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
@@ -888,7 +889,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         );
         if (locked.affectedRows === 0) return res.json({ success: false, message: 'Ce retrait a déjà été traité.' });
 
-        const localOrderId = `RET_${id}_${Date.now()}`;
+        const localOrderId = createPaymentReference();
         try {
           const data = await initiateSoleasDisbursement({
             wallet: normalizeAdminProviderWallet(ret.numero_compte, country.code),

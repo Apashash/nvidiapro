@@ -18,6 +18,7 @@ const {
   executeSoleasCollection,
   verifySoleasCollection,
   normalizeSoleasCountryCode,
+  createPaymentReference,
 } = require('../services/paymentProviders');
 
 const countryDialCodes = {
@@ -217,7 +218,7 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   }
 
   const currency  = country.currency;
-  const reference = `DEP_${user_id}_${Date.now()}`;
+  const reference = createPaymentReference();
 
   // ── Insert depot record (en_attente) ────────────────────────────────────────
   let depot_id;
@@ -490,7 +491,7 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
       return initiateCollect(req, res, {
         depot_id, montant: payload.amount, currency: payload.currency, numero: payload.phone,
         operateur: payload.operator, country_code: payload.country_code,
-        reference: `DEP_${req.session.user_id}_${Date.now()}`, notify_url,
+        reference: createPaymentReference(), notify_url,
       });
     }
 
