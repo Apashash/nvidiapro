@@ -45,6 +45,11 @@ const uploadTutoVideo = multer({
     cb(null, TUTO_ALLOWED_MIMES.includes(file.mimetype) && TUTO_ALLOWED_EXTS.includes(ext));
   },
 });
+
+function normalizeHistoryStatus(value, allowedStatuses) {
+  const status = String(value || '').trim().toLowerCase();
+  return allowedStatuses.includes(status) ? status : '';
+}
 const TUTO_SECTIONS = ['depot', 'retrait', 'investir', 'astuces'];
 
 // Deletes a tuto video file only if it resolves inside TUTO_UPLOAD_DIR — guards
@@ -371,22 +376,40 @@ router.get('/adminxyz/utilisateurs', requireAdminAuth, async (req, res) => {
 // ── Dépôts ─────────────────────────────────────────────────────────────────────
 router.get('/adminxyz/depots', requireAdminAuth, async (req, res) => {
   try {
+    const statut = normalizeHistoryStatus(req.query.statut, ['en_attente', 'valide', 'rejete']);
+    const where = statut ? 'WHERE d.statut = ?' : '';
+    const params = statut ? [statut] : [];
     const [depots] = await db.query(`
       SELECT d.*, u.nom, u.telephone FROM depots d
       LEFT JOIN utilisateurs u ON d.user_id=u.id
-      ORDER BY d.date_depot DESC LIMIT 300`);
-    res.render('admin', { currentPage: 'depots', pageTitle: 'Dépôts', depots });
+      ${where}
+      ORDER BY d.date_depot DESC LIMIT 300`, params);
+    res.render('admin', {
+      currentPage: 'depots',
+      pageTitle: 'Dépôts',
+      depots,
+      depotStatutFilter: statut,
+    });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
 // ── Retraits ───────────────────────────────────────────────────────────────────
 router.get('/adminxyz/retraits', requireAdminAuth, async (req, res) => {
   try {
+    const statut = normalizeHistoryStatus(req.query.statut, ['en_attente', 'en_cours', 'valide', 'rejete']);
+    const where = statut ? 'WHERE r.statut = ?' : '';
+    const params = statut ? [statut] : [];
     const [retraits] = await db.query(`
       SELECT r.*, u.nom, u.telephone FROM retraits r
       LEFT JOIN utilisateurs u ON r.user_id=u.id
-      ORDER BY r.date_demande DESC LIMIT 300`);
-    res.render('admin', { currentPage: 'retraits', pageTitle: 'Retraits', retraits });
+      ${where}
+      ORDER BY r.date_demande DESC LIMIT 300`, params);
+    res.render('admin', {
+      currentPage: 'retraits',
+      pageTitle: 'Retraits',
+      retraits,
+      retraitStatutFilter: statut,
+    });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
