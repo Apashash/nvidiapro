@@ -452,7 +452,6 @@ function selectCountry(option) {
 function toggleCountryMenu(open) {
     countryPicker.classList.toggle('open', open);
     countryTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (open) countrySearch.focus();
 }
 
 countryTrigger.addEventListener('click', () => {

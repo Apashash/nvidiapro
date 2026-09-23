@@ -310,7 +310,6 @@
         function toggleCountryMenu(open) {
             countryPicker.classList.toggle('open', open);
             countryTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-            if (open) countrySearch.focus();
         }
         function normalizeIndicatif(value) {
             const digits = String(value || '').replace(/\D/g, '');
@@ -342,7 +341,6 @@
             customIndicatif.required = isOther;
             if (isOther) {
                 updateOtherIndicator();
-                customIndicatif.focus();
             } else {
                 indicatifInput.value = option.dataset.code;
                 countryCodeLabel.textContent = option.dataset.code;
