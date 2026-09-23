@@ -9,6 +9,8 @@
 
     **How to apply:** when adding new tables/migrations, always run `npm run setup-db` after confirming `SUPABASE_DATABASE_URL` is set — this script now uses the same precedence logic as `config/db.js`. If you ever add a new script that opens its own `pg` `Pool`, use the same `SUPABASE_DATABASE_URL || DATABASE_URL` fallback (with SSL `rejectUnauthorized: false` when Supabase is used) instead of hardcoding `DATABASE_URL`.
 
+**Connection note:** use Supabase's Session pooler connection string on port 5432 (`*.pooler.supabase.com`) for this environment. The direct `db.<project-ref>.supabase.co` hostname may resolve only to IPv6 and fail from the runtime.
+
 **Provider-routing schema note:** the existing Supabase `depots` table may predate provider routing even when `scripts/setup-db.js` contains the newer columns; verify/apply the `fournisseur`, `provider_transaction_id`, and `provider_service_id` columns before testing provider-specific deposits.
 
     **Fresh import/re-clone gotcha:** secrets do not carry over on a fresh import — `SUPABASE_DATABASE_URL` will be missing and the app silently falls back to the empty Replit-provisioned DB (still runs, just with no real data). Check `viewEnvVars({ type: "secret" })` for it and ask the user to re-provide the connection string via `requestSecrets` before assuming the DB is empty.

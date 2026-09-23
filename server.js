@@ -3,10 +3,17 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express();
+const sessionSecret = process.env.SESSION_SECRET
+  || (process.env.NODE_ENV === 'production' ? null : 'nvidia-tech-secret-2025');
+
+if (!sessionSecret) {
+  throw new Error('SESSION_SECRET must be configured when NODE_ENV=production.');
+}
 
 // View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.set('trust proxy', 1);
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -18,7 +25,7 @@ app.use('/soleaspay_callback', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'nvidia-tech-secret-2025',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
