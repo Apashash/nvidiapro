@@ -1248,6 +1248,17 @@ label,
   border-color: #d5d5da !important;
 }
 
+/* The country picker is a form control, not a primary action button. */
+.country-trigger,
+.country-trigger:hover,
+.country-picker.open .country-trigger {
+  background: #f7f7f8 !important;
+  color: var(--brand-text) !important;
+  border: 1.5px solid var(--brand-border) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
 .amount-tag,
 .ussd-code,
 .otp-ussd-code {
