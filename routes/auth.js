@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { getParams } = require('../services/params');
+const crypto = require('crypto');
 
 const paysEligibles = {
   '+237': 'Cameroun',
@@ -28,6 +29,10 @@ function isValidIndicatif(indicatif) {
 function normalizeIndicatif(indicatif) {
   const value = String(indicatif || '').trim();
   return /^\d{1,4}$/.test(value) ? `+${value}` : value;
+}
+
+function generateReferralCode() {
+  return `Dangote${crypto.randomInt(10_000_000, 100_000_000)}`;
 }
 
 // GET /connexion
@@ -133,8 +138,20 @@ router.post('/inscription1', async (req, res) => {
       if (parrains.length) parrain_id = parrains[0].id;
     }
 
-    // Generate referral code
-    const code_parrainage = 'AL' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 999);
+    // Generate a new referral code while preserving all existing legacy codes.
+    let code_parrainage = '';
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const candidate = generateReferralCode();
+      const [matches] = await db.query(
+        'SELECT id FROM utilisateurs WHERE code_parrainage = ?',
+        [candidate]
+      );
+      if (!matches.length) {
+        code_parrainage = candidate;
+        break;
+      }
+    }
+    if (!code_parrainage) throw new Error('Impossible de générer un code de parrainage unique.');
 
     const conn = await db.getConnection();
     try {
