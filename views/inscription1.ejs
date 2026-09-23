@@ -76,73 +76,73 @@
         .country-trigger {
             width:100%; min-height:52px; display:flex; align-items:center;
             justify-content:space-between; gap:10px; padding:11px 13px;
-            background:#FBF5EC; border:1.5px solid #E8D5B0; border-radius:14px;
-            color:#3D2B1F; font-size:14px; font-family:'Poppins',sans-serif;
+             background:#f7f7f8; border:1.5px solid #e4e4e4; border-radius:14px;
+             color:#202024; font-size:14px; font-family:'Poppins',sans-serif;
             cursor:pointer; text-align:left;
         }
         .country-trigger:hover, .country-picker.open .country-trigger {
-            border-color:#C47D1E; box-shadow:0 0 0 3px rgba(196,125,30,0.12);
+            border-color:#14105f; box-shadow:0 0 0 3px rgba(20,16,95,0.12);
         }
         .country-trigger-text { display:flex; align-items:center; gap:8px; min-width:0; }
-        .country-trigger-code { color:#A87D50; font-size:12px; font-weight:600; }
-        .country-trigger i { color:#C47D1E; font-size:13px; transition:transform 0.2s; }
+        .country-trigger-code { color:#6f6f73; font-size:12px; font-weight:600; }
+        .country-trigger i { color:#d60000; font-size:13px; transition:transform 0.2s; }
         .country-picker.open .country-trigger i { transform:rotate(180deg); }
         .country-menu {
             display:none; position:absolute; z-index:30; top:calc(100% + 6px);
-            left:0; right:0; padding:7px; background:#fff; border:1px solid #E8D5B0;
-            border-radius:12px; box-shadow:0 10px 24px rgba(61,43,31,0.16);
+            left:0; right:0; padding:7px; background:#fff; border:1px solid #e4e4e4;
+            border-radius:12px; box-shadow:0 10px 24px rgba(20,16,95,0.16);
         }
         .country-picker.open .country-menu { display:block; }
         .country-search-wrap { position:relative; margin-bottom:7px; }
         .country-search-wrap i {
             position:absolute; left:13px; top:50%; transform:translateY(-50%);
-            color:#B09070; font-size:13px; pointer-events:none;
+             color:#6f6f73; font-size:13px; pointer-events:none;
         }
         .country-search {
-            width:100%; height:42px; background:#FBF5EC; border:1.5px solid #E8D5B0;
-            border-radius:10px; padding:10px 12px 10px 36px; color:#3D2B1F;
+             width:100%; height:42px; background:#f7f7f8; border:1.5px solid #e4e4e4;
+             border-radius:10px; padding:10px 12px 10px 36px; color:#202024;
             font-size:13px; font-family:'Poppins',sans-serif; outline:none;
         }
         .country-search:focus, .custom-indicatif:focus {
-            border-color:#C47D1E; box-shadow:0 0 0 3px rgba(196,125,30,0.12);
+            border-color:#14105f; box-shadow:0 0 0 3px rgba(20,16,95,0.12);
         }
         .country-options {
-            max-height:224px; overflow-y:auto; padding:0; background:#FBF5EC;
-            border:1px solid #E8D5B0; border-radius:10px;
-            scrollbar-width:thin; scrollbar-color:#D5B27B transparent;
+            max-height:224px; overflow-y:auto; padding:0; background:#f7f7f8;
+            border:1px solid #e4e4e4; border-radius:10px;
+            scrollbar-width:thin; scrollbar-color:#b7b7c8 transparent;
         }
         .country-option {
             width:100%; min-height:41px; display:flex; align-items:center;
             justify-content:space-between; gap:10px; padding:9px 11px;
-            background:transparent; border:0; border-radius:8px; color:#3D2B1F;
+             background:transparent; border:0; border-radius:8px; color:#202024;
             text-align:left; font-size:13px; font-family:'Poppins',sans-serif;
             cursor:pointer; transition:background 0.15s, color 0.15s;
         }
         .country-option + .country-option { margin-top:2px; }
-        .country-option:hover { background:#FEF3DA; }
-        .country-option.active { background:#C47D1E; color:#fff; font-weight:700; }
+        .country-option:hover { background:#eef2ff; }
+        .country-option.active { background:#14105f; color:#fff; font-weight:700; }
         .country-option-code { font-size:11px; opacity:0.7; font-weight:600; }
         .country-option.active .country-option-code { opacity:0.9; }
         .country-empty {
-            padding:12px; color:#A87D50; font-size:12px; text-align:center;
+            padding:12px; color:#6f6f73; font-size:12px; text-align:center;
         }
         .custom-indicatif {
-            width:100%; height:50px; background:#FBF5EC; border:1.5px solid #E8D5B0;
-            border-radius:14px; padding:13px; color:#3D2B1F; font-size:14px;
+            width:100%; height:50px; background:#f7f7f8; border:1.5px solid #e4e4e4;
+            border-radius:14px; padding:13px; color:#202024; font-size:14px;
             font-family:'Poppins',sans-serif; outline:none; margin-bottom:8px;
         }
-        .input-wrap.locked { background:#F3ECDE; border-color:#D9C49A; }
+        .input-wrap.locked { background:#f4f4f4; border-color:#e4e4e4; }
         .input-wrap.locked input {
-            color:#7D5A38; font-weight:600; cursor:not-allowed;
+            color:#14105f; font-weight:600; cursor:not-allowed;
         }
         .lock-icon {
             width:40px; display:flex; align-items:center; justify-content:center;
-            color:#A87D50; font-size:14px; flex-shrink:0;
+            color:#6f6f73; font-size:14px; flex-shrink:0;
         }
         .eye-toggle {
             position:absolute; right:0; top:0; bottom:0;
             background:none; border:none; cursor:pointer;
-            color:#A87D50; font-size:16px;
+            color:#6f6f73; font-size:16px;
             display:flex; align-items:center; justify-content:center;
             width:44px; z-index:2;
         }
@@ -162,16 +162,16 @@
         }
         .btn-submit {
             width:100%; padding:16px;
-            background:linear-gradient(135deg,#D4921F,#B07018);
+            background:linear-gradient(135deg,#14105f,#d60000);
             border:none; border-radius:16px;
             font-size:16px; font-weight:700; color:#fff;
             cursor:pointer; margin-top:8px;
-            box-shadow:0 6px 20px rgba(196,125,30,0.4);
+            box-shadow:0 6px 20px rgba(20,16,95,0.3);
             transition:transform 0.2s; font-family:'Poppins',sans-serif;
         }
         .btn-submit:hover { transform:translateY(-2px); }
-        .login-link { text-align:center; margin-top:20px; font-size:13px; color:#A87D50; }
-        .login-link a { color:#C47D1E; font-weight:600; text-decoration:none; }
+        .login-link { text-align:center; margin-top:20px; font-size:13px; color:#6f6f73; }
+        .login-link a { color:#d60000; font-weight:600; text-decoration:none; }
     </style>
     <link rel="stylesheet" href="/assets/dangote-theme.css">
 </head>
