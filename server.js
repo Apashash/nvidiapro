@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
+const PgSession = require('connect-pg-simple')(session);
 const path = require('path');
+const db = require('./config/db');
 
 const app = express();
 const sessionSecret = process.env.SESSION_SECRET
@@ -25,6 +27,13 @@ app.use('/soleaspay_callback', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 app.use(session({
+  // The default MemoryStore loses every login when Plesk restarts the
+  // process or sends the next request to another worker.
+  store: new PgSession({
+    pool: db.pool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true,
+  }),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
@@ -32,6 +41,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
   },
 }));
 

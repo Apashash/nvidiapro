@@ -170,6 +170,15 @@ CREATE TABLE IF NOT EXISTS app_parametres (
   valeur TEXT
 );
 
+-- Persistent express-session storage for external deployments.
+CREATE TABLE IF NOT EXISTS user_sessions (
+  sid VARCHAR(255) PRIMARY KEY,
+  sess JSON NOT NULL,
+  expire TIMESTAMP(6) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS user_sessions_expire_idx ON user_sessions (expire);
+
 CREATE TABLE IF NOT EXISTS vip_paliers (
   id SERIAL PRIMARY KEY,
   niveau INTEGER UNIQUE NOT NULL,

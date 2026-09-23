@@ -64,4 +64,8 @@ const db = {
   },
 };
 
+// The session store needs the native pg pool so it can use its own query
+// result shape instead of the application's MySQL-compatible wrapper.
+db.pool = pool;
+
 module.exports = db;
