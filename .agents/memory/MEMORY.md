@@ -5,3 +5,4 @@
 - [Deposit referral and withdrawal rules](deposit-referral-and-withdrawal-rules.md) — commissions are based on validated deposits; withdrawals require at least one purchased action.
 - [Mobile language stability](mobile-language-stability.md) — avoid continuous whole-page mutation observers for client-side translation; translate on load and explicit language changes.
 - [MySoleas OAuth authentication](soleaspay-payout-auth.md) — V4 gateway calls require client_credentials and x-sp-auth-token; the old API ACCESS/private-secret flow is V3 only.
+- [External npm deployment](external-npm-deployment.md) — package-lock files generated on Replit can contain internal registry URLs that must be replaced before Plesk installs dependencies.
