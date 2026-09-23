@@ -105,6 +105,7 @@ router.get('/inscription1', (req, res) => {
 router.post('/inscription1', async (req, res) => {
   try {
     const { nom, telephone, mot_de_passe, confirmation } = req.body;
+    const code_parrain = String(req.body.code_parrain || req.session.parrain_code || '').trim();
     const paysSelectionne = req.body.pays;
     const indicatif = normalizeIndicatif(req.body.indicatif);
     const paysConnu = paysEligibles[indicatif];
@@ -112,6 +113,7 @@ router.post('/inscription1', async (req, res) => {
     const telLocal = (telephone || '').replace(/[^0-9]/g, '');
     const tel = indicatif + telLocal;
     req.session.form_data = { nom, pays, indicatif, telephone };
+    if (code_parrain) req.session.parrain_code = code_parrain;
 
     if (!nom || !pays || !indicatif || !telLocal || !mot_de_passe) {
       throw new Error('Tous les champs sont obligatoires');
@@ -129,7 +131,6 @@ router.post('/inscription1', async (req, res) => {
 
     // Parrain
     let parrain_id = null;
-    const code_parrain = req.session.parrain_code || '';
     if (code_parrain) {
       const [parrains] = await db.query(
         'SELECT id FROM utilisateurs WHERE code_parrainage = ? OR RIGHT(code_parrainage, 5) = ?',
