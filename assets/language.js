@@ -288,7 +288,8 @@
         'action(s) achetée(s) pour': { en: 'share(s) purchased for', es: 'acción(es) comprada(s) por', zh: '股，购买金额为', ur: 'شیئرز کی خریداری، رقم' },
         'Erreur lors de l’achat': { en: 'Purchase error', es: 'Error durante la compra', zh: '购买出错', ur: 'خریداری میں خرابی' },
         "Erreur lors de l'achat": { en: 'Purchase error', es: 'Error durante la compra', zh: '购买出错', ur: 'خریداری میں خرابی' },
-        'Erreur de connexion': { en: 'Connection error', es: 'Error de conexión', zh: '连接错误', ur: 'کنکشن میں خرابی' }
+        'Erreur de connexion': { en: 'Connection error', es: 'Error de conexión', zh: '连接错误', ur: 'کنکشن میں خرابی' },
+        'Changer la devise': { en: 'Change currency', es: 'Cambiar moneda', zh: '切换货币', ur: 'کرنسی تبدیل کریں' }
     };
     const dictionaries = {
         en: {

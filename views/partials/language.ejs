@@ -15,26 +15,84 @@
 <style>
     html.gd-language-pending body { visibility: hidden; }
 </style>
-<div class="gd-language-picker" data-language-picker>
-    <button type="button" class="gd-language-toggle" data-language-toggle aria-label="Choisir la langue" aria-expanded="false">
-        <span class="gd-language-globe" aria-hidden="true">🌐</span>
-        <span data-language-current>FR</span>
-        <span class="gd-language-chevron" aria-hidden="true">▾</span>
-    </button>
-    <div class="gd-language-menu" data-language-menu role="menu">
-        <button type="button" data-language-option="fr" role="menuitem"><span>🇫🇷</span> Français</button>
-        <button type="button" data-language-option="en" role="menuitem"><span>🇬🇧</span> English</button>
-        <button type="button" data-language-option="es" role="menuitem"><span>🇪🇸</span> Español</button>
-        <button type="button" data-language-option="zh" role="menuitem"><span>🇨🇳</span> 中文</button>
-        <button type="button" data-language-option="ur" role="menuitem"><span>🇵🇰</span> اردو</button>
+<%
+    const configuredCurrencyRate = Number(locals.appParams && appParams.taux_usdt_fcfa);
+    const currencyRate = Number.isFinite(configuredCurrencyRate) && configuredCurrencyRate > 0
+        ? configuredCurrencyRate
+        : 600;
+%>
+<script>window.GD_USDT_FCFA_RATE = <%= currencyRate %>;</script>
+<div class="gd-utility-bar">
+    <label class="gd-currency-picker">
+        <i class="fas fa-coins" aria-hidden="true"></i>
+        <select data-currency-selector aria-label="Changer la devise"
+                onchange="window.GDCurrency.setCurrency(this.value)">
+            <option value="FCFA">FCFA</option>
+            <option value="USDT">USDT</option>
+        </select>
+        <span class="gd-currency-chevron" aria-hidden="true">▾</span>
+    </label>
+    <div class="gd-language-picker" data-language-picker>
+        <button type="button" class="gd-language-toggle" data-language-toggle aria-label="Choisir la langue" aria-expanded="false">
+            <span class="gd-language-globe" aria-hidden="true">🌐</span>
+            <span data-language-current>FR</span>
+            <span class="gd-language-chevron" aria-hidden="true">▾</span>
+        </button>
+        <div class="gd-language-menu" data-language-menu role="menu">
+            <button type="button" data-language-option="fr" role="menuitem"><span>🇫🇷</span> Français</button>
+            <button type="button" data-language-option="en" role="menuitem"><span>🇬🇧</span> English</button>
+            <button type="button" data-language-option="es" role="menuitem"><span>🇪🇸</span> Español</button>
+            <button type="button" data-language-option="zh" role="menuitem"><span>🇨🇳</span> 中文</button>
+            <button type="button" data-language-option="ur" role="menuitem"><span>🇵🇰</span> اردو</button>
+        </div>
     </div>
 </div>
 <style>
-    .gd-language-picker {
+    .gd-utility-bar {
         position: fixed;
         top: 14px;
         right: 14px;
         z-index: 15000;
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        font-family: Arial, sans-serif;
+        direction: ltr;
+    }
+    .gd-currency-picker {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        min-height: 36px;
+        padding: 6px 8px;
+        border: 1px solid rgba(20, 16, 95, 0.18);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.96);
+        color: #14105F;
+        box-shadow: 0 3px 12px rgba(20, 16, 95, 0.16);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 800;
+    }
+    .gd-currency-picker:focus-within {
+        border-color: #14105F;
+        box-shadow: 0 0 0 3px rgba(20, 16, 95, 0.12);
+    }
+    .gd-currency-picker > i { font-size: 14px; }
+    .gd-currency-picker select {
+        width: 48px;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        appearance: none;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font: 800 11px Arial, sans-serif;
+    }
+    .gd-currency-chevron { font-size: 11px; margin-left: -4px; }
+    .gd-language-picker {
+        position: relative;
         font-family: Arial, sans-serif;
     }
     .gd-language-toggle {
@@ -84,7 +142,8 @@
     .gd-language-menu button:hover,
     .gd-language-menu button.active { background: #FFF0EE; color: #D60000; }
     @media (max-width: 520px) {
-        .gd-language-picker { top: 10px; right: 10px; }
+        .gd-utility-bar { top: 10px; right: 10px; }
     }
 </style>
+<script src="/assets/currency-display.js?v=2"></script>
 <script src="/assets/language.js?v=20"></script>

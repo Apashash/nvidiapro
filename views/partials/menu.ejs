@@ -66,15 +66,6 @@
     .nav-center.active span { color: var(--nav-active); font-weight: 700; }
     body { padding-bottom: 80px !important; }
 </style>
-<%
-    const configuredCurrencyRate = Number(locals.appParams && appParams.taux_usdt_fcfa);
-    const currencyRate = Number.isFinite(configuredCurrencyRate) && configuredCurrencyRate > 0
-        ? configuredCurrencyRate
-        : 600;
-%>
-<script>window.GD_USDT_FCFA_RATE = <%= currencyRate %>;</script>
-<script src="/assets/currency-display.js"></script>
-
 <nav class="bottom-nav">
     <a href="/" class="nav-item <%= locals.page === 'index' ? 'active' : '' %>">
         <i class="fas fa-home"></i><span>Accueil</span>
