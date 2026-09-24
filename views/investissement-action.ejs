@@ -201,6 +201,9 @@ function roundActions(value) { return Math.round(value * 10000) / 10000; }
 function currentCurrency() {
     return window.GDCurrency ? window.GDCurrency.getCurrency() : 'FCFA';
 }
+function translateText(value) {
+    return window.GDLanguage ? window.GDLanguage.translate(value) : value;
+}
 function currencyRate() {
     return window.GDCurrency && Number.isFinite(window.GDCurrency.rate) && window.GDCurrency.rate > 0
         ? window.GDCurrency.rate
@@ -220,8 +223,8 @@ function inputAmountDecimals(currency = currentCurrency()) {
 }
 function syncAmountInputLabels() {
     const currency = currentCurrency();
-    document.getElementById('amountModeButton').textContent = `Montant ${currency}`;
-    document.getElementById('amountInputLabel').textContent = `Montant souhaité en ${currency}`;
+    document.getElementById('amountModeButton').textContent = translateText(`Montant ${currency}`);
+    document.getElementById('amountInputLabel').textContent = translateText(`Montant souhaité en ${currency}`);
 }
 function money(value) {
     const currency = currentCurrency();
@@ -244,6 +247,24 @@ function switchMode(nextMode) {
     document.getElementById('amountField').style.display = mode === 'amount' ? 'block' : 'none';
     updateSummary();
 }
+function renderPlanDetails() {
+    const planMeta = document.querySelector('.plan-heading p');
+    if (planMeta) {
+        planMeta.textContent = `${plan.duree} ${translateText('jours')} · ${plan.achatsRestants} ${translateText('achat(s) restant(s)')}`;
+    }
+}
+function renderBalanceModalMessage(amount) {
+    const missing = Math.max(0, amount - solde);
+    document.getElementById('balanceModalMessage').textContent =
+        `${translateText('Votre solde est de')} ${money(solde)}. ${translateText('Il vous manque')} ${money(missing)} ${translateText('pour confirmer.')}`;
+}
+function renderSuccessMessage(result) {
+    document.getElementById('successText').textContent =
+        `${result.nombre_actions} ${translateText('action(s) achetée(s) pour')} ${money(result.montant)}.`;
+}
+let pendingBalanceAmount = null;
+let completedPurchase = null;
+let submittingPurchase = false;
 function updateSummary() {
     const actionsInput = document.getElementById('actionsInput');
     const amountInput = document.getElementById('amountInput');
@@ -252,8 +273,8 @@ function updateSummary() {
     const button = document.getElementById('confirmButton');
     if (!raw) {
         document.getElementById('helpText').textContent = mode === 'amount'
-            ? 'Saisissez un montant en FCFA.'
-            : `Saisissez au moins ${plan.actionsMinimum} actions.`;
+            ? `${translateText('Saisissez un montant')} ${currentCurrency()}.`
+            : `${translateText('Saisissez au moins')} ${plan.actionsMinimum} ${translateText('actions')}.`;
         warning.style.display = 'none'; button.disabled = true; return;
     }
 
@@ -262,7 +283,7 @@ function updateSummary() {
         : amountToFcfa(decimal(raw));
     let actions = mode === 'actions' ? decimal(raw) : roundActions(amount / plan.prixAction);
     if (!Number.isFinite(actions) || !Number.isFinite(amount) || actions <= 0 || amount <= 0) {
-        document.getElementById('helpText').textContent = 'Saisissez une valeur valide.';
+        document.getElementById('helpText').textContent = translateText('Saisissez une valeur valide.');
         warning.style.display = 'none'; button.disabled = true; return;
     }
     actions = roundActions(actions);
@@ -275,13 +296,13 @@ function updateSummary() {
     const rate = rateForAmount(amount);
     const daily = amount * rate / 100;
     document.getElementById('helpText').textContent =
-        `${actions} action(s) · ${money(plan.prixAction)}/action · taux ${rate}%/jour`;
+        `${actions} ${translateText('action(s)')} · ${money(plan.prixAction)}/${translateText('action')} · ${translateText('taux')} ${rate}%/${translateText('jour')}`;
     document.getElementById('summaryAmount').textContent = money(amount);
     document.getElementById('summaryDaily').textContent = money(daily);
     document.getElementById('summaryTotal').textContent = money(daily * plan.duree);
 
     if (actions < plan.actionsMinimum) {
-        warning.textContent = `Le minimum pour ce plan est de ${plan.actionsMinimum} actions.`;
+        warning.textContent = `${translateText('Le minimum pour ce plan est de')} ${plan.actionsMinimum} ${translateText('actions')}.`;
         warning.style.display = 'block'; button.disabled = true;
     } else if (amount > solde) {
         // Show the balance message only after the user confirms.
@@ -292,9 +313,8 @@ function updateSummary() {
     }
 }
 function showBalanceModal(amount) {
-    const missing = Math.max(0, amount - solde);
-    document.getElementById('balanceModalMessage').textContent =
-        `Votre solde est de ${money(solde)}. Il vous manque ${money(missing)} pour confirmer.`;
+    pendingBalanceAmount = amount;
+    renderBalanceModalMessage(amount);
     document.getElementById('balanceModal').style.display = 'flex';
 }
 let displayedCurrency = currentCurrency();
@@ -307,12 +327,14 @@ document.getElementById('actionsInput').addEventListener('input', updateSummary)
 document.getElementById('amountInput').addEventListener('input', updateSummary);
 document.getElementById('closeBalanceModal').addEventListener('click', () => {
     document.getElementById('balanceModal').style.display = 'none';
+    pendingBalanceAmount = null;
 });
 document.getElementById('confirmButton').addEventListener('click', async function() {
     const actions = decimal(document.getElementById('actionsInput').value);
     const displayedAmount = decimal(document.getElementById('summaryAmount').textContent.replace(/[^\d,.-]/g, '').replace(',', '.'));
     const amount = amountToFcfa(displayedAmount);
-    this.disabled = true; this.textContent = 'Traitement...';
+    submittingPurchase = true;
+    this.disabled = true; this.textContent = translateText('Traitement...');
     try {
         const response = await fetch('/acheter-action', {
             method: 'POST',
@@ -324,21 +346,34 @@ document.getElementById('confirmButton').addEventListener('click', async functio
             if (result.message === 'Solde insuffisant') {
                 showBalanceModal(amount);
             } else {
-                document.getElementById('warningText').textContent = result.message || 'Erreur lors de l’achat';
+                document.getElementById('warningText').textContent = translateText(result.message || 'Erreur lors de l’achat');
                 document.getElementById('warningText').style.display = 'block';
             }
-            this.disabled = false; this.textContent = "Confirmer l'achat";
+            submittingPurchase = false;
+            this.disabled = false; this.textContent = translateText("Confirmer l'achat");
             return;
         }
         document.getElementById('purchaseCard').style.display = 'none';
-        document.getElementById('successText').textContent =
-            `${result.nombre_actions} action(s) achetée(s) pour ${money(result.montant)}.`;
+        submittingPurchase = false;
+        completedPurchase = result;
+        renderSuccessMessage(result);
         document.getElementById('successCard').style.display = 'block';
     } catch (error) {
-        document.getElementById('warningText').textContent = error.message || 'Erreur de connexion.';
+        document.getElementById('warningText').textContent = translateText(error.message || 'Erreur de connexion');
         document.getElementById('warningText').style.display = 'block';
-        this.disabled = false; this.textContent = "Confirmer l'achat";
+        submittingPurchase = false;
+        this.disabled = false; this.textContent = translateText("Confirmer l'achat");
     }
+});
+
+window.addEventListener('gd-language-change', () => {
+    renderPlanDetails();
+    syncAmountInputLabels();
+    updateSummary();
+    const confirmButton = document.getElementById('confirmButton');
+    confirmButton.textContent = translateText(submittingPurchase ? 'Traitement...' : "Confirmer l'achat");
+    if (pendingBalanceAmount !== null) renderBalanceModalMessage(pendingBalanceAmount);
+    if (completedPurchase) renderSuccessMessage(completedPurchase);
 });
 
 window.addEventListener('gd-currency-change', event => {
@@ -354,6 +389,7 @@ window.addEventListener('gd-currency-change', event => {
     syncAmountInputLabels();
     updateSummary();
 });
+renderPlanDetails();
 updateSummary();
 </script>
 </body>

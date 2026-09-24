@@ -263,7 +263,32 @@
         'Rejoindre la communauté': { en: 'Join the community', es: 'Únete a la comunidad', zh: '加入社区', ur: 'کمیونٹی میں شامل ہوں' },
         'Canal Telegram officiel': { en: 'Official Telegram channel', es: 'Canal oficial de Telegram', zh: '官方 Telegram 频道', ur: 'سرکاری ٹیلیگرام چینل' },
         'Annonces, actualités et offres exclusives': { en: 'Announcements, news and exclusive offers', es: 'Anuncios, noticias y ofertas exclusivas', zh: '公告、新闻和独家优惠', ur: 'اعلانات، خبریں اور خصوصی پیشکشیں' },
-        'Échangez avec la communauté GD': { en: 'Chat with the GD community', es: 'Habla con la comunidad GD', zh: '与 GD 社区交流', ur: 'GD کمیونٹی سے بات کریں' }
+        'Échangez avec la communauté GD': { en: 'Chat with the GD community', es: 'Habla con la comunidad GD', zh: '与 GD 社区交流', ur: 'GD کمیونٹی سے بات کریں' },
+        'Retour aux plans d’investissement': { en: 'Back to investment plans', es: 'Volver a los planes de inversión', zh: '返回投资计划', ur: 'سرمایہ کاری کے منصوبوں پر واپس جائیں' },
+        "Retour aux plans d'investissement": { en: 'Back to investment plans', es: 'Volver a los planes de inversión', zh: '返回投资计划', ur: 'سرمایہ کاری کے منصوبوں پر واپس جائیں' },
+        'Retour aux plans': { en: 'Back to plans', es: 'Volver a los planes', zh: '返回计划', ur: 'منصوبوں پر واپس جائیں' },
+        'À savoir :': { en: 'Keep in mind:', es: 'A tener en cuenta:', zh: '请注意：', ur: 'یاد رکھیں:' },
+        'le minimum est de': { en: 'the minimum is', es: 'el mínimo es de', zh: '最低数量为', ur: 'کم از کم تعداد' },
+        'actions.': { en: 'shares.', es: 'acciones.', zh: '股。', ur: 'شیئرز۔' },
+        'Votre solde actuel est de': { en: 'Your current balance is', es: 'Tu saldo actual es de', zh: '您当前余额为', ur: 'آپ کا موجودہ بیلنس ہے' },
+        'Vous pouvez effectuer au maximum': { en: 'You can make at most', es: 'Puedes realizar un máximo de', zh: '您最多可以进行', ur: 'آپ زیادہ سے زیادہ' },
+        'achats sur ce plan.': { en: 'purchases on this plan.', es: 'compras en este plan.', zh: '次购买。', ur: 'اس منصوبے پر خریداری کر سکتے ہیں۔' },
+        'action(s)': { en: 'share(s)', es: 'acción(es)', zh: '股', ur: 'شیئرز' },
+        'action': { en: 'share', es: 'acción', zh: '股', ur: 'شیئر' },
+        'actions': { en: 'shares', es: 'acciones', zh: '股', ur: 'شیئرز' },
+        'taux': { en: 'rate', es: 'tasa', zh: '利率', ur: 'شرح' },
+        'achat(s) restant(s)': { en: 'purchase(s) remaining', es: 'compras restantes', zh: '次剩余购买', ur: 'باقی خریداری' },
+        'Saisissez un montant': { en: 'Enter an amount', es: 'Introduce un monto', zh: '请输入金额', ur: 'رقم درج کریں' },
+        'Saisissez au moins': { en: 'Enter at least', es: 'Introduce al menos', zh: '请至少输入', ur: 'کم از کم درج کریں' },
+        'Saisissez une valeur valide.': { en: 'Enter a valid value.', es: 'Introduce un valor válido.', zh: '请输入有效数值。', ur: 'درست قدر درج کریں۔' },
+        'Le minimum pour ce plan est de': { en: 'The minimum for this plan is', es: 'El mínimo para este plan es de', zh: '此计划的最低数量为', ur: 'اس منصوبے کی کم از کم تعداد' },
+        'Votre solde est de': { en: 'Your balance is', es: 'Tu saldo es de', zh: '您的余额为', ur: 'آپ کا بیلنس ہے' },
+        'Il vous manque': { en: 'You are short', es: 'Te faltan', zh: '您还差', ur: 'آپ کو مزید درکار ہیں' },
+        'pour confirmer.': { en: 'to confirm.', es: 'para confirmar.', zh: '即可确认。', ur: 'تصدیق کے لیے۔' },
+        'action(s) achetée(s) pour': { en: 'share(s) purchased for', es: 'acción(es) comprada(s) por', zh: '股，购买金额为', ur: 'شیئرز کی خریداری، رقم' },
+        'Erreur lors de l’achat': { en: 'Purchase error', es: 'Error durante la compra', zh: '购买出错', ur: 'خریداری میں خرابی' },
+        "Erreur lors de l'achat": { en: 'Purchase error', es: 'Error durante la compra', zh: '购买出错', ur: 'خریداری میں خرابی' },
+        'Erreur de connexion': { en: 'Connection error', es: 'Error de conexión', zh: '连接错误', ur: 'کنکشن میں خرابی' }
     };
     const dictionaries = {
         en: {
