@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const { getParams } = require('./params');
+const { normalizeAshtechCryptoAssets } = require('./ashtechCrypto');
 
 const ASHTECH_API_BASE = process.env.ASHTECH_API_BASE || 'https://www.ashtechpay.com';
 const SOLEASPAY_API_BASE = process.env.MYSOLEAS_API_BASE
@@ -10,6 +11,7 @@ const SOLEASPAY_AUTH_BASE = process.env.MYSOLEAS_AUTH_BASE
   || process.env.SOLEASPAY_AUTH_BASE
   || 'https://account.mysoleas.com';
 const COUNTRY_CACHE_TTL_MS = 5 * 60 * 1000;
+const CRYPTO_ASSET_CACHE_TTL_MS = 5 * 60 * 1000;
 const PAYMENT_REFERENCE_LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 const PAYMENT_REFERENCE_ALNUM = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -42,6 +44,8 @@ const fallbackSoleasServices = [
 
 let ashtechCountriesCache = null;
 let ashtechCountriesCachedAt = 0;
+let ashtechCryptoAssetsCache = null;
+let ashtechCryptoAssetsCachedAt = 0;
 let soleasServicesCache = null;
 let soleasServicesCachedAt = 0;
 let soleasBearerToken = null;
@@ -306,6 +310,27 @@ async function getAshtechCountries() {
   }
 }
 
+async function getAshtechCryptoAssets() {
+  const now = Date.now();
+  if (ashtechCryptoAssetsCache && now - ashtechCryptoAssetsCachedAt < CRYPTO_ASSET_CACHE_TTL_MS) {
+    return ashtechCryptoAssetsCache.map(asset => ({ ...asset }));
+  }
+
+  const apiKey = getAshtechApiKey();
+  if (!apiKey) {
+    throw new Error('AshTechPay Direct API key is not configured');
+  }
+
+  const { data } = await axios.get(`${ASHTECH_API_BASE}/v1/crypto/assets`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    timeout: 10000,
+  });
+  const assets = normalizeAshtechCryptoAssets(data);
+  ashtechCryptoAssetsCache = assets;
+  ashtechCryptoAssetsCachedAt = now;
+  return assets.map(asset => ({ ...asset }));
+}
+
 function normalizeSoleasCountryCode(value) {
   const code = String(value || '').trim().toUpperCase();
   const alpha3 = {
@@ -433,6 +458,7 @@ module.exports = {
   fallbackSoleasServices,
   getAshtechApiKey,
   getAshtechCountries,
+  getAshtechCryptoAssets,
   getOperatorProvider,
   getSoleasApiKey,
   getSoleasPrivateSecret,

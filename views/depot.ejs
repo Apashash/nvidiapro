@@ -200,6 +200,33 @@
             border-radius:12px; padding:12px; margin-top:12px; text-decoration:none;
             font-size:14px; font-weight:700;
         }
+        .crypto-payment-summary {
+            display:grid; gap:9px; margin:12px 0; padding:13px;
+            background:#FBF5EC; border:1px solid #E8D5B0; border-radius:12px;
+        }
+        .crypto-payment-row { display:flex; justify-content:space-between; gap:12px; font-size:12px; }
+        .crypto-payment-row span { color:#7D5A38; }
+        .crypto-payment-row strong { color:#3D2B1F; text-align:right; }
+        .crypto-address-block, .crypto-memo-block {
+            display:grid; gap:7px; margin-top:10px; padding:12px;
+            background:#fff; border:1px solid #E8D5B0; border-radius:11px;
+        }
+        .crypto-address-block label, .crypto-memo-block label {
+            color:#7D5A38; font-size:11px; font-weight:700; text-transform:uppercase;
+        }
+        .crypto-address-value, .crypto-memo-value {
+            display:block; overflow-wrap:anywhere; color:#3D2B1F;
+            font-family:monospace; font-size:13px; line-height:1.5;
+        }
+        .crypto-copy-btn {
+            justify-self:start; border:0; border-radius:8px; padding:8px 11px;
+            background:#FEF3DA; color:#A0631A; font-size:12px; font-weight:700;
+            cursor:pointer;
+        }
+        .crypto-expiry-note, .crypto-network-note, .crypto-rate-note {
+            color:#7D5A38; font-size:11px; line-height:1.5; margin-top:6px;
+        }
+        .crypto-asset-error { color:#C0392B; font-size:12px; line-height:1.5; margin-top:7px; }
 
         /* ── OTP card ── */
         .otp-card {
@@ -235,7 +262,7 @@
         <a href="/" class="back-btn"><i class="fas fa-chevron-left"></i></a>
         <div class="header-text">
             <h1>Effectuer un Dépôt</h1>
-            <p>Rechargez votre compte Mobile Money</p>
+            <p>Rechargez votre compte par Mobile Money ou crypto</p>
         </div>
     </div>
 
@@ -271,45 +298,92 @@
         <% } %>
 
         <% if (locals.pending_depot_id) { %>
-        <div class="payment-pending-card" id="paymentStatusCard">
+        <div class="payment-pending-card" id="paymentStatusCard"
+             data-crypto-expires-at="<%= pending_crypto?.expires_at || '' %>">
             <div class="ppc-header">
                 <div class="ppc-spinner" id="ppcSpinner"></div>
-                <div class="ppc-title" id="ppcTitle">Paiement initié</div>
+                <div class="ppc-title" id="ppcTitle"><%= pending_crypto ? 'Paiement crypto initié' : 'Paiement initié' %></div>
             </div>
-            <div class="ppc-phone">
-                <i class="fas fa-mobile-alt"></i>
-                <span>Confirmez sur votre téléphone</span>
-                <strong><%= pending_numero %></strong>
-            </div>
-            <% if (locals.pending_wave_url) { %>
-                <a href="<%= pending_wave_url %>" target="_blank" rel="noopener" class="ppc-wave-btn">
-                    <i class="fas fa-external-link-alt"></i> Payer avec Wave
-                </a>
+            <% if (locals.pending_crypto) { %>
+                <div class="crypto-payment-summary">
+                    <div class="crypto-payment-row">
+                        <span>Actif</span>
+                        <strong><%= pending_crypto.name || pending_crypto.coin || 'Crypto' %><%= pending_crypto.coin ? ` (${pending_crypto.coin})` : '' %></strong>
+                    </div>
+                    <div class="crypto-payment-row">
+                        <span>Réseau</span>
+                        <strong><%= pending_crypto.network_label || pending_crypto.network || 'En vérification' %></strong>
+                    </div>
+                    <div class="crypto-payment-row">
+                        <span>Montant du dépôt</span>
+                        <strong><%= Number(pending_crypto.amount_fcfa || 0).toLocaleString('fr-FR') %> FCFA</strong>
+                    </div>
+                    <% if (Number.isFinite(Number(pending_crypto.amount)) && pending_crypto.currency) { %>
+                    <div class="crypto-payment-row">
+                        <span>Montant demandé par AshTech</span>
+                        <strong><%= Number(pending_crypto.amount).toFixed(2) %> <%= pending_crypto.currency %></strong>
+                    </div>
+                    <% } %>
+                </div>
+                <% if (pending_crypto.address && !pending_crypto.expired) { %>
+                <div class="crypto-details" id="cryptoPaymentDetails">
+                    <div class="crypto-address-block">
+                        <label for="cryptoAddressValue">Adresse de réception</label>
+                        <code class="crypto-address-value" id="cryptoAddressValue"><%= pending_crypto.address %></code>
+                        <button type="button" class="crypto-copy-btn" data-copy-target="cryptoAddressValue">
+                            <i class="fas fa-copy"></i> Copier l’adresse
+                        </button>
+                    </div>
+                    <% if (pending_crypto.memo) { %>
+                    <div class="crypto-memo-block">
+                        <label for="cryptoMemoValue"><%= pending_crypto.memo_type || 'Memo / tag' %></label>
+                        <code class="crypto-memo-value" id="cryptoMemoValue"><%= pending_crypto.memo %></code>
+                        <button type="button" class="crypto-copy-btn" data-copy-target="cryptoMemoValue">
+                            <i class="fas fa-copy"></i> Copier le memo / tag
+                        </button>
+                    </div>
+                    <% } %>
+                    <p class="crypto-expiry-note">
+                        Vérifiez le réseau avant l’envoi. Adresse disponible encore
+                        <strong id="cryptoExpiryCountdown">15:00</strong> au maximum.
+                    </p>
+                </div>
+                <% } %>
+                <div class="ppc-note" id="ppcNote">
+                    <i class="fas fa-clock"></i>
+                    <%= pending_crypto.status_message || (pending_crypto.expired
+                        ? 'Cette adresse a expiré. N’envoyez plus de fonds ; le statut serveur reste vérifié.'
+                        : 'Votre solde sera crédité en FCFA uniquement après confirmation par AshTechPay.') %>
+                </div>
+            <% } else { %>
+                <div class="ppc-phone">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Confirmez sur votre téléphone</span>
+                    <strong><%= pending_numero %></strong>
+                </div>
+                <% if (locals.pending_wave_url) { %>
+                    <a href="<%= pending_wave_url %>" target="_blank" rel="noopener" class="ppc-wave-btn">
+                        <i class="fas fa-external-link-alt"></i> Payer avec Wave
+                    </a>
+                <% } %>
+                <div class="ppc-note" id="ppcNote">
+                    <i class="fas fa-clock"></i> Votre solde sera crédité automatiquement dès confirmation.
+                </div>
             <% } %>
-            <div class="ppc-note" id="ppcNote">
-                <i class="fas fa-clock"></i> Votre solde sera crédité automatiquement dès confirmation.
-            </div>
             <div class="ppc-progress-bar"><div class="ppc-progress-fill" id="ppcBar"></div></div>
         </div>
         <% } %>
 
-        <% if (!locals.otp_pending) { %>
+        <% if (!locals.otp_pending && !locals.pending_crypto) { %>
         <div class="form-card" id="formCard"
              data-selected-country="<%= selectedCountryCode || '' %>"
-             data-selected-operator="<%= selectedOperator || '' %>">
+             data-selected-operator="<%= selectedOperator || '' %>"
+             data-selected-crypto-asset="<%= selectedCryptoAsset || '' %>"
+             data-selected-crypto-country="<%= selectedCryptoCountryCode || '' %>">
             <form id="depotForm" method="POST" action="/depot/process">
 
                 <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-money-bill-wave"></i> Montant du dépôt
-                        <span class="currency-badge" id="currencyBadge" style="display:none"></span>
-                    </label>
-                    <input type="number" name="montant" id="montant" min="<%= depotMin %>" step="100" required
-                           placeholder="Montant minimum : <%= depotMin.toLocaleString('fr-FR') %>" class="form-input">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label"><i class="fas fa-globe-africa"></i> Pays</label>
+                    <label class="form-label"><i class="fas fa-globe-africa"></i> Mode de dépôt / pays</label>
                     <div class="country-picker" id="countryPicker">
                         <button type="button" class="country-trigger" id="countryTrigger"
                                 aria-haspopup="listbox" aria-expanded="false">
@@ -324,12 +398,23 @@
                                        aria-label="Rechercher un pays">
                             </div>
                             <div class="country-options" id="countryOptions" role="listbox" aria-label="Pays disponibles">
+                            <button type="button" class="country-option"
+                                    data-code="CRYPTO"
+                                    data-currency="FCFA"
+                                    data-operators=""
+                                    data-name="Crypto"
+                                    data-kind="crypto"
+                                    role="option" aria-selected="false">
+                                <span>Crypto</span>
+                                <span class="country-option-code">USDT</span>
+                            </button>
                         <% countries.forEach(function(c) { %>
                             <button type="button" class="country-option"
                                     data-code="<%= c.code %>"
                                     data-currency="<%= c.currency %>"
                                     data-operators="<%= c.operators.join('|') %>"
                                     data-name="<%= c.name %>"
+                                    data-kind="mobile"
                                     role="option" aria-selected="false">
                                 <span><%= c.name %></span>
                                 <span class="country-option-code"><%= c.code %></span>
@@ -343,14 +428,65 @@
                     <input type="hidden" name="country_code" id="countryCode">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="cryptoCountryGroup" hidden>
+                    <label class="form-label"><i class="fas fa-map-marker-alt"></i> Pays de résidence</label>
+                    <select name="crypto_country_code" id="cryptoCountryCode" class="form-input" disabled required>
+                        <option value="">Sélectionnez votre pays</option>
+                        <% countries.forEach(function(c) { %>
+                        <option value="<%= c.code %>" <%= selectedCryptoCountryCode === c.code ? 'selected' : '' %>>
+                            <%= c.name %>
+                        </option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="form-group" id="cryptoCoinGroup" hidden>
+                    <label class="form-label"><i class="fab fa-bitcoin"></i> Actif crypto</label>
+                    <select id="cryptoCoin" class="form-input" disabled required>
+                        <option value="">Chargement des actifs disponibles…</option>
+                    </select>
+                    <div class="crypto-asset-error" id="cryptoAssetError" role="alert" hidden></div>
+                </div>
+
+                <div class="form-group" id="cryptoNetworkGroup" hidden>
+                    <label class="form-label"><i class="fas fa-network-wired"></i> Réseau</label>
+                    <select name="asset_code" id="cryptoAssetCode" class="form-input" disabled required>
+                        <option value="">Sélectionnez d’abord un actif</option>
+                    </select>
+                    <p class="crypto-network-note" id="cryptoNetworkNote"></p>
+                </div>
+
+                <div class="form-group" id="amountGroup">
+                    <label class="form-label">
+                        <i class="fas fa-money-bill-wave"></i> Montant du dépôt
+                        <span class="currency-badge" id="currencyBadge" style="display:none"></span>
+                    </label>
+                    <input type="number" name="montant" id="montant" min="<%= depotMin %>" step="100" required
+                           placeholder="Montant minimum : <%= depotMin.toLocaleString('fr-FR') %>" class="form-input">
+                    <p class="crypto-rate-note" id="cryptoRateNote" hidden>
+                        Taux : 1 USDT = <%= Number(cryptoRate).toLocaleString('fr-FR') %> FCFA.
+                        Estimation : <strong id="cryptoUsdtEstimate">—</strong>
+                    </p>
+                </div>
+
+                <div class="form-group" id="cryptoCustomerGroup" hidden>
+                    <label class="form-label"><i class="fas fa-user"></i> Informations obligatoires pour le paiement crypto</label>
+                    <input type="text" name="firstName" id="cryptoFirstName" class="form-input"
+                           placeholder="Prénom" autocomplete="given-name" maxlength="100" disabled required>
+                    <input type="text" name="lastName" id="cryptoLastName" class="form-input" style="margin-top:10px"
+                           placeholder="Nom" autocomplete="family-name" maxlength="100" disabled required>
+                    <input type="email" name="email" id="cryptoEmail" class="form-input" style="margin-top:10px"
+                           placeholder="Adresse e-mail" autocomplete="email" maxlength="254" disabled required>
+                </div>
+
+                <div class="form-group" id="mobileOperatorGroup">
                     <label class="form-label"><i class="fas fa-mobile-alt"></i> Opérateur Mobile Money</label>
                     <select name="operateur" id="operateur" required disabled class="form-input">
                         <option value="">Sélectionnez d'abord un pays</option>
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="mobilePhoneGroup">
                     <label class="form-label"><i class="fas fa-phone"></i> Numéro Mobile Money</label>
                     <input type="tel" name="numero" id="numero" required
                          placeholder="Ex : 22890000000" pattern="[0-9]{6,15}"
@@ -379,24 +515,212 @@
 
 <script>
 const operateurSelect = document.getElementById('operateur');
-const countryCodeInput= document.getElementById('countryCode');
-const currencyBadge   = document.getElementById('currencyBadge');
-const countryDisplay  = document.getElementById('pays');
-const countrySearch   = document.getElementById('countrySearch');
-const countryEmpty    = document.getElementById('countryEmpty');
-const countryOptions  = Array.from(document.querySelectorAll('.country-option'));
-const countryPicker   = document.getElementById('countryPicker');
-const countryTrigger  = document.getElementById('countryTrigger');
-const countryLabel    = document.getElementById('countrySelectedLabel');
-const numeroInput     = document.getElementById('numero');
-const savedCountryCode = document.getElementById('formCard')?.dataset.selectedCountry || '';
-const savedOperator    = document.getElementById('formCard')?.dataset.selectedOperator || '';
+const countryCodeInput = document.getElementById('countryCode');
+const currencyBadge = document.getElementById('currencyBadge');
+const countryDisplay = document.getElementById('pays');
+const countrySearch = document.getElementById('countrySearch');
+const countryEmpty = document.getElementById('countryEmpty');
+const countryOptions = Array.from(document.querySelectorAll('.country-option'));
+const countryPicker = document.getElementById('countryPicker');
+const countryTrigger = document.getElementById('countryTrigger');
+const countryLabel = document.getElementById('countrySelectedLabel');
+const numeroInput = document.getElementById('numero');
+const depotForm = document.getElementById('depotForm');
+const formCard = document.getElementById('formCard');
+const submitBtn = document.getElementById('submitBtn');
+const savedCountryCode = formCard?.dataset.selectedCountry || '';
+const savedOperator = formCard?.dataset.selectedOperator || '';
+const savedCryptoAsset = formCard?.dataset.selectedCryptoAsset || '';
+const cryptoRate = Number(<%= JSON.stringify(Number(cryptoRate)) %>);
 const phoneDialCodes = {
     CM: '237', TG: '228', BJ: '229', CI: '225', BF: '226',
     GA: '241', CG: '242', NE: '227', ML: '223', SN: '221'
 };
+const cryptoCountryGroup = document.getElementById('cryptoCountryGroup');
+const cryptoCountryCode = document.getElementById('cryptoCountryCode');
+const cryptoCoinGroup = document.getElementById('cryptoCoinGroup');
+const cryptoCoin = document.getElementById('cryptoCoin');
+const cryptoNetworkGroup = document.getElementById('cryptoNetworkGroup');
+const cryptoAssetCode = document.getElementById('cryptoAssetCode');
+const cryptoNetworkNote = document.getElementById('cryptoNetworkNote');
+const cryptoCustomerGroup = document.getElementById('cryptoCustomerGroup');
+const cryptoRateNote = document.getElementById('cryptoRateNote');
+const cryptoUsdtEstimate = document.getElementById('cryptoUsdtEstimate');
+const cryptoAssetError = document.getElementById('cryptoAssetError');
+const mobileOperatorGroup = document.getElementById('mobileOperatorGroup');
+const mobilePhoneGroup = document.getElementById('mobilePhoneGroup');
+const amountInput = document.getElementById('montant');
+const firstNameInput = document.getElementById('cryptoFirstName');
+const lastNameInput = document.getElementById('cryptoLastName');
+const emailInput = document.getElementById('cryptoEmail');
+const loadingTitle = document.querySelector('#loadingDiv p');
+const loadingHelp = document.querySelector('#loadingDiv small');
+let cryptoAssets = [];
+let cryptoAssetsLoaded = false;
+let cryptoAssetsRequest = null;
+let cryptoMode = false;
+
 function translateDynamic(value) {
     return window.GDLanguage ? window.GDLanguage.translate(value) : value;
+}
+
+function setCryptoInputsEnabled(enabled) {
+    [cryptoCountryCode, cryptoCoin, cryptoAssetCode, firstNameInput, lastNameInput, emailInput]
+        .forEach(input => {
+            if (!input) return;
+            input.disabled = !enabled;
+            input.required = enabled;
+        });
+}
+
+function updateCryptoEstimate() {
+    if (!cryptoUsdtEstimate || !amountInput) return;
+    const amount = Number(amountInput.value);
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(cryptoRate) || cryptoRate <= 0) {
+        cryptoUsdtEstimate.textContent = '—';
+        return;
+    }
+    cryptoUsdtEstimate.textContent = (Math.round((amount / cryptoRate) * 100) / 100).toFixed(2) + ' USDT';
+}
+
+function updateCryptoNetworkNote() {
+    if (!cryptoNetworkNote || !cryptoAssetCode) return;
+    const selected = cryptoAssets.find(asset => asset.asset_code === cryptoAssetCode.value);
+    if (!selected) {
+        cryptoNetworkNote.textContent = '';
+        return;
+    }
+    cryptoNetworkNote.textContent = selected.memo_required
+        ? 'Ce réseau exige le memo/tag retourné par AshTechPay. Saisissez-le séparément dans votre portefeuille.'
+        : 'Vérifiez le réseau affiché avant tout transfert.';
+}
+
+function populateCryptoNetworks(selectedAssetCode = '') {
+    if (!cryptoCoin || !cryptoAssetCode) return;
+    cryptoAssetCode.innerHTML = '<option value="">Sélectionnez un réseau</option>';
+    const networks = cryptoAssets.filter(asset => asset.coin === cryptoCoin.value);
+    networks.forEach(asset => {
+        const option = document.createElement('option');
+        option.value = asset.asset_code;
+        option.textContent = asset.network_label;
+        cryptoAssetCode.appendChild(option);
+    });
+    cryptoAssetCode.disabled = !cryptoMode || networks.length === 0;
+    if (selectedAssetCode && networks.some(asset => asset.asset_code === selectedAssetCode)) {
+        cryptoAssetCode.value = selectedAssetCode;
+    }
+    updateCryptoNetworkNote();
+}
+
+async function loadCryptoAssets() {
+    if (cryptoAssetsLoaded) return;
+    if (cryptoAssetsRequest) return cryptoAssetsRequest;
+    cryptoAssetError.hidden = true;
+    cryptoAssetError.textContent = '';
+    cryptoCoin.disabled = true;
+    cryptoAssetCode.disabled = true;
+    cryptoCoin.innerHTML = '<option value="">Chargement des actifs disponibles…</option>';
+
+    cryptoAssetsRequest = (async () => {
+        try {
+            const response = await fetch('/depot/crypto/assets', {
+                headers: { Accept: 'application/json' },
+            });
+            const data = await response.json().catch(() => null);
+            if (!response.ok) throw new Error(data?.error || 'Catalogue crypto indisponible.');
+            if (!Array.isArray(data?.assets) || !data.assets.length) {
+                throw new Error('Aucun actif crypto actif n’est disponible.');
+            }
+
+            cryptoAssets = data.assets;
+            cryptoAssetsLoaded = true;
+            cryptoCoin.innerHTML = '<option value="">Sélectionnez un actif</option>';
+            const coins = [...new Set(cryptoAssets.map(asset => asset.coin))];
+            coins.forEach(coin => {
+                const sample = cryptoAssets.find(asset => asset.coin === coin);
+                const option = document.createElement('option');
+                option.value = coin;
+                option.textContent = sample?.name && sample.name !== coin
+                    ? sample.name + ' (' + coin + ')'
+                    : coin;
+                cryptoCoin.appendChild(option);
+            });
+            cryptoCoin.disabled = !cryptoMode;
+            const savedAsset = cryptoAssets.find(asset => asset.asset_code === savedCryptoAsset);
+            if (savedAsset) {
+                cryptoCoin.value = savedAsset.coin;
+                populateCryptoNetworks(savedAsset.asset_code);
+            } else {
+                populateCryptoNetworks();
+            }
+        } catch (error) {
+            cryptoCoin.innerHTML = '<option value="">Catalogue indisponible</option>';
+            cryptoAssetError.textContent = error.message || 'Impossible de charger les actifs crypto.';
+            cryptoAssetError.hidden = false;
+        } finally {
+            cryptoAssetsRequest = null;
+        }
+    })();
+    return cryptoAssetsRequest;
+}
+
+function selectCountry(option) {
+    if (!option) return;
+    const isCrypto = option.dataset.kind === 'crypto';
+    cryptoMode = isCrypto;
+    countryOptions.forEach(item => {
+        const selected = item === option;
+        item.classList.toggle('active', selected);
+        item.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+
+    countryDisplay.value = option.dataset.name;
+    countryCodeInput.value = isCrypto ? 'CRYPTO' : option.dataset.code;
+    currencyBadge.textContent = isCrypto ? 'FCFA' : option.dataset.currency;
+    currencyBadge.style.display = 'inline-block';
+    countryLabel.textContent = translateDynamic(option.dataset.name);
+
+    cryptoCountryGroup.hidden = !isCrypto;
+    cryptoCoinGroup.hidden = !isCrypto;
+    cryptoNetworkGroup.hidden = !isCrypto;
+    cryptoCustomerGroup.hidden = !isCrypto;
+    cryptoRateNote.hidden = !isCrypto;
+    mobileOperatorGroup.hidden = isCrypto;
+    mobilePhoneGroup.hidden = isCrypto;
+    setCryptoInputsEnabled(isCrypto);
+
+    if (isCrypto) {
+        depotForm.action = '/depot/crypto/process';
+        amountInput.step = '1';
+        operateurSelect.required = false;
+        operateurSelect.disabled = true;
+        numeroInput.required = false;
+        numeroInput.disabled = true;
+        operateurSelect.innerHTML = '<option value="">Crypto</option>';
+        loadCryptoAssets();
+        updateCryptoEstimate();
+    } else {
+        depotForm.action = '/depot/process';
+        amountInput.step = '100';
+        operateurSelect.required = true;
+        operateurSelect.disabled = false;
+        numeroInput.required = true;
+        numeroInput.disabled = false;
+        operateurSelect.innerHTML = '<option value="">' + translateDynamic('Sélectionnez un opérateur') + '</option>';
+        String(option.dataset.operators || '').split('|').filter(Boolean).forEach(op => {
+            const operatorOption = document.createElement('option');
+            operatorOption.value = op;
+            operatorOption.textContent = op;
+            operateurSelect.appendChild(operatorOption);
+        });
+        const dialCode = phoneDialCodes[option.dataset.code];
+        if (dialCode) numeroInput.placeholder = 'Ex : ' + dialCode + '90000000';
+    }
+
+    if (countryPicker) {
+        countryPicker.classList.remove('open');
+        countryTrigger.setAttribute('aria-expanded', 'false');
+    }
 }
 
 if (countrySearch) {
@@ -405,36 +729,10 @@ if (countrySearch) {
         countryTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
-    function selectCountry(option) {
-        operateurSelect.innerHTML = '<option value="">' + translateDynamic('Sélectionnez un opérateur') + '</option>';
-        countryOptions.forEach(item => {
-            const selected = item === option;
-            item.classList.toggle('active', selected);
-            item.setAttribute('aria-selected', selected ? 'true' : 'false');
-        });
-        const operators = option.dataset.operators.split('|');
-        operateurSelect.disabled = false;
-        operators.forEach(function (op) {
-            const o = document.createElement('option');
-            o.value = op; o.textContent = op;
-            operateurSelect.appendChild(o);
-        });
-        countryDisplay.value = option.dataset.name;
-        countryCodeInput.value = option.dataset.code;
-        currencyBadge.textContent = option.dataset.currency;
-        currencyBadge.style.display = 'inline-block';
-        countryLabel.textContent = translateDynamic(option.dataset.name);
-        const dialCode = phoneDialCodes[option.dataset.code];
-        if (numeroInput && dialCode) numeroInput.placeholder = 'Ex : ' + dialCode + '90000000';
-        toggleCountryMenu(false);
-    }
-
     countryTrigger.addEventListener('click', () => {
         toggleCountryMenu(!countryPicker.classList.contains('open'));
     });
-    countryOptions.forEach(option => {
-        option.addEventListener('click', () => selectCountry(option));
-    });
+    countryOptions.forEach(option => option.addEventListener('click', () => selectCountry(option)));
 
     countrySearch.addEventListener('input', function () {
         const query = this.value.trim().toLocaleLowerCase('fr-FR');
@@ -449,9 +747,9 @@ if (countrySearch) {
         countryEmpty.hidden = visibleCount !== 0;
     });
 
-    // Restore the country/operator after an error; otherwise use the first
-    // active country from AshTechPay's live catalogue.
+    const firstMobileCountry = countryOptions.find(option => option.dataset.kind !== 'crypto');
     const initialCountry = countryOptions.find(option => option.dataset.code === savedCountryCode)
+        || firstMobileCountry
         || countryOptions[0];
     if (initialCountry) {
         selectCountry(initialCountry);
@@ -468,18 +766,48 @@ if (countrySearch) {
     });
 }
 
-const depotForm = document.getElementById('depotForm');
-if (depotForm) depotForm.addEventListener('submit', function (e) {
-    const countryCode = document.getElementById('countryCode').value;
-    if (!countryCode) {
-        e.preventDefault();
-        alert(translateDynamic('Veuillez sélectionner un pays.'));
+if (cryptoCoin) cryptoCoin.addEventListener('change', () => populateCryptoNetworks());
+if (cryptoAssetCode) cryptoAssetCode.addEventListener('change', updateCryptoNetworkNote);
+if (amountInput) amountInput.addEventListener('input', updateCryptoEstimate);
+
+if (depotForm) depotForm.addEventListener('submit', function (event) {
+    if (!countryCodeInput.value) {
+        event.preventDefault();
+        alert(translateDynamic('Veuillez sélectionner un mode de dépôt.'));
         return;
     }
-    document.getElementById('formCard').style.opacity = '0.6';
-    document.getElementById('depotForm').style.display  = 'none';
+    if (cryptoMode && (!cryptoAssetsLoaded || !cryptoAssetCode.value || !cryptoCountryCode.value)) {
+        event.preventDefault();
+        alert(translateDynamic('Sélectionnez un actif, un réseau et votre pays.'));
+        return;
+    }
+    if (cryptoMode) {
+        loadingTitle.textContent = 'Création de votre paiement crypto…';
+        loadingHelp.textContent = 'Les détails de réception s’afficheront après confirmation d’AshTechPay.';
+        submitBtn.innerHTML = '<i class="fas fa-lock"></i> Création du paiement…';
+    } else {
+        loadingTitle.textContent = 'Paiement en cours de traitement…';
+        loadingHelp.textContent = 'Une notification va apparaître sur votre téléphone';
+    }
+    formCard.style.opacity = '0.6';
+    depotForm.style.display = 'none';
     document.getElementById('loadingDiv').style.display = 'block';
-    document.getElementById('submitBtn').disabled = true;
+    submitBtn.disabled = true;
+});
+
+document.querySelectorAll('[data-copy-target]').forEach(button => {
+    button.addEventListener('click', async () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+        if (!target) return;
+        const value = target.textContent.trim();
+        try {
+            await navigator.clipboard.writeText(value);
+            button.textContent = 'Copié';
+            setTimeout(() => { button.innerHTML = '<i class="fas fa-copy"></i> Copier'; }, 1600);
+        } catch (error) {
+            button.textContent = 'Copie impossible';
+        }
+    });
 });
 
 // ── Polling du statut de paiement ──────────────────────────────────────────
@@ -491,26 +819,47 @@ if (depotForm) depotForm.addEventListener('submit', function (e) {
     const title    = document.getElementById('ppcTitle');
     const note     = document.getElementById('ppcNote');
     const bar      = document.getElementById('ppcBar');
-
+    const isCrypto = Boolean(card.dataset.cryptoExpiresAt);
+    const expiryTime = Date.parse(card.dataset.cryptoExpiresAt || '');
+    const expiryCountdown = document.getElementById('cryptoExpiryCountdown');
+    const cryptoDetails = document.getElementById('cryptoPaymentDetails');
+    const pollMs = 3000;
+    const remainingAtLoad = Number.isFinite(expiryTime)
+        ? Math.ceil((expiryTime - Date.now()) / 1000)
+        : 900;
     let elapsed = 0;
-    const MAX_WAIT = 180; // 3 minutes max
+    const MAX_WAIT = isCrypto ? Math.max(30, Math.min(900, remainingAtLoad)) : 180;
 
-    // Animate progress bar slowly over MAX_WAIT seconds
     function tickBar() {
-        elapsed += 3;
+        elapsed += pollMs / 1000;
         const pct = Math.min(95, Math.round(elapsed / MAX_WAIT * 100));
         bar.style.width = pct + '%';
+    }
+
+    function updateCryptoExpiry() {
+        if (!Number.isFinite(expiryTime)) return;
+        const seconds = Math.max(0, Math.ceil((expiryTime - Date.now()) / 1000));
+        if (expiryCountdown) {
+            const minutes = Math.floor(seconds / 60);
+            const remainder = String(seconds % 60).padStart(2, '0');
+            expiryCountdown.textContent = minutes + ':' + remainder;
+        }
+        if (seconds === 0) {
+            if (cryptoDetails) cryptoDetails.hidden = true;
+            if (note) note.textContent = 'Cette adresse a expiré. N’envoyez plus de fonds ; le statut reste vérifié côté serveur.';
+        }
     }
 
     function setSuccess() {
         card.classList.add('success');
         spinner.classList.add('done');
         spinner.innerHTML = '✓';
-        title.textContent = translateDynamic('Paiement confirmé !');
-        note.innerHTML = '<i class="fas fa-check-circle"></i> ' + translateDynamic('Votre solde a été crédité automatiquement.');
+        title.textContent = translateDynamic(isCrypto ? 'Dépôt confirmé !' : 'Paiement confirmé !');
+        note.textContent = translateDynamic('Votre solde a été crédité en FCFA après confirmation par le serveur.');
         bar.style.width = '100%';
         bar.style.background = '#16A34A';
         clearInterval(pollInterval);
+        clearInterval(expiryInterval);
         setTimeout(() => { window.location.href = '/'; }, 2500);
     }
 
@@ -519,18 +868,26 @@ if (depotForm) depotForm.addEventListener('submit', function (e) {
         spinner.classList.add('failed');
         spinner.innerHTML = '✗';
         title.textContent = translateDynamic('Paiement échoué');
-        note.innerHTML = '<i class="fas fa-times-circle"></i> ' + translateDynamic('La transaction a été rejetée. Veuillez réessayer.');
+        note.textContent = translateDynamic('La transaction a été rejetée. Veuillez réessayer.');
         bar.style.width = '100%';
         bar.style.background = '#DC2626';
         clearInterval(pollInterval);
+        clearInterval(expiryInterval);
+        if (isCrypto) setTimeout(() => { window.location.href = '/depot?failed=1'; }, 2500);
     }
 
     function setTimeout_() {
-        title.textContent = translateDynamic('En attente de confirmation…');
-        note.innerHTML = '<i class="fas fa-info-circle"></i> ' + translateDynamic('Vérifiez votre téléphone. Le solde sera crédité dès validation.');
+        title.textContent = translateDynamic(isCrypto ? 'Vérification toujours en cours' : 'En attente de confirmation…');
+        note.textContent = isCrypto && Number.isFinite(expiryTime) && Date.now() >= expiryTime
+            ? 'Adresse expirée : n’envoyez plus de fonds. Le serveur continue de vérifier le statut.'
+            : translateDynamic(isCrypto
+                ? 'Ne soumettez pas une nouvelle demande. Le solde sera crédité uniquement après confirmation serveur.'
+                : 'Vérifiez votre téléphone. Le solde sera crédité dès validation.');
         clearInterval(pollInterval);
     }
 
+    updateCryptoExpiry();
+    const expiryInterval = setInterval(updateCryptoExpiry, 1000);
     const pollInterval = setInterval(async function () {
         tickBar();
         if (elapsed >= MAX_WAIT) { setTimeout_(); return; }
@@ -541,7 +898,7 @@ if (depotForm) depotForm.addEventListener('submit', function (e) {
             else if (d.statut === 'rejete') setFailed();
             // en_attente → continuer
         } catch(e) { /* réseau — continuer */ }
-    }, 3000);
+    }, pollMs);
 })();
 <% } %>
 </script>
