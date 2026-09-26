@@ -41,14 +41,11 @@ const countryDialCodes = {
   ML: '223',
   SN: '221',
 };
-const CRYPTO_FCFA_PER_USDT_FALLBACK = 600;
+const CRYPTO_FCFA_PER_USDT = 600;
 const CRYPTO_POLL_INTERVAL_MS = 10000;
 
-function getCryptoRate(params = {}) {
-  const configuredRate = Number(params.taux_usdt_fcfa);
-  return Number.isFinite(configuredRate) && configuredRate > 0
-    ? configuredRate
-    : CRYPTO_FCFA_PER_USDT_FALLBACK;
+function getCryptoRate() {
+  return CRYPTO_FCFA_PER_USDT;
 }
 
 function normalizeCountryName(value) {
@@ -225,7 +222,7 @@ router.get('/depot', requireAuth, async (req, res) => {
     delete req.session.depot_form;
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
-    const cryptoRate = getCryptoRate(params);
+    const cryptoRate = getCryptoRate();
     const countries = await getAshtechCountries();
     res.render('depot', {
       user, countries, error, failed, depotMin, cryptoRate,
@@ -318,7 +315,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   const asset = findAshtechCryptoAsset(assets, assetCode);
   if (!asset) return rejectForm('Cet actif ou réseau crypto n’est plus disponible.');
 
-  const cryptoRate = getCryptoRate(params);
+  const cryptoRate = getCryptoRate();
   let usdtAmount;
   try {
     usdtAmount = calculateUsdtAmount(montant, cryptoRate);
