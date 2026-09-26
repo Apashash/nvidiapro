@@ -1,4 +1,5 @@
 const CRYPTO_PENDING_TTL_MS = 15 * 60 * 1000;
+const CRYPTO_STATUS_GRACE_MS = 5 * 60 * 1000;
 
 function normalizeAshtechCryptoAssets(payload) {
   if (!payload || !Array.isArray(payload.assets)) {
@@ -163,11 +164,21 @@ function getCryptoExpiry(payment, now = Date.now()) {
   return new Date(baseTime + CRYPTO_PENDING_TTL_MS).toISOString();
 }
 
+function getCryptoPollTimeoutMs(payment, now = Date.now()) {
+  const expiryTime = Date.parse(getCryptoExpiry(payment, now));
+  return Math.max(
+    CRYPTO_PENDING_TTL_MS,
+    expiryTime - now + CRYPTO_STATUS_GRACE_MS,
+  );
+}
+
 module.exports = {
   CRYPTO_PENDING_TTL_MS,
+  CRYPTO_STATUS_GRACE_MS,
   calculateUsdtAmount,
   findAshtechCryptoAsset,
   getCryptoExpiry,
+  getCryptoPollTimeoutMs,
   normalizeAshtechCryptoAssets,
   normalizeAshtechCryptoCollectResponse,
 };

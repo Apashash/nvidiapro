@@ -4,6 +4,7 @@ const {
   calculateUsdtAmount,
   findAshtechCryptoAsset,
   getCryptoExpiry,
+  getCryptoPollTimeoutMs,
   normalizeAshtechCryptoAssets,
   normalizeAshtechCryptoCollectResponse,
 } = require('../services/ashtechCrypto');
@@ -98,4 +99,13 @@ test('uses provider expiry when present and enforces the documented 15-minute fa
     getCryptoExpiry({ created_at: null, expires_at: null }, Date.parse('2026-09-26T12:00:00Z')),
     '2026-09-26T12:15:00.000Z',
   );
+});
+
+test('keeps server status polling active through the provider expiry plus grace', () => {
+  const now = Date.parse('2026-09-26T12:00:00.000Z');
+  assert.equal(
+    getCryptoPollTimeoutMs({ expires_at: '2026-09-26T13:00:00.000Z' }, now),
+    65 * 60 * 1000,
+  );
+  assert.equal(getCryptoPollTimeoutMs({}, now), 20 * 60 * 1000);
 });
