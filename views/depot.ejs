@@ -320,7 +320,7 @@
                     </div>
                     <% if (Number.isFinite(Number(pending_crypto.amount)) && pending_crypto.currency) { %>
                     <div class="crypto-payment-row">
-                        <span>Montant demandé par AshTech</span>
+                        <span>Montant à envoyer</span>
                         <strong><%= Number(pending_crypto.amount).toFixed(2) %> <%= pending_crypto.currency %></strong>
                     </div>
                     <% } %>
@@ -353,7 +353,7 @@
                     <i class="fas fa-clock"></i>
                     <%= pending_crypto.status_message || (pending_crypto.expired
                         ? 'Cette adresse a expiré. N’envoyez plus de fonds ; le statut serveur reste vérifié.'
-                        : 'Votre solde sera crédité en FCFA uniquement après confirmation par AshTechPay.') %>
+                        : 'Votre solde sera crédité en FCFA uniquement après confirmation du paiement.') %>
                 </div>
             <% } else { %>
                 <div class="ppc-phone">
@@ -591,7 +591,7 @@ function updateCryptoNetworkNote() {
         return;
     }
     cryptoNetworkNote.textContent = selected.memo_required
-        ? 'Ce réseau exige le memo/tag retourné par AshTechPay. Saisissez-le séparément dans votre portefeuille.'
+        ? 'Ce réseau exige un memo/tag. Saisissez-le séparément dans votre portefeuille.'
         : 'Vérifiez le réseau affiché avant tout transfert.';
 }
 
@@ -783,7 +783,7 @@ if (depotForm) depotForm.addEventListener('submit', function (event) {
     }
     if (cryptoMode) {
         loadingTitle.textContent = 'Création de votre paiement crypto…';
-        loadingHelp.textContent = 'Les détails de réception s’afficheront après confirmation d’AshTechPay.';
+        loadingHelp.textContent = 'Les détails de réception s’afficheront après l’initialisation du paiement.';
         submitBtn.innerHTML = '<i class="fas fa-lock"></i> Création du paiement…';
     } else {
         loadingTitle.textContent = 'Paiement en cours de traitement…';

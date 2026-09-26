@@ -28,6 +28,7 @@ const {
   getCryptoExpiry,
   normalizeAshtechCryptoCollectResponse,
 } = require('../services/ashtechCrypto');
+const { sanitizePaymentMessage } = require('../services/paymentText');
 
 const countryDialCodes = {
   CM: '237',
@@ -104,30 +105,30 @@ const otpProneOperators = new Set(['Orange Money', 'Wave']);
 function formatAshtechError(error) {
   const status = error.response?.status;
   const responseBody = error.response?.data;
-  const prefix = status ? `AshTechPay (HTTP ${status})` : 'AshTechPay';
+  const prefix = status ? `Paiement (HTTP ${status})` : 'Paiement';
 
   if (typeof responseBody === 'string' && responseBody.trim()) {
-    return `${prefix} : ${responseBody.trim().slice(0, 300)}`;
+    return sanitizePaymentMessage(`${prefix} : ${responseBody.trim().slice(0, 300)}`);
   }
 
   if (responseBody && typeof responseBody === 'object') {
     const code = responseBody.error || responseBody.code || responseBody.type;
     const message = responseBody.message || responseBody.detail || responseBody.error_description;
-    if (code && message) return `${prefix} [${code}] : ${message}`;
-    if (message) return `${prefix} : ${message}`;
-    if (code) return `${prefix} [${code}]`;
+    if (code && message) return sanitizePaymentMessage(`${prefix} [${code}] : ${message}`);
+    if (message) return sanitizePaymentMessage(`${prefix} : ${message}`);
+    if (code) return sanitizePaymentMessage(`${prefix} [${code}]`);
   }
 
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return 'AshTechPay : délai d’attente dépassé, le serveur n’a pas répondu.';
+    return 'Délai d’attente dépassé, le serveur de paiement n’a pas répondu.';
   }
   if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
-    return 'AshTechPay : serveur de paiement introuvable.';
+    return 'Serveur de paiement introuvable.';
   }
   if (!error.response && error.message) {
-    return `AshTechPay : ${error.message}`;
+    return sanitizePaymentMessage(`Erreur de paiement : ${error.message}`);
   }
-  return 'AshTechPay : erreur inconnue du serveur de paiement.';
+  return 'Erreur inconnue du serveur de paiement.';
 }
 
 /*
@@ -185,7 +186,9 @@ router.get('/depot', requireAuth, async (req, res) => {
   try {
     const user_id = req.session.user_id;
     const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
-    const error   = req.session.error  || null;
+    const error   = req.session.error
+      ? sanitizePaymentMessage(req.session.error)
+      : null;
     const failed  = req.query.failed === '1' ? 'Paiement échoué. Veuillez réessayer.' : null;
     let pendingCrypto = req.session.pending_crypto || null;
     if (pendingCrypto?.depot_id) {
@@ -206,6 +209,9 @@ router.get('/depot', requireAuth, async (req, res) => {
     const pending_crypto = pendingCrypto
       ? {
           ...pendingCrypto,
+          status_message: pendingCrypto.status_message
+            ? sanitizePaymentMessage(pendingCrypto.status_message)
+            : null,
           expired: Boolean(pendingCrypto.expires_at)
             && Date.parse(pendingCrypto.expires_at) <= Date.now(),
         }
@@ -213,7 +219,12 @@ router.get('/depot', requireAuth, async (req, res) => {
     const pending_depot_id = pending_crypto?.depot_id || req.session.pending_depot_id || null;
     const pending_numero   = req.session.pending_numero   || null;
     const pending_wave_url = req.session.pending_wave_url || null;
-    const otp_pending      = req.session.otp_pending      || null;
+    const otp_pending      = req.session.otp_pending
+      ? {
+          ...req.session.otp_pending,
+          message: sanitizePaymentMessage(req.session.otp_pending.message || ''),
+        }
+      : null;
     const depotForm        = req.session.depot_form || {};
     delete req.session.error;
     delete req.session.pending_depot_id;
@@ -249,7 +260,7 @@ router.get('/depot/crypto/assets', requireAuth, async (req, res) => {
       error.response?.status || error.message,
     );
     res.status(503).json({
-      error: 'Le catalogue crypto AshTechPay est temporairement indisponible.',
+      error: 'Le catalogue crypto est temporairement indisponible.',
     });
   }
 });
@@ -294,13 +305,13 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
 
   const apiKey = getAshtechApiKey();
   if (!apiKey) {
-    return rejectForm('AshTechPay : clé API Direct API absente du serveur.');
+    return rejectForm('Le service de paiement crypto est momentanément indisponible.');
   }
   cryptoApiKey = apiKey;
 
   const countries = await getAshtechCountries();
   const country = countries.find(item => item.code === countryCode);
-  if (!country) return rejectForm('Pays de résidence non supporté par AshTechPay.');
+  if (!country) return rejectForm('Ce pays n’est pas pris en charge pour le paiement crypto.');
 
   let assets;
   try {
@@ -399,7 +410,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
       expires_at: expiresAt,
       status_message: 'La création n’a pas pu être confirmée. Ne relancez pas le paiement ; vérifiez le statut de cette demande.',
     };
-    req.session.error = 'AshTechPay n’a pas confirmé la création du paiement. Ne soumettez pas une nouvelle demande immédiatement.';
+    req.session.error = 'La demande n’a pas été confirmée. Ne soumettez pas une nouvelle demande immédiatement ; vérifiez son statut.';
     console.error(
       `AshTechPay crypto create error for depot ${depot_id}:`,
       status || error.code || error.message,
@@ -436,9 +447,9 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
       transaction_id: transactionId || null,
       created_at: requestCreatedAt,
       expires_at: new Date(Date.now() + CRYPTO_PENDING_TTL_MS).toISOString(),
-      status_message: 'AshTechPay a répondu avec des détails incomplets. Ne transférez pas de fonds ; la demande reste en vérification.',
+      status_message: 'La réponse de paiement est incomplète. Ne transférez pas de fonds ; la demande reste en vérification.',
     };
-    req.session.error = 'Les détails de réception renvoyés par AshTechPay ne peuvent pas être vérifiés. Ne transférez pas de fonds.';
+    req.session.error = 'Les détails de réception ne peuvent pas être vérifiés. Ne transférez pas de fonds.';
     console.error(`AshTechPay crypto response validation error for depot ${depot_id}:`, error.message);
     return res.redirect('/depot');
   }
@@ -474,7 +485,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
     expires_at: getCryptoExpiry(payment, Date.now()),
     status_message: payment.status === 'pending'
       ? null
-      : 'Vérification du statut de cette demande auprès d’AshTechPay.',
+      : 'Vérification du statut de cette demande en cours.',
   };
   delete req.session.depot_form;
   return res.redirect('/depot');
@@ -609,7 +620,7 @@ async function initiateAshtechCollect(req, res, { depot_id, montant, currency, n
     const apiKey = getAshtechApiKey();
     if (!apiKey) {
       await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
-      req.session.error = 'AshTechPay : clé API Direct API absente du serveur.';
+      req.session.error = 'Le service de paiement est momentanément indisponible.';
       return res.redirect('/depot');
     }
 
