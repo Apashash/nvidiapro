@@ -200,6 +200,14 @@
             border-radius:12px; padding:12px; margin-top:12px; text-decoration:none;
             font-size:14px; font-weight:700;
         }
+        .crypto-new-request-form { margin-top:12px; }
+        .crypto-new-request-warning { margin:0 0 10px; font-size:12px; line-height:1.5; }
+        .crypto-new-request-btn {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            width:100%; border:0; border-radius:10px; padding:11px;
+            background:#D60000; color:#fff; font:inherit; font-size:13px;
+            font-weight:700; cursor:pointer;
+        }
         .crypto-payment-summary {
             display:grid; gap:9px; margin:12px 0; padding:13px;
             background:#FBF5EC; border:1px solid #E8D5B0; border-radius:12px;
@@ -273,6 +281,9 @@
         <% } %>
         <% if (locals.error) { %>
             <div class="alert-box alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+        <% } %>
+        <% if (locals.depot_notice) { %>
+            <div class="alert-box alert-warning"><i class="fas fa-exclamation-triangle"></i> <%= depot_notice %></div>
         <% } %>
 
         <% if (locals.otp_pending) { %>
@@ -369,6 +380,17 @@
                 <div class="ppc-note" id="ppcNote">
                     <i class="fas fa-clock"></i> Votre solde sera crédité automatiquement dès confirmation.
                 </div>
+            <% } %>
+            <% if (locals.pending_crypto) { %>
+            <form method="POST" action="/depot/crypto/new-request" class="crypto-new-request-form">
+                <div class="alert-box alert-warning crypto-new-request-warning">
+                    Cette demande reste active et suivie. Si vous avez déjà envoyé des fonds, attendez sa confirmation.
+                    Si vous payez aussi une nouvelle demande, les deux dépôts pourront être crédités.
+                </div>
+                <button type="submit" class="crypto-new-request-btn">
+                    <i class="fas fa-plus-circle"></i> Effectuer un nouveau dépôt
+                </button>
+            </form>
             <% } %>
             <div class="ppc-progress-bar"><div class="ppc-progress-fill" id="ppcBar"></div></div>
         </div>
@@ -823,12 +845,14 @@ document.querySelectorAll('[data-copy-target]').forEach(button => {
     const expiryTime = Date.parse(card.dataset.cryptoExpiresAt || '');
     const expiryCountdown = document.getElementById('cryptoExpiryCountdown');
     const cryptoDetails = document.getElementById('cryptoPaymentDetails');
-    const pollMs = 3000;
+    const pollMs = isCrypto ? 30000 : 3000;
     const remainingAtLoad = Number.isFinite(expiryTime)
         ? Math.ceil((expiryTime - Date.now()) / 1000)
         : 900;
     let elapsed = 0;
-    const MAX_WAIT = isCrypto ? Math.max(30, Math.min(900, remainingAtLoad)) : 180;
+    const MAX_WAIT = isCrypto
+        ? Math.max(30, Math.max(0, remainingAtLoad) + 300)
+        : 180;
 
     function tickBar() {
         elapsed += pollMs / 1000;
@@ -846,7 +870,7 @@ document.querySelectorAll('[data-copy-target]').forEach(button => {
         }
         if (seconds === 0) {
             if (cryptoDetails) cryptoDetails.hidden = true;
-            if (note) note.textContent = 'Cette adresse a expiré. N’envoyez plus de fonds ; le statut reste vérifié côté serveur.';
+            if (note) note.textContent = 'Cette adresse a expiré. N’envoyez plus de fonds ; la demande reste enregistrée et toute confirmation sera vérifiée.';
         }
     }
 
@@ -879,11 +903,12 @@ document.querySelectorAll('[data-copy-target]').forEach(button => {
     function setTimeout_() {
         title.textContent = translateDynamic(isCrypto ? 'Vérification toujours en cours' : 'En attente de confirmation…');
         note.textContent = isCrypto && Number.isFinite(expiryTime) && Date.now() >= expiryTime
-            ? 'Adresse expirée : n’envoyez plus de fonds. Le serveur continue de vérifier le statut.'
+            ? 'Adresse expirée : n’envoyez plus de fonds. La demande reste enregistrée et toute confirmation reçue sera traitée.'
             : translateDynamic(isCrypto
-                ? 'Ne soumettez pas une nouvelle demande. Le solde sera crédité uniquement après confirmation serveur.'
+                ? 'La demande reste suivie. Vous pouvez ouvrir le formulaire d’un nouveau dépôt ci-dessous.'
                 : 'Vérifiez votre téléphone. Le solde sera crédité dès validation.');
         clearInterval(pollInterval);
+        clearInterval(expiryInterval);
     }
 
     updateCryptoExpiry();

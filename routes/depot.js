@@ -26,6 +26,7 @@ const {
   calculateUsdtAmount,
   findAshtechCryptoAsset,
   getCryptoExpiry,
+  getCryptoPollTimeoutMs,
   normalizeAshtechCryptoCollectResponse,
 } = require('../services/ashtechCrypto');
 const { sanitizePaymentMessage } = require('../services/paymentText');
@@ -43,7 +44,7 @@ const countryDialCodes = {
   SN: '221',
 };
 const CRYPTO_FCFA_PER_USDT = 600;
-const CRYPTO_POLL_INTERVAL_MS = 10000;
+const CRYPTO_POLL_INTERVAL_MS = 30000;
 
 function getCryptoRate() {
   return CRYPTO_FCFA_PER_USDT;
@@ -225,8 +226,10 @@ router.get('/depot', requireAuth, async (req, res) => {
           message: sanitizePaymentMessage(req.session.otp_pending.message || ''),
         }
       : null;
+    const depot_notice = req.session.depot_notice || null;
     const depotForm        = req.session.depot_form || {};
     delete req.session.error;
+    delete req.session.depot_notice;
     delete req.session.pending_depot_id;
     delete req.session.pending_numero;
     delete req.session.pending_wave_url;
@@ -236,7 +239,7 @@ router.get('/depot', requireAuth, async (req, res) => {
     const cryptoRate = getCryptoRate();
     const countries = await getAshtechCountries();
     res.render('depot', {
-      user, countries, error, failed, depotMin, cryptoRate,
+      user, countries, error, failed, depot_notice, depotMin, cryptoRate,
       pending_depot_id, pending_numero, pending_wave_url, pending_crypto, otp_pending,
       selectedCountryCode: depotForm.country_code || '',
       selectedOperator: depotForm.operateur || '',
@@ -262,6 +265,44 @@ router.get('/depot/crypto/assets', requireAuth, async (req, res) => {
     res.status(503).json({
       error: 'Le catalogue crypto est temporairement indisponible.',
     });
+  }
+});
+
+router.post('/depot/crypto/new-request', requireAuth, async (req, res) => {
+  const clearPendingCryptoSession = () => {
+    delete req.session.pending_crypto;
+    delete req.session.pending_depot_id;
+    delete req.session.pending_numero;
+    delete req.session.pending_wave_url;
+    delete req.session.depot_form;
+  };
+
+  try {
+    const depot_id = Number(req.session.pending_crypto?.depot_id);
+    if (!Number.isSafeInteger(depot_id) || depot_id <= 0) {
+      req.session.error = 'Aucune demande crypto en attente à quitter.';
+      return res.redirect('/depot');
+    }
+
+    const [[depot]] = await db.query(
+      'SELECT statut FROM depots WHERE id = ? AND user_id = ?',
+      [depot_id, req.session.user_id]
+    );
+    if (!depot) {
+      clearPendingCryptoSession();
+      req.session.error = 'La demande précédente est introuvable. Vous pouvez en créer une nouvelle.';
+      return res.redirect('/depot');
+    }
+
+    clearPendingCryptoSession();
+    if (depot.statut === 'en_attente') {
+      req.session.depot_notice = 'Votre demande précédente reste en attente et continue d’être suivie. Si vous avez déjà envoyé des fonds, n’effectuez pas un deuxième paiement. Tout paiement confirmé sur l’une ou l’autre demande sera crédité.';
+    }
+    return res.redirect('/depot');
+  } catch (error) {
+    console.error('Could not reopen crypto deposit form:', error.message);
+    req.session.error = 'Impossible de vérifier la demande précédente. Réessayez dans quelques instants.';
+    return res.redirect('/depot');
   }
 });
 
@@ -374,6 +415,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   };
 
   let responseData;
+  let responseReceivedAt;
   try {
     const response = await axios.post(
       `${ASHTECH_API_BASE}/v1/crypto/collect`,
@@ -387,6 +429,8 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
       }
     );
     responseData = response.data;
+    responseReceivedAt = Date.now();
+    cryptoAttempt.expires_at = getCryptoExpiry(responseData, responseReceivedAt);
   } catch (error) {
     const status = error.response?.status;
     if (status && status >= 400 && status < 500 && status !== 408 && status !== 409) {
@@ -435,7 +479,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   } catch (error) {
     if (transactionId) {
       pollTransactionStatus(depot_id, transactionId, apiKey, {
-        timeoutMs: CRYPTO_PENDING_TTL_MS,
+        timeoutMs: getCryptoPollTimeoutMs(responseData, responseReceivedAt || Date.now()),
         intervalMs: CRYPTO_POLL_INTERVAL_MS,
       });
     }
@@ -446,7 +490,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
       reference,
       transaction_id: transactionId || null,
       created_at: requestCreatedAt,
-      expires_at: new Date(Date.now() + CRYPTO_PENDING_TTL_MS).toISOString(),
+      expires_at: cryptoAttempt.expires_at,
       status_message: 'La réponse de paiement est incomplète. Ne transférez pas de fonds ; la demande reste en vérification.',
     };
     req.session.error = 'Les détails de réception ne peuvent pas être vérifiés. Ne transférez pas de fonds.';
@@ -454,8 +498,9 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
     return res.redirect('/depot');
   }
 
+  const expiresAt = getCryptoExpiry(payment, responseReceivedAt || Date.now());
   pollTransactionStatus(depot_id, payment.transaction_id, apiKey, {
-    timeoutMs: CRYPTO_PENDING_TTL_MS,
+    timeoutMs: getCryptoPollTimeoutMs(payment, responseReceivedAt || Date.now()),
     intervalMs: CRYPTO_POLL_INTERVAL_MS,
   });
 
@@ -482,7 +527,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
     credited_amount_usdt: payment.credited_amount_usdt,
     total_fee_amount_usdt: payment.total_fee_amount_usdt,
     created_at: payment.created_at || requestCreatedAt,
-    expires_at: getCryptoExpiry(payment, Date.now()),
+    expires_at: expiresAt,
     status_message: payment.status === 'pending'
       ? null
       : 'Vérification du statut de cette demande en cours.',
@@ -511,14 +556,15 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
           console.error('Could not persist AshTechPay crypto transaction id:', databaseError.message);
         }
         pollTransactionStatus(cryptoAttempt.depot_id, cryptoAttempt.transaction_id, cryptoApiKey, {
-          timeoutMs: CRYPTO_PENDING_TTL_MS,
+          timeoutMs: getCryptoPollTimeoutMs(cryptoAttempt, Date.now()),
           intervalMs: CRYPTO_POLL_INTERVAL_MS,
         });
       }
       req.session.pending_depot_id = cryptoAttempt.depot_id;
       req.session.pending_crypto = {
         ...cryptoAttempt,
-        expires_at: new Date(Date.now() + CRYPTO_PENDING_TTL_MS).toISOString(),
+        expires_at: cryptoAttempt.expires_at
+          || new Date(Date.now() + CRYPTO_PENDING_TTL_MS).toISOString(),
         status_message: 'La demande a été enregistrée mais son statut est incertain. Ne soumettez pas une nouvelle demande ; le serveur vérifie la transaction.',
       };
       req.session.error = 'Le statut de la demande crypto ne peut pas encore être confirmé.';
