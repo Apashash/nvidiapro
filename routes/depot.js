@@ -30,6 +30,10 @@ const {
   normalizeAshtechCryptoCollectResponse,
 } = require('../services/ashtechCrypto');
 const { sanitizePaymentMessage } = require('../services/paymentText');
+const {
+  findAccountPaymentCountry,
+  normalizeCountryName,
+} = require('../services/accountPaymentCountry');
 
 const countryDialCodes = {
   CM: '237',
@@ -48,14 +52,6 @@ const CRYPTO_POLL_INTERVAL_MS = 30000;
 
 function getCryptoRate() {
   return CRYPTO_FCFA_PER_USDT;
-}
-
-function normalizeCountryName(value) {
-  return String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLocaleLowerCase('fr-FR');
 }
 
 function resolveUserCryptoCountryCode(user, countries) {
@@ -237,15 +233,17 @@ router.get('/depot', requireAuth, async (req, res) => {
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
     const cryptoRate = getCryptoRate();
-    const countries = await getAshtechCountries();
+    const allCountries = await getAshtechCountries();
+    const accountCountry = findAccountPaymentCountry(user?.pays, allCountries);
+    const countries = accountCountry ? [accountCountry] : [];
     res.render('depot', {
-      user, countries, error, failed, depot_notice, depotMin, cryptoRate,
+      user, countries, cryptoCountries: allCountries, error, failed, depot_notice, depotMin, cryptoRate,
       pending_depot_id, pending_numero, pending_wave_url, pending_crypto, otp_pending,
       selectedCountryCode: depotForm.country_code || '',
       selectedOperator: depotForm.operateur || '',
       selectedCryptoAsset: depotForm.crypto_asset_code || '',
       selectedCryptoCountryCode: depotForm.crypto_country_code
-        || resolveUserCryptoCountryCode(user, countries),
+        || resolveUserCryptoCountryCode(user, allCountries),
     });
   } catch (e) {
     console.error('GET /depot error:', e);
@@ -605,8 +603,24 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   // Validate country & operator against our known list
   const countries = await getAshtechCountries();
   const country = countries.find(c => c.code === country_code);
+  let user;
+  try {
+    [[user]] = await db.query(
+      'SELECT pays FROM utilisateurs WHERE id = ?',
+      [user_id]
+    );
+  } catch (error) {
+    console.error('Could not validate deposit account country:', error.message);
+    req.session.error = 'Impossible de vérifier le pays de votre compte. Réessayez.';
+    return res.redirect('/depot');
+  }
+  const accountCountry = findAccountPaymentCountry(user?.pays, countries);
   if (!country) {
     req.session.error = 'Pays non supporté';
+    return res.redirect('/depot');
+  }
+  if (!accountCountry || country.code !== accountCountry.code) {
+    req.session.error = 'Le dépôt Mobile Money est limité au pays de votre compte. Choisissez le crypto pour un autre pays.';
     return res.redirect('/depot');
   }
   if (!country.operators.includes(operateur)) {

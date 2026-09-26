@@ -10,3 +10,9 @@ The collect response includes a transaction ID and reference, status, payment me
 **Why:** Incorrect address, memo/tag, or QR handling can direct a customer to send funds incorrectly, and the skill explicitly prohibits inventing provider response fields.
 
 **How to apply:** Use the documented response fields and live asset catalogue, confirm transaction status server-side before crediting, and omit QR output until AshTech publishes an exact compatible format.
+
+Manual USDT withdrawals are separate from the documented collection API. Calculate the payout from the configured FCFA/USDT rate after the withdrawal fee, then require an administrator to send the funds externally and confirm the request. Do not invent an automated payout endpoint. Current withdrawal network choices are drawn from active USDT catalogue assets without a required memo; that catalogue does not guarantee that the administrator's wallet can send on each network.
+
+**Why:** No provider payout contract is documented, and the product owner selected manual USDT fulfillment at the configured rate.
+
+**How to apply:** Keep the off-platform send and admin confirmation explicit; before broadening supported networks, confirm the admin wallet's capabilities or maintain a separate payout-network allowlist.

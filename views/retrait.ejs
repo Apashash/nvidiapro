@@ -235,51 +235,41 @@
         <div class="form-card">
             <h3><i class="fas fa-arrow-up"></i> Informations de retrait</h3>
 
-            <!-- Pays -->
+            <!-- Mode de retrait / pays du compte -->
             <div class="form-group">
-                <label class="form-label">Pays</label>
+                <label class="form-label">Mode de retrait</label>
                 <div class="country-picker" id="countryPicker">
                     <button type="button" class="country-trigger" id="countryTrigger"
                             aria-haspopup="listbox" aria-expanded="false">
-                        <span id="countrySelectedLabel">Cameroun</span>
+                        <span id="countrySelectedLabel"><%= withdrawalCountry ? `${withdrawalCountry.name} · Mobile Money` : 'Crypto USDT' %></span>
                         <i class="fas fa-chevron-down" aria-hidden="true"></i>
                     </button>
                     <div class="country-menu" id="countryMenu">
                         <div class="country-search-wrap">
                             <i class="fas fa-search"></i>
                             <input type="search" id="countrySearch" class="country-search"
-                                   placeholder="Rechercher un pays" autocomplete="off"
-                                   aria-label="Rechercher un pays">
+                                   placeholder="Rechercher un mode" autocomplete="off"
+                                   aria-label="Rechercher un mode de retrait">
                         </div>
-                        <div class="country-options" id="countryOptions" role="listbox" aria-label="Pays disponibles">
-                            <button type="button" class="country-option" data-name="Cameroun" data-code="+237" role="option" aria-selected="false">
-                                <span>Cameroun</span><span class="country-option-code">+237</span>
+                        <div class="country-options" id="countryOptions" role="listbox" aria-label="Modes de retrait disponibles">
+                            <% if (withdrawalCountry && withdrawalCountry.operators && withdrawalCountry.operators.length) { %>
+                            <button type="button" class="country-option"
+                                    data-name="<%= withdrawalCountry.name %>"
+                                    data-code="+<%= withdrawalDialCode %>"
+                                    data-country-code="<%= withdrawalCountry.code %>"
+                                    data-operators="<%= withdrawalCountry.operators.join('|') %>"
+                                    data-kind="mobile" role="option" aria-selected="false">
+                                <span><%= withdrawalCountry.name %> · Mobile Money</span>
+                                <span class="country-option-code">+<%= withdrawalDialCode %></span>
                             </button>
-                            <button type="button" class="country-option" data-name="Togo" data-code="+228" role="option" aria-selected="false">
-                                <span>Togo</span><span class="country-option-code">+228</span>
+                            <% } %>
+                            <button type="button" class="country-option"
+                                    data-name="Crypto USDT" data-code=""
+                                    data-country-code="CRYPTO" data-kind="crypto"
+                                    role="option" aria-selected="false">
+                                <span>Crypto USDT</span><span class="country-option-code">USDT</span>
                             </button>
-                            <button type="button" class="country-option" data-name="Bénin" data-code="+229" role="option" aria-selected="false">
-                                <span>Bénin</span><span class="country-option-code">+229</span>
-                            </button>
-                            <button type="button" class="country-option" data-name="Côte d'Ivoire" data-code="+225" role="option" aria-selected="false">
-                                <span>Côte d'Ivoire</span><span class="country-option-code">+225</span>
-                            </button>
-                            <button type="button" class="country-option" data-name="Burkina Faso" data-code="+226" role="option" aria-selected="false">
-                                <span>Burkina Faso</span><span class="country-option-code">+226</span>
-                            </button>
-                            <button type="button" class="country-option" data-name="Gabon" data-code="+241" role="option" aria-selected="false">
-                                <span>Gabon</span><span class="country-option-code">+241</span>
-                            </button>
-                            <button type="button" class="country-option" data-name="Congo Brazzaville" data-code="+242" role="option" aria-selected="false">
-                                <span>Congo Brazzaville</span><span class="country-option-code">+242</span>
-                            </button>
-                            <button type="button" class="country-option" data-name="Niger" data-code="+227" role="option" aria-selected="false">
-                                <span>Niger</span><span class="country-option-code">+227</span>
-                            </button>
-                            <button type="button" class="country-option" data-name="Mali" data-code="+223" role="option" aria-selected="false">
-                                <span>Mali</span><span class="country-option-code">+223</span>
-                            </button>
-                            <div class="country-empty" id="countryEmpty" hidden>Aucun pays trouvé.</div>
+                            <div class="country-empty" id="countryEmpty" hidden>Aucun mode trouvé.</div>
                         </div>
                     </div>
                 </div>
@@ -287,32 +277,58 @@
             </div>
 
             <!-- Opérateur -->
-            <div class="form-group">
+            <div class="form-group" id="mobileOperatorGroup" hidden>
                 <label class="form-label">Opérateur Mobile Money</label>
                 <div class="select-wrap">
-                    <select id="sel-operateur" class="form-select" required>
+                    <select id="sel-operateur" class="form-select" disabled>
                         <option value="">-- Choisissez d'abord le pays --</option>
                     </select>
                 </div>
             </div>
 
             <!-- Numéro -->
-            <div class="form-group">
+            <div class="form-group" id="mobilePhoneGroup" hidden>
                 <label class="form-label">Numéro Mobile Money</label>
                 <div class="phone-row">
-                    <div class="indicatif-box" id="indicatif-display">+237</div>
+                    <div class="indicatif-box" id="indicatif-display"></div>
                     <input type="tel" id="inp-numero" class="form-input"
-                           placeholder="Ex: 6XXXXXXXX" inputmode="numeric"
+                           placeholder="Ex : numéro local" inputmode="numeric" disabled
                            value="<%= (user.telephone || '').replace(/^\+\d+/, '') %>">
                 </div>
             </div>
 
             <!-- Nom -->
-            <div class="form-group">
+            <div class="form-group" id="mobileNameGroup" hidden>
                 <label class="form-label">Nom complet du titulaire</label>
-                <input type="text" id="inp-nom" class="form-input"
+                <input type="text" id="inp-nom" class="form-input" disabled
                        placeholder="Nom sur le compte Mobile Money"
                        value="<%= user.nom || '' %>">
+            </div>
+
+            <!-- Retrait crypto manuel -->
+            <div class="form-group" id="cryptoWithdrawalGroup" hidden>
+                <label class="form-label" for="cryptoWithdrawalNetwork">Réseau USDT</label>
+                <div class="select-wrap">
+                    <select id="cryptoWithdrawalNetwork" class="form-select" disabled>
+                        <option value="">Chargement des réseaux USDT…</option>
+                    </select>
+                </div>
+                <div id="cryptoWithdrawalError" class="notif error" role="alert" hidden></div>
+                <label class="form-label" for="cryptoWalletAddress" style="margin-top:14px">Adresse de réception USDT</label>
+                <input type="text" id="cryptoWalletAddress" class="form-input" disabled
+                       maxlength="255" autocomplete="off" spellcheck="false"
+                       placeholder="Adresse du portefeuille sur le réseau sélectionné">
+                <div class="info-card" style="margin-top:12px">
+                    <div>Retrait traité manuellement après vérification.</div>
+                    <% if (Number(withdrawalCryptoRate) > 0) { %>
+                    <div style="margin-top:4px">Taux actuel : <strong>1 USDT = <%= Number(withdrawalCryptoRate).toLocaleString('fr-FR') %> FCFA</strong></div>
+                    <% } else { %>
+                    <div style="margin-top:4px;color:#C0392B">Taux USDT non configuré. Réessayez plus tard.</div>
+                    <% } %>
+                    <div style="display:flex;justify-content:space-between;margin-top:8px;border-top:1px dashed #E8931A;padding-top:7px">
+                        <span>Montant USDT estimé</span><strong id="cryptoWithdrawalEstimate">—</strong>
+                    </div>
+                </div>
             </div>
 
             <!-- Montant -->
@@ -362,12 +378,12 @@
                 <polyline points="20 6 9 17 4 12"/>
             </svg>
         </div>
-        <div class="popup-title">Retrait envoyé avec succès !</div>
-        <div class="popup-msg">Votre demande a été soumise. Elle sera traitée dans les 24h.</div>
+        <div class="popup-title" id="successPopupTitle">Retrait envoyé avec succès !</div>
+        <div class="popup-msg" id="successPopupMessage">Votre demande a été soumise. Elle sera traitée dans les 24h.</div>
         <div class="popup-detail">
             <div class="row"><span class="key">Montant</span><span class="val" id="pop-montant">—</span></div>
-            <div class="row"><span class="key">Opérateur</span><span class="val" id="pop-operateur">—</span></div>
-            <div class="row"><span class="key">Numéro</span><span class="val" id="pop-numero">—</span></div>
+            <div class="row"><span class="key">Mode / réseau</span><span class="val" id="pop-operateur">—</span></div>
+            <div class="row"><span class="key">Numéro / adresse</span><span class="val" id="pop-numero">—</span></div>
             <div class="row"><span class="key">Nom</span><span class="val" id="pop-nom">—</span></div>
         </div>
         <button class="popup-ok" onclick="window.location.href='/'">OK</button>
@@ -375,29 +391,35 @@
 </div>
 
 <script>
-const operateursByPays = {
-    'Cameroun':          ['MTN Mobile Money', 'Orange Money'],
-    'Togo':              ['Flooz (Moov)', 'T-Money'],
-    'Bénin':             ['MTN Mobile Money', 'Moov Money'],
-    "Côte d'Ivoire":     ['Orange Money', 'MTN Mobile Money', 'Moov Money', 'Wave'],
-    'Burkina Faso':      ['Orange Money', 'Moov Money'],
-    'Gabon':             ['Airtel Money', 'Moov Money'],
-    'Congo Brazzaville': ['Airtel Money', 'MTN Mobile Money'],
-    'Niger':             ['Airtel Money'],
-    'Mali':              ['Moov Money', 'Orange Money'],
-};
-
 const fraisPourcentage = <%= locals.fraisPourcentage || 0 %>;
 const retraitDisponible = <%= locals.retraits_disponibles ? 'true' : 'false' %>;
 const hasActiveInvestment = <%= locals.hasActiveInvestment ? 'true' : 'false' %>;
 const retraitBloque = <%= locals.retrait_bloque ? 'true' : 'false' %>;
 const retraitSuspendu = <%= locals.suspendu ? 'true' : 'false' %>;
 const retraitMinimum = <%= parseFloat(locals.params && params.retrait_minimum ? params.retrait_minimum : 1200) %>;
+const withdrawalCryptoRate = <%= Number(withdrawalCryptoRate) %>;
 const scheduleMessage = <%- JSON.stringify(locals.schedule && schedule.message ? schedule.message : 'Les retraits ne sont pas disponibles en ce moment.') %>;
 const feeSummary   = document.getElementById('fee-summary');
 const inpMontant   = document.getElementById('inp-montant');
+const cryptoWithdrawalGroup = document.getElementById('cryptoWithdrawalGroup');
+const cryptoWithdrawalNetwork = document.getElementById('cryptoWithdrawalNetwork');
+const cryptoWithdrawalError = document.getElementById('cryptoWithdrawalError');
+const cryptoWalletAddress = document.getElementById('cryptoWalletAddress');
+const cryptoWithdrawalEstimate = document.getElementById('cryptoWithdrawalEstimate');
+const mobileOperatorGroup = document.getElementById('mobileOperatorGroup');
+const mobilePhoneGroup = document.getElementById('mobilePhoneGroup');
+const mobileNameGroup = document.getElementById('mobileNameGroup');
+let cryptoWithdrawalAssetsLoaded = false;
+let cryptoWithdrawalAssetsRequest = null;
+let cryptoWithdrawalAssets = [];
+
 function translateDynamic(value) {
     return window.GDLanguage ? window.GDLanguage.translate(value) : value;
+}
+
+function getNetWithdrawalAmount(amount) {
+    const fee = Math.round((amount * fraisPourcentage / 100) * 100) / 100;
+    return Math.round((amount - fee) * 100) / 100;
 }
 
 function updateFeeSummary() {
@@ -408,16 +430,17 @@ function updateFeeSummary() {
         return;
     }
     const frais = Math.round((montant * fraisPourcentage / 100) * 100) / 100;
-    const net = montant - frais;
+    const net = getNetWithdrawalAmount(montant);
     document.getElementById('fee-montant').textContent = montant.toLocaleString('fr-FR') + ' FCFA';
     document.getElementById('fee-frais').textContent = '- ' + frais.toLocaleString('fr-FR') + ' FCFA';
     document.getElementById('fee-net').textContent = net.toLocaleString('fr-FR') + ' FCFA';
     feeSummary.style.display = 'block';
 }
-if (inpMontant) inpMontant.addEventListener('input', updateFeeSummary);
 
 const selPays       = document.getElementById('sel-pays');
 const selOp         = document.getElementById('sel-operateur');
+const mobilePhone   = document.getElementById('inp-numero');
+const mobileName    = document.getElementById('inp-nom');
 const indicatifBox  = document.getElementById('indicatif-display');
 const countrySearch = document.getElementById('countrySearch');
 const countryEmpty  = document.getElementById('countryEmpty');
@@ -427,13 +450,96 @@ const countryTrigger= document.getElementById('countryTrigger');
 const countryLabel  = document.getElementById('countrySelectedLabel');
 
 function updateOperateurs() {
-    const pays = selPays.value;
-    const ops  = operateursByPays[pays] || [];
+    const selectedOption = countryOptions.find(option =>
+        (option.dataset.kind === 'crypto' ? 'Crypto USDT' : option.dataset.name) === selPays.value
+    );
+    const ops = selectedOption?.dataset.kind === 'mobile'
+        ? String(selectedOption.dataset.operators || '').split('|').filter(Boolean)
+        : [];
     const code = selPays.dataset.code || '';
-    indicatifBox.textContent = code || '+???';
+    indicatifBox.textContent = code;
     selOp.innerHTML = ops.length
-        ? ops.map(o => `<option value="${o}">${o}</option>`).join('')
+        ? '<option value="">' + translateDynamic('Sélectionnez un opérateur') + '</option>'
         : '<option value="">-- ' + translateDynamic("Sélectionnez d'abord un pays") + ' --</option>';
+    ops.forEach(operator => {
+        const option = document.createElement('option');
+        option.value = operator;
+        option.textContent = operator;
+        selOp.appendChild(option);
+    });
+    selOp.disabled = ops.length === 0;
+    selOp.required = ops.length > 0;
+}
+
+async function loadCryptoWithdrawalAssets() {
+    if (cryptoWithdrawalAssetsLoaded) return cryptoWithdrawalAssets;
+    if (cryptoWithdrawalAssetsRequest) return cryptoWithdrawalAssetsRequest;
+
+    cryptoWithdrawalError.hidden = true;
+    cryptoWithdrawalNetwork.disabled = true;
+    cryptoWithdrawalNetwork.innerHTML = '<option value="">Chargement des réseaux USDT…</option>';
+    cryptoWithdrawalAssetsRequest = (async () => {
+        try {
+            const response = await fetch('/retrait/crypto/assets');
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.error || 'Réseaux USDT indisponibles.');
+            cryptoWithdrawalAssets = Array.isArray(payload.assets) ? payload.assets : [];
+            cryptoWithdrawalNetwork.innerHTML = '<option value="">Sélectionnez un réseau USDT</option>';
+            cryptoWithdrawalAssets.forEach(asset => {
+                const option = document.createElement('option');
+                option.value = asset.asset_code;
+                option.textContent = asset.network_label;
+                cryptoWithdrawalNetwork.appendChild(option);
+            });
+            if (!cryptoWithdrawalAssets.length) {
+                throw new Error('Aucun réseau USDT disponible pour le moment.');
+            }
+            cryptoWithdrawalAssetsLoaded = true;
+            cryptoWithdrawalNetwork.disabled = false;
+            return cryptoWithdrawalAssets;
+        } catch (error) {
+            cryptoWithdrawalNetwork.innerHTML = '<option value="">Réseaux indisponibles</option>';
+            cryptoWithdrawalError.textContent = error.message || 'Impossible de charger les réseaux USDT.';
+            cryptoWithdrawalError.hidden = false;
+            throw error;
+        } finally {
+            cryptoWithdrawalAssetsRequest = null;
+            updateCryptoWithdrawalEstimate();
+        }
+    })();
+    return cryptoWithdrawalAssetsRequest;
+}
+
+function updateCryptoWithdrawalEstimate() {
+    if (!cryptoWithdrawalEstimate) return;
+    const amount = Number(inpMontant.value);
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(withdrawalCryptoRate) || withdrawalCryptoRate <= 0) {
+        cryptoWithdrawalEstimate.textContent = '—';
+        return;
+    }
+    const netAmount = getNetWithdrawalAmount(amount);
+    const usdtCents = Math.floor((netAmount / withdrawalCryptoRate) * 100 + 1e-9);
+    cryptoWithdrawalEstimate.textContent = usdtCents > 0
+        ? `${(usdtCents / 100).toFixed(2)} USDT`
+        : 'Montant trop faible';
+}
+
+function setWithdrawalMode() {
+    const cryptoMode = selPays.value === 'Crypto USDT';
+    mobileOperatorGroup.hidden = cryptoMode;
+    mobilePhoneGroup.hidden = cryptoMode;
+    mobileNameGroup.hidden = cryptoMode;
+    cryptoWithdrawalGroup.hidden = !cryptoMode;
+    mobilePhone.disabled = cryptoMode;
+    mobilePhone.required = !cryptoMode;
+    mobileName.disabled = cryptoMode;
+    mobileName.required = !cryptoMode;
+    cryptoWalletAddress.disabled = !cryptoMode;
+    cryptoWalletAddress.required = cryptoMode;
+    cryptoWithdrawalNetwork.required = cryptoMode;
+    updateOperateurs();
+    if (cryptoMode) loadCryptoWithdrawalAssets().catch(() => {});
+    updateCryptoWithdrawalEstimate();
 }
 
 function selectCountry(option) {
@@ -442,10 +548,13 @@ function selectCountry(option) {
         item.classList.toggle('active', selected);
         item.setAttribute('aria-selected', selected ? 'true' : 'false');
     });
-    selPays.value = option.dataset.name;
+    selPays.value = option.dataset.kind === 'crypto' ? 'Crypto USDT' : option.dataset.name;
     selPays.dataset.code = option.dataset.code;
-    countryLabel.textContent = translateDynamic(option.dataset.name);
-    updateOperateurs();
+    selPays.dataset.countryCode = option.dataset.countryCode || '';
+    countryLabel.textContent = translateDynamic(option.dataset.kind === 'crypto'
+        ? 'Crypto USDT'
+        : `${option.dataset.name} · Mobile Money`);
+    setWithdrawalMode();
     toggleCountryMenu(false);
 }
 
@@ -467,15 +576,23 @@ countrySearch.addEventListener('input', function () {
     countryOptions.forEach(option => {
         const matches = !query
             || option.dataset.name.toLocaleLowerCase('fr-FR').includes(query)
-            || option.dataset.code.toLocaleLowerCase('fr-FR').includes(query);
+            || option.dataset.code.toLocaleLowerCase('fr-FR').includes(query)
+            || option.dataset.kind.toLocaleLowerCase('fr-FR').includes(query);
         option.hidden = !matches;
         if (matches) visibleCount += 1;
     });
     countryEmpty.hidden = visibleCount !== 0;
 });
 
-// Select the first supported country by default.
-if (countryOptions.length) selectCountry(countryOptions[0]);
+if (inpMontant) inpMontant.addEventListener('input', () => {
+    updateFeeSummary();
+    updateCryptoWithdrawalEstimate();
+});
+if (cryptoWithdrawalNetwork) cryptoWithdrawalNetwork.addEventListener('change', updateCryptoWithdrawalEstimate);
+
+// Default to the account's Mobile Money country when available, otherwise crypto.
+const initialCountry = countryOptions.find(option => option.dataset.kind === 'mobile') || countryOptions[0];
+if (initialCountry) selectCountry(initialCountry);
 
 document.addEventListener('click', event => {
     if (!countryPicker.contains(event.target)) toggleCountryMenu(false);
@@ -501,11 +618,14 @@ document.getElementById('withdrawInfoPopup').addEventListener('click', function 
 document.getElementById('btn-retrait').addEventListener('click', async function () {
     const pays     = selPays.value;
     const operateur= selOp.value;
-    const numero   = document.getElementById('inp-numero').value.trim();
-    const nom      = document.getElementById('inp-nom').value.trim();
+    const numero   = mobilePhone.value.trim();
+    const nom      = mobileName.value.trim();
     const montant  = parseFloat(document.getElementById('inp-montant').value);
     const indicatif= selPays.dataset.code || '';
     const notifZone= document.getElementById('notif-zone');
+    const cryptoMode = pays === 'Crypto USDT';
+    const walletAddress = cryptoWalletAddress.value.trim();
+    const assetCode = cryptoWithdrawalNetwork.value;
 
     notifZone.innerHTML = '';
 
@@ -521,7 +641,20 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
         return;
     }
 
-    if (!pays || !operateur || !numero || !nom || !montant) {
+    if (!Number.isFinite(montant) || montant <= 0) {
+        notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> ' + translateDynamic('Saisissez un montant valide.') + '</div>';
+        notifZone.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    if (cryptoMode && (!assetCode || walletAddress.length < 20
+        || walletAddress.length > 255 || !/^[A-Za-z0-9:_-]+$/.test(walletAddress))) {
+        notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> ' + translateDynamic('Choisissez un réseau USDT et saisissez une adresse de portefeuille valide.') + '</div>';
+        notifZone.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    if (!cryptoMode && (!pays || !selPays.dataset.countryCode || !operateur || !numero || !nom)) {
         notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> ' + translateDynamic('Veuillez remplir tous les champs.') + '</div>';
         notifZone.scrollIntoView({ behavior: 'smooth' });
         return;
@@ -539,10 +672,21 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
     this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + translateDynamic('Traitement...');
 
     try {
+        const requestBody = cryptoMode
+            ? { mode: 'crypto', asset_code: assetCode, wallet_address: walletAddress, montant }
+            : {
+                mode: 'mobile_money',
+                pays,
+                country_code: selPays.dataset.countryCode,
+                operateur,
+                numero: indicatif + numero,
+                nom,
+                montant,
+            };
         const resp = await fetch('/retrait', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ pays, operateur, numero: indicatif + numero, nom, montant }),
+            body: new URLSearchParams(requestBody),
         });
 
         // If redirected to login page, session expired
@@ -561,13 +705,27 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
         }
 
         if (data.success) {
-            const netLabel = (typeof data.frais === 'number' && data.frais > 0)
-                ? `${parseInt(montant).toLocaleString('fr-FR')} FCFA (frais ${data.frais.toLocaleString('fr-FR')} FCFA, net ${data.montantNet.toLocaleString('fr-FR')} FCFA)`
-                : parseInt(montant).toLocaleString('fr-FR') + ' FCFA';
+            const montantLabel = Number(montant).toLocaleString('fr-FR') + ' FCFA';
+            const feeLabel = Number(data.frais) > 0
+                ? ` (frais ${Number(data.frais).toLocaleString('fr-FR')} FCFA, net ${Number(data.montantNet).toLocaleString('fr-FR')} FCFA)`
+                : '';
+            const netLabel = cryptoMode
+                ? `${montantLabel}${feeLabel} · ${data.cryptoAmountUsdt} USDT`
+                : `${montantLabel}${feeLabel}`;
+            document.getElementById('successPopupTitle').textContent = cryptoMode
+                ? 'Demande de retrait enregistrée'
+                : 'Retrait envoyé avec succès !';
+            document.getElementById('successPopupMessage').textContent = cryptoMode
+                ? 'Le paiement USDT sera effectué manuellement après vérification.'
+                : 'Votre demande a été soumise. Elle sera traitée dans les 24h.';
             document.getElementById('pop-montant').textContent   = netLabel;
-            document.getElementById('pop-operateur').textContent = operateur;
-            document.getElementById('pop-numero').textContent    = indicatif + numero;
-            document.getElementById('pop-nom').textContent       = nom;
+            document.getElementById('pop-operateur').textContent = cryptoMode
+                ? `USDT · ${data.networkLabel}`
+                : operateur;
+            document.getElementById('pop-numero').textContent    = cryptoMode
+                ? walletAddress
+                : indicatif + numero;
+            document.getElementById('pop-nom').textContent       = cryptoMode ? mobileName.value : nom;
             document.getElementById('successPopup').classList.add('show');
         } else {
             const message = String(data.message || '');

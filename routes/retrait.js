@@ -3,6 +3,19 @@ const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { getParams } = require('../services/params');
+const {
+  getAshtechCountries,
+  getAshtechCryptoAssets,
+} = require('../services/paymentProviders');
+const {
+  calculateManualUsdtWithdrawalAmount,
+  findAshtechCryptoAsset,
+  getManualUsdtWithdrawalAssets,
+} = require('../services/ashtechCrypto');
+const {
+  findAccountPaymentCountry,
+  getCountryDialCode,
+} = require('../services/accountPaymentCountry');
 
 // Maps admin day abbreviations → JS getUTCDay() values (0=Sun … 6=Sat)
 const DAY_MAP = { 'Dim': 0, 'Lun': 1, 'Mar': 2, 'Mer': 3, 'Jeu': 4, 'Ven': 5, 'Sam': 6 };
@@ -52,12 +65,30 @@ function buildScheduleStatus(params) {
   };
 }
 
+router.get('/retrait/crypto/assets', requireAuth, async (req, res) => {
+  try {
+    const assets = getManualUsdtWithdrawalAssets(await getAshtechCryptoAssets())
+      .map(asset => ({
+        asset_code: asset.asset_code,
+        network_label: asset.network_label,
+      }));
+    res.json({ assets });
+  } catch (error) {
+    console.error('Could not load USDT withdrawal networks:', error.message);
+    res.status(503).json({
+      error: 'Les réseaux USDT sont temporairement indisponibles.',
+    });
+  }
+});
+
 // ── GET /retrait ─────────────────────────────────────────────────────────────
 router.get('/retrait', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
   try {
     const params = await getParams();
     const [[user]]    = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
+    const countries = await getAshtechCountries();
+    const withdrawalCountry = findAccountPaymentCountry(user?.pays, countries);
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
 
@@ -75,9 +106,20 @@ router.get('/retrait', requireAuth, async (req, res) => {
     delete req.session.retrait_message;
 
     const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
+    const configuredCryptoRate = params.taux_usdt_fcfa === undefined || params.taux_usdt_fcfa === ''
+      ? 600
+      : Number(params.taux_usdt_fcfa);
+    const withdrawalCryptoRate = Number.isFinite(configuredCryptoRate) && configuredCryptoRate > 0
+      ? configuredCryptoRate
+      : 0;
     res.render('retrait', {
       user, solde, retraits_disponibles, hasActiveInvestment, suspendu,
       retrait_bloque, schedule, params, fraisPourcentage, message,
+      withdrawalCountry,
+      withdrawalDialCode: withdrawalCountry
+        ? getCountryDialCode(withdrawalCountry.code)
+        : '',
+      withdrawalCryptoRate,
     });
   } catch (e) {
     console.error(e);
@@ -92,7 +134,10 @@ router.post('/retrait', requireAuth, async (req, res) => {
     const params = await getParams();
 
     // 1. Retrait bloqué individuellement par l'admin ?
-    const [[userCheck]] = await db.query('SELECT retrait_bloque FROM utilisateurs WHERE id = ?', [user_id]);
+    const [[userCheck]] = await db.query(
+      'SELECT retrait_bloque, pays, nom FROM utilisateurs WHERE id = ?',
+      [user_id]
+    );
     if (userCheck && userCheck.retrait_bloque) {
       return res.json({ success: false, blocked: true, message: 'Votre retrait est bloqué. Pour le débloquer, achetez un nouveau plan VIP ou invitez une personne à investir.' });
     }
@@ -118,17 +163,20 @@ router.post('/retrait', requireAuth, async (req, res) => {
     }
 
     // 4. Form validation
-    const montant   = parseFloat(req.body.montant);
-    const numero    = (req.body.numero   || '').trim();
-    const nom       = (req.body.nom      || '').trim();
-    const operateur = (req.body.operateur || '').trim();
-    const pays      = (req.body.pays     || '').trim();
+    const montant = Number(req.body.montant);
+    const cryptoMode = req.body.mode === 'crypto';
+    let numero = '';
+    let nom = '';
+    let operateur = '';
+    let pays = '';
+    let methode = '';
+    let cryptoAmountUsdt = null;
+    let networkLabel = null;
 
-    if (!Number.isFinite(montant) || montant <= 0 || !numero || !nom || !operateur || !pays) {
-      return res.json({ success: false, message: 'Veuillez remplir tous les champs.' });
+    if (!Number.isFinite(montant) || montant <= 0) {
+      return res.json({ success: false, message: 'Saisissez un montant valide.' });
     }
 
-    // 5. Minimum amount from params
     const retraitMin = parseFloat(params.retrait_minimum ?? 1200);
     if (montant < retraitMin) {
       return res.json({
@@ -137,16 +185,96 @@ router.post('/retrait', requireAuth, async (req, res) => {
       });
     }
 
+    if (cryptoMode) {
+      const walletAddress = String(req.body.wallet_address || '').trim();
+      const assetCode = String(req.body.asset_code || '').trim();
+      if (walletAddress.length < 20 || walletAddress.length > 255
+          || !/^[A-Za-z0-9:_-]+$/.test(walletAddress)) {
+        return res.json({ success: false, message: 'Adresse de portefeuille USDT invalide.' });
+      }
+
+      let assets;
+      try {
+        assets = getManualUsdtWithdrawalAssets(await getAshtechCryptoAssets());
+      } catch (error) {
+        console.error('USDT network validation failed:', error.message);
+        return res.json({ success: false, message: 'Impossible de vérifier le réseau USDT. Réessayez plus tard.' });
+      }
+      const asset = findAshtechCryptoAsset(assets, assetCode);
+      if (!asset) {
+        return res.json({ success: false, message: 'Sélectionnez un réseau USDT disponible.' });
+      }
+
+      const rate = params.taux_usdt_fcfa === undefined || params.taux_usdt_fcfa === ''
+        ? 600
+        : Number(params.taux_usdt_fcfa);
+      if (!Number.isFinite(rate) || rate <= 0) {
+        return res.json({ success: false, message: 'Le taux USDT/FCFA n’est pas configuré.' });
+      }
+      try {
+        const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
+        const frais = Math.round((montant * fraisPourcentage / 100) * 100) / 100;
+        const montantNet = Math.round((montant - frais) * 100) / 100;
+        cryptoAmountUsdt = calculateManualUsdtWithdrawalAmount(montantNet, rate);
+      } catch (error) {
+        return res.json({ success: false, message: error.message });
+      }
+
+      networkLabel = asset.network_label;
+      numero = walletAddress;
+      nom = String(userCheck?.nom || '').trim();
+      operateur = 'Crypto USDT';
+      pays = String(userCheck?.pays || 'Autre').trim();
+      methode = `Crypto USDT ${cryptoAmountUsdt} · ${networkLabel} · taux ${rate} FCFA/USDT`;
+      if (methode.length > 100) {
+        return res.json({ success: false, message: 'Le nom du réseau USDT est trop long.' });
+      }
+    } else {
+      const submittedCountry = String(req.body.pays || '').trim();
+      const countryCode = String(req.body.country_code || '').trim().toUpperCase();
+      const countries = await getAshtechCountries();
+      const accountCountry = findAccountPaymentCountry(userCheck?.pays, countries);
+      const submittedAccountCountry = findAccountPaymentCountry(submittedCountry, countries);
+      const country = countries.find(item => item.code === countryCode);
+      operateur = String(req.body.operateur || '').trim();
+      nom = String(req.body.nom || '').trim();
+      const submittedPhone = String(req.body.numero || '').trim();
+      const dialCode = country ? getCountryDialCode(country.code) : '';
+      const phoneDigits = submittedPhone.replace(/\D/g, '');
+
+      if (!accountCountry || !country || country.code !== accountCountry.code
+          || !submittedAccountCountry || submittedAccountCountry.code !== accountCountry.code) {
+        return res.json({
+          success: false,
+          message: 'Le retrait Mobile Money est limité au pays de votre compte. Choisissez le crypto si nécessaire.',
+        });
+      }
+      if (!country.operators.includes(operateur)) {
+        return res.json({ success: false, message: 'Opérateur invalide pour le pays de votre compte.' });
+      }
+      if (!dialCode || !phoneDigits.startsWith(dialCode)
+          || phoneDigits.length < 8 || phoneDigits.length > 15
+          || !nom || nom.length > 100) {
+        return res.json({ success: false, message: 'Vérifiez le numéro et le nom du titulaire.' });
+      }
+
+      numero = `+${phoneDigits}`;
+      pays = country.name;
+      methode = operateur;
+    }
+
     const maxParJour = parseInt(params.retrait_max_par_jour ?? 1);
 
     // Withdrawal fee — percentage kept by the platform, deducted from the payout
     const fraisPourcentage = parseFloat(params.retrait_frais_pourcentage ?? 0);
     const frais = Math.round((montant * fraisPourcentage / 100) * 100) / 100;
-    const montantNet = montant - frais;
+    const montantNet = Math.round((montant - frais) * 100) / 100;
 
-    const methode = fraisPourcentage > 0
-      ? `${operateur} (${pays}) — frais ${fraisPourcentage}% : ${frais.toLocaleString('fr-FR')} FCFA, net : ${montantNet.toLocaleString('fr-FR')} FCFA`
-      : `${operateur} (${pays})`;
+    if (!cryptoMode) {
+      methode = fraisPourcentage > 0
+        ? `${operateur} (${pays}) — frais ${fraisPourcentage}% : ${frais.toLocaleString('fr-FR')} FCFA, net : ${montantNet.toLocaleString('fr-FR')} FCFA`
+        : `${operateur} (${pays})`;
+    }
 
     // 6. Atomic transaction: check daily limit + debit balance + insert retrait
     const conn = await db.getConnection();
@@ -183,7 +311,13 @@ router.post('/retrait', requireAuth, async (req, res) => {
       await conn.commit();
     } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
 
-    res.json({ success: true, frais, montantNet });
+    res.json({
+      success: true,
+      frais,
+      montantNet,
+      cryptoAmountUsdt,
+      networkLabel,
+    });
   } catch (e) {
     console.error(e);
     res.json({ success: false, message: 'Erreur serveur: ' + e.message });

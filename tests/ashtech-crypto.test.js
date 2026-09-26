@@ -2,8 +2,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   calculateUsdtAmount,
+  calculateManualUsdtWithdrawalAmount,
   findAshtechCryptoAsset,
   getCryptoExpiry,
+  getManualUsdtWithdrawalAssets,
   getCryptoPollTimeoutMs,
   normalizeAshtechCryptoAssets,
   normalizeAshtechCryptoCollectResponse,
@@ -61,6 +63,23 @@ test('converts FCFA to a two-decimal USDT request using the selected rate', () =
   assert.equal(calculateUsdtAmount(200, 600), '0.33');
   assert.equal(calculateUsdtAmount(6000, 600), '10.00');
   assert.throws(() => calculateUsdtAmount(0, 600), /invalide/i);
+});
+
+test('converts net FCFA to USDT without rounding the manual payout upward', () => {
+  assert.equal(calculateManualUsdtWithdrawalAmount(1000, 600), '1.66');
+  assert.equal(calculateManualUsdtWithdrawalAmount(6000, 600), '10.00');
+  assert.throws(() => calculateManualUsdtWithdrawalAmount(1, 600), /trop faible/i);
+});
+
+test('limits manual USDT withdrawal choices to networks without a required memo', () => {
+  assert.deepEqual(
+    getManualUsdtWithdrawalAssets([
+      asset,
+      { ...asset, asset_code: 'USDT.MEMO', memo_required: true },
+      { ...asset, asset_code: 'BTC.TRC20', coin: 'BTC' },
+    ]),
+    [asset],
+  );
 });
 
 test('validates the documented crypto collect response against the selected asset', () => {

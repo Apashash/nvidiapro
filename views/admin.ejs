@@ -814,26 +814,34 @@
 
   <div id="retraitList">
   <% retraits.forEach(r => { %>
-  <div class="card" data-search="<%= (r.nom+' '+(r.telephone||'')+' '+(r.numero_compte||'')).toLowerCase() %>">
+  <% const isCryptoWithdrawal = String(r.operateur || '').toUpperCase() === 'CRYPTO USDT'; %>
+  <div class="card" data-search="<%= (r.nom+' '+(r.telephone||'')+' '+(r.numero_compte||'')+' '+(r.methode||'')).toLowerCase() %>">
     <div class="card-row" style="align-items:flex-start">
       <div style="flex:1">
-        <div style="font-weight:700"><%- r.nom || '—' %></div>
-        <div class="dep-meta"><%- r.telephone || '—' %></div>
+        <div style="font-weight:700"><%= r.nom || '—' %></div>
+        <div class="dep-meta"><%= r.telephone || '—' %></div>
         <div class="ret-amount"><%= parseFloat(r.montant||0).toLocaleString('fr-FR') %> FCFA</div>
         <% if (r.montant_net != null && parseFloat(r.montant_net) !== parseFloat(r.montant || 0)) { %>
         <div class="dep-meta">Net à payer : <%= parseFloat(r.montant_net).toLocaleString('fr-FR') %> FCFA</div>
         <% } %>
-        <div class="dep-meta" style="margin-bottom:6px"><%- r.methode || '—' %> · <%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
+        <div class="dep-meta" style="margin-bottom:6px"><%= r.methode || '—' %> · <%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
+        <% if (isCryptoWithdrawal) { %>
+        <div class="dep-meta" style="margin-bottom:8px;color:#9A5B12">Envoyer manuellement le montant USDT indiqué. Vérifier que le portefeuille d’envoi prend en charge ce réseau et confirmer seulement après le transfert.</div>
+        <% } %>
         <% if (r.numero_compte) { %>
         <div style="margin-bottom:4px">
-          <span style="font-weight:700;font-size:0.85rem;text-decoration:underline"><%- r.numero_compte %></span>
-          <button class="copy-btn" style="display:inline-flex;margin-left:6px" onclick="copyText('<%- r.numero_compte %>')"><i class="fas fa-copy"></i></button>
+          <code style="font-weight:700;font-size:0.85rem;overflow-wrap:anywhere"><%= r.numero_compte %></code>
+          <button class="copy-btn" style="display:inline-flex;margin-left:6px"
+                  data-copy-value="<%= r.numero_compte %>"
+                  onclick="copyText(this.dataset.copyValue)" aria-label="Copier l’adresse"><i class="fas fa-copy"></i></button>
         </div>
         <% } %>
         <% if (r.statut === 'en_attente') { %>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> Valider manuellement</button>
+          <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> <%= isCryptoWithdrawal ? 'Confirmer l’envoi USDT' : 'Valider manuellement' %></button>
+          <% if (!isCryptoWithdrawal) { %>
           <button class="btn-xs btn-v" onclick="doAction('pay_retrait_soleaspay',<%= r.id %>)"><i class="fas fa-money-bill-transfer"></i> Payer avec SoleasPay</button>
+          <% } %>
           <button class="btn-xs btn-r" onclick="doAction('reject_retrait',<%= r.id %>)"><i class="fas fa-times"></i> Rejeter</button>
         </div>
         <% } else if (r.statut === 'en_cours') { %>
@@ -1598,7 +1606,7 @@
       <div class="param-icon" style="background:#ECFEFF"><i class="fas fa-coins" style="color:#0891B2"></i></div>
       <div class="param-head-text">
         <h3>Taux de conversion USDT</h3>
-        <p>Définit combien de FCFA vaut 1 USDT pour l'affichage des soldes</p>
+        <p>Définit combien de FCFA vaut 1 USDT pour l'affichage des soldes et le calcul des retraits USDT manuels</p>
       </div>
     </div>
     <label class="param-label">1 USDT = combien de FCFA ?</label>
@@ -2065,7 +2073,7 @@ function filterTx() {
 // ── AJAX action ─────────────────────────────────────────────────────────
 const actionLabels = {
   validate_deposit:'Valider ce dépôt ?', reject_deposit:'Rejeter ce dépôt ?',
-  validate_retrait:'Valider ce retrait manuellement sans appeler SoleasPay ?',
+  validate_retrait:'Confirmer le paiement manuel après avoir envoyé les fonds au client ?',
   pay_retrait_soleaspay:'Lancer le paiement de ce retrait via SoleasPay ?',
   check_retrait_soleaspay:'Vérifier le statut du paiement SoleasPay ?',
   reject_retrait:'Rejeter ce retrait et rembourser le solde ?',

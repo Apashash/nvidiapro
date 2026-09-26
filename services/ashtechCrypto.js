@@ -64,6 +64,30 @@ function calculateUsdtAmount(fiatAmount, fcfaPerUsdt) {
   return (cents / 100).toFixed(2);
 }
 
+function calculateManualUsdtWithdrawalAmount(netFiatAmount, fcfaPerUsdt) {
+  const amount = Number(netFiatAmount);
+  const rate = Number(fcfaPerUsdt);
+  if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(rate) || rate <= 0) {
+    throw new Error('Montant net ou taux de conversion invalide');
+  }
+
+  const cents = Math.floor((amount / rate) * 100 + 1e-9);
+  if (cents <= 0) {
+    throw new Error('Le montant net est trop faible pour un retrait USDT');
+  }
+
+  return (cents / 100).toFixed(2);
+}
+
+function getManualUsdtWithdrawalAssets(assets) {
+  if (!Array.isArray(assets)) return [];
+  return assets.filter(asset =>
+    asset
+      && String(asset.coin || '').trim().toUpperCase() === 'USDT'
+      && asset.memo_required !== true
+  );
+}
+
 function normalizeAshtechCryptoCollectResponse(payment, selectedAsset) {
   if (!payment || typeof payment !== 'object' || Array.isArray(payment)) {
     throw new Error('Réponse de création crypto AshTechPay invalide');
@@ -176,7 +200,9 @@ module.exports = {
   CRYPTO_PENDING_TTL_MS,
   CRYPTO_STATUS_GRACE_MS,
   calculateUsdtAmount,
+  calculateManualUsdtWithdrawalAmount,
   findAshtechCryptoAsset,
+  getManualUsdtWithdrawalAssets,
   getCryptoExpiry,
   getCryptoPollTimeoutMs,
   normalizeAshtechCryptoAssets,
