@@ -400,7 +400,7 @@
             'Lien copié !': 'Link copied!', 'Rejoins-moi sur Groupe Dangote (GD) !': 'Join me on Groupe Dangote (GD)!'
         },
         es: {
-            'Accueil': 'Inicio', 'Investir': 'Invertir', 'Salaire': 'Salario', 'Équipe': 'Equipo', 'Profil': 'Perfil',
+            'Accueil': 'Inicio', 'Investir': 'Invertir', 'Actions': 'Acciones', 'Salaire': 'Salario', 'Équipe': 'Equipo', 'Profil': 'Perfil',
             'Dépôt': 'Depósito', 'Retrait': 'Retiro', 'Historique': 'Historial', 'Toutes vos transactions': 'Todas tus transacciones',
             'Bienvenue !': '¡Bienvenido!', 'Connectez-vous à votre compte': 'Inicia sesión en tu cuenta',
             'Numéro de Téléphone': 'Número de teléfono', 'Numéro de téléphone': 'Número de teléfono',
@@ -488,7 +488,7 @@
             'Lien copié !': '¡Enlace copiado!', 'Rejoins-moi sur Groupe Dangote (GD) !': '¡Únete a mí en Groupe Dangote (GD)!'
         },
         zh: {
-            'Accueil': '首页', 'Investir': '投资', 'Salaire': '工资', 'Équipe': '团队', 'Profil': '个人资料',
+            'Accueil': '首页', 'Investir': '投资', 'Actions': '股票', 'Salaire': '工资', 'Équipe': '团队', 'Profil': '个人资料',
             'Dépôt': '充值', 'Retrait': '提现', 'Historique': '交易记录', 'Toutes vos transactions': '所有交易',
             'Bienvenue !': '欢迎！', 'Connectez-vous à votre compte': '登录您的账户',
             'Numéro de Téléphone': '电话号码', 'Numéro de téléphone': '电话号码',
@@ -575,7 +575,7 @@
             'Lien copié !': '链接已复制！', 'Rejoins-moi sur Groupe Dangote (GD) !': '加入我在Groupe Dangote（GD）的团队！'
         },
         ur: {
-            'Accueil': 'ہوم', 'Investir': 'سرمایہ کاری', 'Salaire': 'تنخواہ', 'Équipe': 'ٹیم', 'Profil': 'پروفائل',
+            'Accueil': 'ہوم', 'Investir': 'سرمایہ کاری', 'Actions': 'شیئرز', 'Salaire': 'تنخواہ', 'Équipe': 'ٹیم', 'Profil': 'پروفائل',
             'Dépôt': 'جمع', 'Retrait': 'رقم نکلوانا', 'Historique': 'تاریخ', 'Toutes vos transactions': 'آپ کے تمام لین دین',
             'Bienvenue !': 'خوش آمدید!', 'Connectez-vous à votre compte': 'اپنے اکاؤنٹ میں لاگ ان کریں',
             'Numéro de Téléphone': 'فون نمبر', 'Numéro de téléphone': 'فون نمبر',
