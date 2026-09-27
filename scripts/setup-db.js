@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
   last_spin_time TIMESTAMP,
   is_admin BOOLEAN DEFAULT false,
   is_banned BOOLEAN DEFAULT false,
-  retrait_bloque BOOLEAN DEFAULT false
+  retrait_bloque BOOLEAN DEFAULT false,
+  est_promoteur BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS soldes (
@@ -243,6 +244,7 @@ async function setup() {
     const alterations = [
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false`,
       `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS retrait_bloque BOOLEAN DEFAULT false`,
+      `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS est_promoteur BOOLEAN NOT NULL DEFAULT false`,
       `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS bloque BOOLEAN DEFAULT false`,
       `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS prix_action NUMERIC(15,2)`,
       `ALTER TABLE planinvestissement ADD COLUMN IF NOT EXISTS actions_minimum INTEGER DEFAULT 1`,

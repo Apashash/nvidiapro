@@ -41,6 +41,7 @@
     .badge-admin  { background:#EEF2FF; color:#4f46e5; }
     .badge-banned { background:#FEF2F2; color:#dc2626; }
     .badge-blocked{ background:#FFF7ED; color:#EA580C; }
+    .badge-promoteur { background:#ECFDF5; color:#047857; }
 
     /* Action list */
     .action-list { background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.07); }
@@ -178,6 +179,7 @@
         <% if (user.is_admin) { %><span class="badge-tag badge-admin">Admin</span><% } %>
         <% if (user.is_banned) { %><span class="badge-tag badge-banned">Banni</span><% } %>
         <% if (user.retrait_bloque) { %><span class="badge-tag badge-blocked">Retrait bloqué</span><% } %>
+        <% if (user.est_promoteur) { %><span class="badge-tag badge-promoteur">Promoteur</span><% } %>
       </div>
       <div class="user-tel"><%- user.telephone %></div>
       <div class="user-bal"><%= parseFloat(user.solde||0).toLocaleString('fr-FR') %> FCFA</div>
@@ -221,6 +223,11 @@
     <button class="action-item" onclick="doBlockRetrait()">
       <div class="action-icon" style="background:#FFF7ED"><i class="fas fa-lock" style="color:#EA580C"></i></div>
       <span class="action-label"><%= user.retrait_bloque ? 'Débloquer le retrait' : 'Bloquer le retrait' %></span>
+      <i class="fas fa-chevron-right action-chevron"></i>
+    </button>
+    <button class="action-item" onclick="doTogglePromoteur()">
+      <div class="action-icon" style="background:#ECFDF5"><i class="fas fa-bullhorn" style="color:#047857"></i></div>
+      <span class="action-label"><%= user.est_promoteur ? 'Retirer le statut promoteur' : 'Marquer comme promoteur' %></span>
       <i class="fas fa-chevron-right action-chevron"></i>
     </button>
     <button class="action-item danger" onclick="doDelete()">
@@ -475,6 +482,15 @@ async function doBlockRetrait() {
   const d = await post('/adminxyz/action', { action:'toggle_retrait_block', id: UID });
   if (d.success) { toast('✓ ' + (isBlocked ? 'Retrait débloqué' : 'Retrait bloqué'), 'ok'); setTimeout(() => location.reload(), 900); }
   else toast('✗ ' + (d.message||'Erreur'), 'err');
+}
+async function doTogglePromoteur() {
+  const isPromoteur = <%= user.est_promoteur ? 'true' : 'false' %>;
+  if (!confirm(isPromoteur ? 'Retirer le statut promoteur ?' : 'Marquer cet utilisateur comme promoteur ?')) return;
+  const d = await post('/adminxyz/action', { action:'toggle_promoteur', id: UID });
+  if (d.success) {
+    toast('✓ ' + (d.est_promoteur ? 'Statut promoteur activé' : 'Statut promoteur retiré'), 'ok');
+    setTimeout(() => location.reload(), 900);
+  } else toast('✗ ' + (d.message||'Erreur'), 'err');
 }
 async function doDelete() {
   const confirm1 = confirm('⚠️ Supprimer définitivement cet utilisateur et toutes ses données ?');

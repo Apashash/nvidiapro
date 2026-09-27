@@ -360,7 +360,7 @@ router.post('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
 router.get('/adminxyz/utilisateurs', requireAdminAuth, async (req, res) => {
   try {
     const [users] = await db.query(`
-      SELECT u.id, u.nom, u.telephone, u.pays, u.date_inscription, u.is_admin, u.code_parrainage,
+      SELECT u.id, u.nom, u.telephone, u.pays, u.date_inscription, u.is_admin, u.est_promoteur, u.code_parrainage,
              COALESCE(s.solde,0) as solde,
              COALESCE(v.niveau,0) as niveau_vip,
              (SELECT COUNT(*) FROM utilisateurs f WHERE f.parrain_id=u.id) as nb_filleuls,
@@ -400,7 +400,7 @@ router.get('/adminxyz/retraits', requireAdminAuth, async (req, res) => {
     const where = statut ? 'WHERE r.statut = ?' : '';
     const params = statut ? [statut] : [];
     const [retraits] = await db.query(`
-      SELECT r.*, u.nom, u.telephone FROM retraits r
+      SELECT r.*, u.nom, u.telephone, u.est_promoteur FROM retraits r
       LEFT JOIN utilisateurs u ON r.user_id=u.id
       ${where}
       ORDER BY r.date_demande DESC LIMIT 300`, params);
@@ -990,6 +990,14 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
         if (!u) return res.json({ success: false, message: 'Utilisateur non trouvé' });
         await db.query('UPDATE utilisateurs SET is_admin=? WHERE id=?', [!u.is_admin, id]);
         return res.json({ success: true, is_admin: !u.is_admin });
+      }
+
+      case 'toggle_promoteur': {
+        const [[u]] = await db.query('SELECT est_promoteur FROM utilisateurs WHERE id=?', [id]);
+        if (!u) return res.json({ success: false, message: 'Utilisateur non trouvé' });
+        const estPromoteur = !u.est_promoteur;
+        await db.query('UPDATE utilisateurs SET est_promoteur=? WHERE id=?', [estPromoteur, id]);
+        return res.json({ success: true, est_promoteur: estPromoteur });
       }
 
       case 'add_plan': {
