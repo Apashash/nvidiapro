@@ -29,6 +29,7 @@ const {
   getCryptoPollTimeoutMs,
   normalizeAshtechCryptoCollectResponse,
 } = require('../services/ashtechCrypto');
+const { formatAshtechError } = require('../services/ashtechError');
 const { sanitizePaymentMessage } = require('../services/paymentText');
 const {
   findAccountPaymentCountry,
@@ -99,35 +100,6 @@ const fallbackAshtechCountries = [
 // response, so this list is informational, not authoritative.
 const otpProneOperators = new Set(['Orange Money', 'Wave']);
 
-function formatAshtechError(error) {
-  const status = error.response?.status;
-  const responseBody = error.response?.data;
-  const prefix = status ? `Paiement (HTTP ${status})` : 'Paiement';
-
-  if (typeof responseBody === 'string' && responseBody.trim()) {
-    return sanitizePaymentMessage(`${prefix} : ${responseBody.trim().slice(0, 300)}`);
-  }
-
-  if (responseBody && typeof responseBody === 'object') {
-    const code = responseBody.error || responseBody.code || responseBody.type;
-    const message = responseBody.message || responseBody.detail || responseBody.error_description;
-    if (code && message) return sanitizePaymentMessage(`${prefix} [${code}] : ${message}`);
-    if (message) return sanitizePaymentMessage(`${prefix} : ${message}`);
-    if (code) return sanitizePaymentMessage(`${prefix} [${code}]`);
-  }
-
-  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return 'Délai d’attente dépassé, le serveur de paiement n’a pas répondu.';
-  }
-  if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
-    return 'Serveur de paiement introuvable.';
-  }
-  if (!error.response && error.message) {
-    return sanitizePaymentMessage(`Erreur de paiement : ${error.message}`);
-  }
-  return 'Erreur inconnue du serveur de paiement.';
-}
-
 /*
 function normalizeAshtechCountries(payload) {
   const countries = Array.isArray(payload)
@@ -183,8 +155,11 @@ router.get('/depot', requireAuth, async (req, res) => {
   try {
     const user_id = req.session.user_id;
     const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
-    const error   = req.session.error
-      ? sanitizePaymentMessage(req.session.error)
+    const flashError = req.session.error;
+    const error = flashError
+      ? flashError?.provider === 'ashtechpay'
+        ? flashError.body || `AshTechPay (HTTP ${flashError.status || 'inconnu'}) : réponse vide.`
+        : sanitizePaymentMessage(flashError)
       : null;
     const failed  = req.query.failed === '1' ? 'Paiement échoué. Veuillez réessayer.' : null;
     let pendingCrypto = req.session.pending_crypto || null;
@@ -899,7 +874,7 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
         ussd_code: apiError.ussd_code || otp_pending.ussd_code,
         message: apiError.message || 'Code OTP invalide ou expiré. Veuillez réessayer.',
       };
-      req.session.error = apiError.message || 'Code OTP invalide ou expiré. Veuillez réessayer.';
+      req.session.error = formatAshtechError(e);
       return res.redirect('/depot');
     }
 
@@ -908,9 +883,7 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
     // nouvelle session OTP, plutôt que de rejeter le dépôt.
     if (e.response?.status === 400 && (apiError?.error === 'otp_expired' || apiError?.error === 'missing_reference')) {
       delete req.session.otp_pending;
-      req.session.error = apiError.error === 'otp_expired'
-        ? "Le code a expiré. Un nouveau code vous a été envoyé, veuillez réessayer."
-        : "La session de confirmation a été perdue. Un nouveau code vous a été envoyé, veuillez réessayer.";
+      req.session.error = formatAshtechError(e);
       return initiateCollect(req, res, {
         depot_id, montant: payload.amount, currency: payload.currency, numero: payload.phone,
         operateur: payload.operator, country_code: payload.country_code,
@@ -926,7 +899,7 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
     const status = e.response?.status;
     if (!status || status >= 500) {
       req.session.otp_pending = otp_pending; // conserver pour réessai
-      req.session.error = 'Erreur temporaire du serveur de paiement. Réessayez dans quelques secondes.';
+      req.session.error = formatAshtechError(e);
       return res.redirect('/depot');
     }
 
