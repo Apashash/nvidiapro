@@ -348,30 +348,40 @@
     /* ───────────── WELCOME POPUP ───────────── */
     .welcome-popup {
         display: flex; position: fixed; inset: 0;
-        background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
-        z-index: 2500; align-items: center; justify-content: center; padding: 20px;
+        background: rgba(11,8,69,0.72); backdrop-filter: blur(8px);
+        z-index: 20000; align-items: center; justify-content: center;
+        padding: 12px; overflow-y: auto; overscroll-behavior: contain;
     }
     .welcome-content {
-        background: var(--card-bg); border-radius: 24px;
-        width: 100%; max-width: 360px; overflow: hidden;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        background: #fff; border: 1px solid #e4e4e4; border-radius: 2px;
+        width: 100%; max-width: 400px; max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px); overflow: hidden;
+        display: flex; flex-direction: column;
+        box-shadow: 0 24px 60px rgba(11,8,69,0.24);
         animation: popupIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes popupIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .welcome-header {
-        padding: 24px 20px;
-        background: linear-gradient(135deg, #D4921F, #A0631A);
-        color: white; text-align: center; position: relative;
+        padding: 20px 54px 18px 20px;
+        background: linear-gradient(135deg, #14105F, #0B0845);
+        border-top: 4px solid #D60000;
+        color: #fff; text-align: center; position: relative; flex: 0 0 auto;
     }
-    .welcome-header h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-    .welcome-message { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; }
+    .welcome-header h3 { color: #fff; font-size: 18px; font-weight: 700; margin: 0; }
+    .welcome-message {
+        color: #34343b; font-size: 14px; line-height: 1.6;
+        margin: 0 0 16px; text-align: left; overflow-wrap: anywhere; white-space: pre-wrap;
+    }
     .welcome-close-top {
-        position: absolute; top: 12px; right: 14px;
-        background: rgba(255,255,255,0.2); border: none; color: #fff;
-        width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px;
+        position: absolute; top: 10px; right: 12px;
+        background: #fff; border: 1px solid #e4e4e4; color: #14105F;
+        width: 32px; height: 32px; border-radius: 2px; cursor: pointer; font-size: 18px;
         display: flex; align-items: center; justify-content: center;
     }
-    .welcome-body { padding: 20px; }
+    .welcome-body {
+        padding: 18px; min-height: 0; overflow-y: auto;
+        overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    }
     .bonus-section {
         background: linear-gradient(135deg, #D4921F, #A0631A);
         border-radius: 12px; padding: 14px; margin-bottom: 14px; text-align: center; color: #fff;
@@ -380,16 +390,25 @@
     .bonus-text { font-size: 13px; opacity: 0.9; }
     .welcome-buttons { display:flex; flex-direction:column; gap:10px; }
     .welcome-btn {
-        padding: 13px; border-radius: 12px; font-weight: 700; cursor: pointer;
+        min-height: 48px; padding: 12px; border-radius: 2px; font-weight: 700; cursor: pointer;
         transition: all 0.2s; text-decoration: none; display: flex;
         align-items: center; justify-content: center; gap: 9px;
-        font-size: 14px; border: none; font-family: 'Poppins', sans-serif;
+        font-size: 14px; line-height: 1.4; text-align: center;
+        overflow-wrap: anywhere; border: 1px solid transparent; font-family: 'Poppins', sans-serif;
     }
-    .welcome-btn-custom { background:linear-gradient(135deg,#14105F,#211987); color:#fff; }
+    .welcome-btn i { flex: 0 0 auto; }
+    .welcome-btn-label { min-width: 0; overflow-wrap: anywhere; }
+    .welcome-btn-custom { background: #D60000; color: #fff; }
     .button-row { display:flex; gap:10px; }
     .button-row .welcome-btn { flex:1; }
-    .welcome-btn-join { background: linear-gradient(135deg, #D4921F, #B07018); color: #fff; }
-    .welcome-btn-close { background: var(--light-bg); color: var(--text-mid); border: 1.5px solid var(--border); }
+    .welcome-btn-join,
+    .welcome-btn-whatsapp,
+    .welcome-btn-close {
+        background: #F7F7F8; color: #14105F; border: 1px solid #E4E4E4;
+    }
+    .welcome-btn-join i { color: #2AABEE; }
+    .welcome-btn-whatsapp i { color: #25D366; }
+    .welcome-btn-close i { color: #D60000; }
     .welcome-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
 
     /* ───────────── FLOATING SERVICE ───────────── */
@@ -436,6 +455,11 @@
         .photo-slider { height: 170px; }
         .post-slider { height: 280px; }
         .post-image-container { height: 200px; }
+        .welcome-popup {
+            padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
+        }
+        .welcome-header { padding: 18px 50px 16px 18px; }
+        .welcome-body { padding: 16px; }
     }
     </style>
     <link rel="stylesheet" href="/assets/dangote-theme.css">
@@ -708,30 +732,28 @@
     <div class="welcome-content">
         <div class="welcome-header">
             <h3>Groupe Dangote (GD)</h3>
-            <div class="welcome-message">
-                <%= _p.popup_message || 'Bienvenue sur Groupe Dangote (GD) ! Investissez dans des projets à fort potentiel et générez des revenus quotidiens.' %>
-            </div>
-            <button class="welcome-close-top" onclick="closeWelcomePopup()">&times;</button>
+            <button class="welcome-close-top" type="button" aria-label="Fermer le popup de bienvenue" onclick="closeWelcomePopup()">&times;</button>
         </div>
         <div class="welcome-body">
+            <p class="welcome-message"><%= _p.popup_message || 'Bienvenue sur Groupe Dangote (GD) ! Investissez dans des projets à fort potentiel et générez des revenus quotidiens.' %></p>
             <div class="welcome-buttons">
                 <% if (popupButtonLabel && popupButtonUrl) { %>
                 <a href="<%= popupButtonUrl %>" target="_blank" rel="noopener noreferrer" class="welcome-btn welcome-btn-custom">
-                    <i class="fas fa-arrow-up-right-from-square"></i> <%= popupButtonLabel %>
+                    <i class="fas fa-arrow-up-right-from-square"></i><span class="welcome-btn-label"><%= popupButtonLabel %></span>
                 </a>
                 <% } %>
                 <% if (_p.telegram_link) { %>
                 <a href="<%= _p.telegram_link %>" target="_blank" rel="noopener" class="welcome-btn welcome-btn-join">
-                    <i class="fab fa-telegram"></i> Canal Telegram
+                    <i class="fab fa-telegram"></i><span class="welcome-btn-label">Canal Telegram</span>
                 </a>
                 <% } %>
                 <% if (_p.whatsapp_group_link) { %>
-                <a href="<%= _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="welcome-btn" style="background:#25D366;color:#fff;">
-                    <i class="fab fa-whatsapp"></i> Groupe WhatsApp
+                <a href="<%= _p.whatsapp_group_link %>" target="_blank" rel="noopener" class="welcome-btn welcome-btn-whatsapp">
+                    <i class="fab fa-whatsapp"></i><span class="welcome-btn-label">Groupe WhatsApp</span>
                 </a>
                 <% } %>
                 <button class="welcome-btn welcome-btn-close" onclick="closeWelcomePopup()">
-                    <i class="fas fa-times"></i> Fermer
+                    <i class="fas fa-times"></i><span class="welcome-btn-label">Fermer</span>
                 </button>
             </div>
         </div>

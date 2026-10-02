@@ -1417,3 +1417,127 @@ label,
     box-shadow: 0 0 35px rgba(20, 16, 95, 0.08);
   }
 }
+
+/* Keep the welcome popup legible above global heading, link, and button rules. */
+.welcome-popup {
+  z-index: 20000 !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.welcome-popup .welcome-content {
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(100%, 400px) !important;
+  max-height: calc(100vh - 24px) !important;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  overflow: hidden !important;
+  background: var(--brand-paper) !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+}
+
+.welcome-popup .welcome-header {
+  flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--brand-navy), var(--brand-navy-dark)) !important;
+  border-top: 4px solid var(--brand-red) !important;
+}
+
+.welcome-popup .welcome-header h3 {
+  color: #fff !important;
+}
+
+.welcome-popup .welcome-message {
+  color: var(--brand-text) !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.welcome-popup .welcome-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.welcome-popup .welcome-close-top {
+  background: #fff !important;
+  border: 1px solid var(--brand-border) !important;
+  border-radius: 2px !important;
+  color: var(--brand-navy) !important;
+}
+
+.welcome-popup .welcome-btn {
+  min-height: 48px;
+  border-radius: 2px !important;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.welcome-popup a.welcome-btn-custom {
+  background: var(--brand-red) !important;
+  border-color: var(--brand-red) !important;
+  color: #fff !important;
+}
+
+.welcome-popup a.welcome-btn-custom:hover {
+  background: var(--brand-red-dark) !important;
+  color: #fff !important;
+}
+
+.welcome-popup a.welcome-btn-join,
+.welcome-popup a.welcome-btn-whatsapp {
+  background: #f7f7f8 !important;
+  border: 1px solid var(--brand-border) !important;
+  color: var(--brand-navy) !important;
+}
+
+.welcome-popup .welcome-btn-join i {
+  color: #2aabee !important;
+}
+
+.welcome-popup .welcome-btn-whatsapp i {
+  color: #25d366 !important;
+}
+
+.welcome-popup .welcome-btn-close,
+.welcome-popup .welcome-btn-close:hover {
+  background: #f7f7f8 !important;
+  border: 1px solid var(--brand-border) !important;
+  color: var(--brand-navy) !important;
+}
+
+.welcome-popup .welcome-btn-close i {
+  color: var(--brand-red) !important;
+}
+
+.welcome-popup a.welcome-btn:focus-visible,
+.welcome-popup button.welcome-btn:focus-visible,
+.welcome-popup .welcome-close-top:focus-visible {
+  outline: 3px solid var(--brand-red) !important;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .welcome-popup {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .welcome-popup .welcome-header {
+    padding: 18px 50px 16px 18px;
+  }
+
+  .welcome-popup .welcome-body {
+    padding: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-popup .welcome-content {
+    animation: none !important;
+  }
+}
