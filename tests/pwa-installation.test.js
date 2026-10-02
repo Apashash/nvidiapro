@@ -53,7 +53,10 @@ test('profile install button opens Android instructions without a timed banner',
     focus() { this.focused = true; },
   };
   const helpText = { textContent: '' };
-  const helpCloseButton = { focus() { this.focused = true; } };
+  const helpCloseButton = {
+    addEventListener() {},
+    focus() { this.focused = true; },
+  };
   const helpDialog = {
     hidden: true,
     querySelector: selector => selector === '[data-pwa-install-help-close]'
