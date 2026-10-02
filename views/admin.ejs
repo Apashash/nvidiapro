@@ -1389,7 +1389,7 @@
       <div class="page-icon"><i class="fas fa-shuffle"></i></div>
       <div>
         <div class="page-title">Fournisseurs de paiement</div>
-        <div class="page-count">Choisissez le fournisseur pour chaque opérateur</div>
+        <div class="page-count">Configurez le fournisseur et la disponibilité de chaque opérateur</div>
       </div>
     </div>
   </div>
@@ -1409,10 +1409,15 @@
     <% countries.forEach(function(country, countryIndex) {
          const countryMappings = providerMappings[country.code] || {};
          const providerCounts = country.operators.reduce(function(counts, operator) {
-           const provider = countryMappings[operator]?.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
+           const mapping = countryMappings[operator] || {};
+           if (mapping.enabled === false) {
+             counts.disabled += 1;
+             return counts;
+           }
+           const provider = mapping.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
            counts[provider] += 1;
            return counts;
-         }, { ashtechpay: 0, soleaspay: 0 });
+         }, { ashtechpay: 0, soleaspay: 0, disabled: 0 });
     %>
       <section class="provider-country-card <%= countryIndex === 0 ? 'is-open' : '' %>" data-country-card>
         <button type="button" class="provider-country-head" onclick="toggleProviderCountry(this)">
@@ -1428,6 +1433,9 @@
             <% if (providerCounts.soleaspay > 0) { %>
               <span class="provider-count-badge soleas"><i class="fas fa-diamond"></i> <%= providerCounts.soleaspay %> SoleasPay</span>
             <% } %>
+            <% if (providerCounts.disabled > 0) { %>
+              <span class="provider-count-badge disabled"><i class="fas fa-ban"></i> <%= providerCounts.disabled %> désactivé(s)</span>
+            <% } %>
             <i class="fas fa-chevron-down provider-chevron"></i>
           </span>
         </button>
@@ -1436,14 +1444,19 @@
           <% country.operators.forEach(function(operator) {
                const selected = countryMappings[operator] || {};
                const selectedProvider = selected.provider === 'soleaspay' ? 'soleaspay' : 'ashtechpay';
+                const operatorEnabled = selected.enabled !== false;
                const autoService = autoServiceMappings[`${country.code}::${operator}`] || null;
                const selectedService = soleasServices.find(service => String(service.id) === String(selected.service_id || autoService?.id));
                const providerLabel = selectedProvider === 'soleaspay' ? 'SoleasPay' : 'AshTechPay';
           %>
-            <div class="provider-operator-row">
+            <div class="provider-operator-row <%= operatorEnabled ? '' : 'is-disabled' %>">
               <div class="provider-operator-info">
                 <div class="provider-operator-name"><%= operator %></div>
                 <div class="provider-operator-meta">
+                  <span class="provider-status-badge <%= operatorEnabled ? 'is-enabled' : 'is-disabled' %>">
+                    <i class="fas <%= operatorEnabled ? 'fa-circle-check' : 'fa-circle-xmark' %>"></i>
+                    <%= operatorEnabled ? 'Actif' : 'Désactivé' %>
+                  </span>
                   <span class="provider-pill <%= selectedProvider %>">
                     <i class="fas <%= selectedProvider === 'soleaspay' ? 'fa-diamond' : 'fa-bolt' %>"></i> <%= providerLabel %>
                   </span>
@@ -1452,17 +1465,29 @@
                   <% } %>
                 </div>
               </div>
-              <button type="button" class="provider-edit-button"
-                data-country-code="<%= country.code %>"
-                data-country-name="<%= country.name %>"
-                data-operator="<%= operator %>"
-                data-provider="<%= selectedProvider %>"
-                data-service-id="<%= selected.service_id || '' %>"
-                data-auto-service-id="<%= autoService?.id || '' %>"
-                data-auto-service-name="<%= autoService?.name || '' %>"
-                onclick="openProviderEditor(this)" aria-label="Modifier <%= operator %>">
-                <i class="fas fa-pencil"></i>
-              </button>
+              <div class="provider-operator-actions">
+                <form method="POST" action="/adminxyz/fournisseurs/toggle-enabled" class="provider-toggle-form">
+                  <input type="hidden" name="country_code" value="<%= country.code %>">
+                  <input type="hidden" name="operator" value="<%= operator %>">
+                  <input type="hidden" name="enabled" value="<%= operatorEnabled ? '0' : '1' %>">
+                  <button type="submit" class="provider-toggle-button <%= operatorEnabled ? 'disable' : 'enable' %>"
+                          aria-label="<%= operatorEnabled ? 'Désactiver ' : 'Réactiver ' %><%= operator %>">
+                    <i class="fas <%= operatorEnabled ? 'fa-toggle-on' : 'fa-toggle-off' %>"></i>
+                    <span><%= operatorEnabled ? 'Désactiver' : 'Réactiver' %></span>
+                  </button>
+                </form>
+                <button type="button" class="provider-edit-button"
+                  data-country-code="<%= country.code %>"
+                  data-country-name="<%= country.name %>"
+                  data-operator="<%= operator %>"
+                  data-provider="<%= selectedProvider %>"
+                  data-service-id="<%= selected.service_id || '' %>"
+                  data-auto-service-id="<%= autoService?.id || '' %>"
+                  data-auto-service-name="<%= autoService?.name || '' %>"
+                  onclick="openProviderEditor(this)" aria-label="Modifier <%= operator %>">
+                  <i class="fas fa-pencil"></i>
+                </button>
+              </div>
             </div>
           <% }); %>
         </div>
@@ -1521,12 +1546,24 @@
     .provider-count-badge, .provider-pill { display:inline-flex; align-items:center; gap:5px; border-radius:8px; padding:5px 9px; font-size:.72rem; font-weight:700; white-space:nowrap; }
     .provider-count-badge.ashtech, .provider-pill.ashtech { color:#936D00; background:#FFF7D6; border:1px solid #F5E5A0; }
     .provider-count-badge.soleas, .provider-pill.soleaspay { color:#166B76; background:#E7F8F7; border:1px solid #B7E9E5; }
+    .provider-count-badge.disabled { color:#9F1239; background:#FFF1F2; border:1px solid #FECDD3; }
     .provider-chevron { color:#64748B; transition:transform .2s; margin-left:4px; }
     .provider-country-card.is-open .provider-chevron { transform:rotate(180deg); }
     .provider-country-body { display:none; border-top:1px solid #E2E8F0; }
     .provider-country-card.is-open .provider-country-body { display:block; }
     .provider-operator-row { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:14px 18px; border-bottom:1px solid #F1F5F9; }
     .provider-operator-row:last-child { border-bottom:0; }
+    .provider-operator-meta { flex-wrap:wrap; }
+    .provider-status-badge { display:inline-flex; align-items:center; gap:5px; border-radius:8px; padding:4px 7px; font-size:.68rem; font-weight:800; white-space:nowrap; }
+    .provider-status-badge.is-enabled { color:#047857; background:#ECFDF5; border:1px solid #A7F3D0; }
+    .provider-status-badge.is-disabled { color:#B91C1C; background:#FEF2F2; border:1px solid #FECACA; }
+    .provider-operator-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .provider-toggle-form { margin:0; }
+    .provider-toggle-button { min-height:34px; display:inline-flex; align-items:center; gap:6px; border:0; border-radius:9px; padding:0 10px; font-size:.72rem; font-weight:800; white-space:nowrap; cursor:pointer; }
+    .provider-toggle-button.disable { background:#FEF2F2 !important; color:#B91C1C !important; }
+    .provider-toggle-button.disable:hover { background:#FEE2E2 !important; }
+    .provider-toggle-button.enable { background:#ECFDF5 !important; color:#047857 !important; }
+    .provider-toggle-button.enable:hover { background:#D1FAE5 !important; }
     .provider-operator-name { color:#1E293B; font-size:.88rem; font-weight:700; margin-bottom:7px; }
     .provider-service-label { color:#64748B; font-size:.72rem; }
     .provider-edit-button { width:34px; height:34px; border:0; border-radius:50%; background:#F0F9FF !important; color:#0786A1 !important; cursor:pointer; }
@@ -1545,7 +1582,7 @@
     .provider-auto-match { display:flex; align-items:center; gap:8px; color:#166B76; background:#E7F8F7; border:1px solid #B7E9E5; border-radius:10px; padding:11px 12px; margin-top:14px; font-size:.78rem; line-height:1.35; }
     .provider-modal-save { width:100%; border:0; border-radius:11px; background:#0B3156 !important; color:#fff !important; padding:12px; margin-top:22px; font-weight:700; cursor:pointer; }
     .provider-modal-save:hover { background:#082542 !important; }
-    @media (max-width:640px) { .provider-country-head { padding:14px; align-items:flex-start; } .provider-country-summary { gap:5px; } .provider-count-badge { font-size:.66rem; padding:4px 6px; } .provider-operator-row { padding:13px 14px; } }
+    @media (max-width:640px) { .provider-country-head { padding:14px; align-items:flex-start; } .provider-country-summary { gap:5px; } .provider-count-badge { font-size:.66rem; padding:4px 6px; } .provider-operator-row { padding:13px 14px; } .provider-operator-actions { gap:5px; } .provider-toggle-button { gap:4px; padding:0 7px; font-size:.66rem; } }
   </style>
 
   <script>

@@ -451,10 +451,12 @@ router.get('/adminxyz/fournisseurs', requireAdminAuth, async (req, res) => {
 
 router.post('/adminxyz/fournisseurs/save', requireAdminAuth, async (req, res) => {
   try {
-    const [countries, soleasServices] = await Promise.all([
+    const [countries, soleasServices, params] = await Promise.all([
       getAshtechCountries(),
       getSoleasServices(),
+      getParams(),
     ]);
+    const existingMappings = parseProviderMappings(params.payment_provider_mappings);
     const rawProviders = req.body.provider || {};
     const rawServices = req.body.service || {};
     const mappings = {};
@@ -481,6 +483,7 @@ router.post('/adminxyz/fournisseurs/save', requireAdminAuth, async (req, res) =>
         mappings[country.code][operator] = {
           provider: selectedProvider,
           service_id: selectedProvider === 'soleaspay' ? serviceId : null,
+          enabled: existingMappings[country.code]?.[operator]?.enabled !== false,
         };
       }
     }
@@ -527,9 +530,12 @@ router.post('/adminxyz/fournisseurs/save-one', requireAdminAuth, async (req, res
     const params = await getParams();
     const mappings = parseProviderMappings(params.payment_provider_mappings);
     mappings[countryCode] = mappings[countryCode] || {};
+    const existingMapping = mappings[countryCode][operator] || {};
     mappings[countryCode][operator] = {
+      ...existingMapping,
       provider,
       service_id: provider === 'soleaspay' ? serviceId : null,
+      enabled: existingMapping.enabled !== false,
     };
     const value = JSON.stringify(mappings);
 
@@ -542,6 +548,44 @@ router.post('/adminxyz/fournisseurs/save-one', requireAdminAuth, async (req, res
   } catch (error) {
     console.error('Admin single payment provider save error:', error);
     res.redirect('/adminxyz/fournisseurs?error=' + encodeURIComponent(error.message || 'Enregistrement impossible.'));
+  }
+});
+
+router.post('/adminxyz/fournisseurs/toggle-enabled', requireAdminAuth, async (req, res) => {
+  const countryCode = String(req.body.country_code || '').trim().toUpperCase();
+  const operator = String(req.body.operator || '').trim();
+  const enabledValue = String(req.body.enabled ?? '').trim();
+
+  try {
+    if (!['0', '1'].includes(enabledValue)) {
+      throw new Error('État de disponibilité invalide.');
+    }
+
+    const countries = await getAshtechCountries();
+    const country = countries.find(item => item.code === countryCode);
+    if (!country || !country.operators.includes(operator)) {
+      throw new Error('Pays ou opérateur invalide.');
+    }
+
+    const params = await getParams();
+    const mappings = parseProviderMappings(params.payment_provider_mappings);
+    mappings[countryCode] = mappings[countryCode] || {};
+    const existingMapping = mappings[countryCode][operator] || {};
+    mappings[countryCode][operator] = {
+      ...existingMapping,
+      enabled: enabledValue === '1',
+    };
+    const value = JSON.stringify(mappings);
+
+    await db.query(
+      'INSERT INTO app_parametres (cle, valeur) VALUES (?, ?) ON CONFLICT (cle) DO UPDATE SET valeur = ?',
+      ['payment_provider_mappings', value, value]
+    );
+    invalidateCache();
+    res.redirect('/adminxyz/fournisseurs?saved=1');
+  } catch (error) {
+    console.error('Admin payment operator status error:', error);
+    res.redirect('/adminxyz/fournisseurs?error=' + encodeURIComponent(error.message || 'Mise à jour impossible.'));
   }
 });
 

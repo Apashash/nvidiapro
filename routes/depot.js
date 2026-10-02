@@ -10,6 +10,7 @@ const {
   SOLEASPAY_API_BASE,
   getAshtechApiKey,
   getAshtechCountries,
+  filterEnabledPaymentOperators,
   getAshtechCryptoAssets,
   getOperatorProvider,
   getSoleasApiKey,
@@ -211,8 +212,12 @@ router.get('/depot', requireAuth, async (req, res) => {
     const allCountries = await getAshtechCountries();
     const accountCountry = findAccountPaymentCountry(user?.pays, allCountries);
     const countries = accountCountry ? [accountCountry] : [];
+    const enabledPaymentCountries = filterEnabledPaymentOperators(
+      allCountries,
+      params.payment_provider_mappings
+    );
     res.render('depot', {
-      user, countries, cryptoCountries: allCountries, error, failed, depot_notice, depotMin, cryptoRate,
+      user, countries, cryptoCountries: enabledPaymentCountries, error, failed, depot_notice, depotMin, cryptoRate,
       pending_depot_id, pending_numero, pending_wave_url, pending_crypto, otp_pending,
       selectedCountryCode: depotForm.country_code || '',
       selectedOperator: depotForm.operateur || '',
@@ -604,6 +609,10 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   }
 
   const providerConfig = await getOperatorProvider(country_code, operateur);
+  if (!providerConfig.enabled) {
+    req.session.error = 'Cet opérateur est temporairement désactivé.';
+    return res.redirect('/depot');
+  }
   if (providerConfig.provider === 'soleaspay' && !providerConfig.serviceId) {
     req.session.error = 'SoleasPay : le service de paiement n’est pas configuré pour cet opérateur.';
     return res.redirect('/depot');

@@ -400,11 +400,26 @@ async function getSoleasServices(countryCode, currency) {
 function parseProviderMappings(rawValue) {
   if (!rawValue) return {};
   try {
-    const parsed = JSON.parse(rawValue);
+    const parsed = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
+}
+
+function isPaymentOperatorEnabled(countryCode, operator, mappings) {
+  return mappings?.[countryCode]?.[operator]?.enabled !== false;
+}
+
+function filterEnabledPaymentOperators(countries, rawMappings) {
+  const mappings = parseProviderMappings(rawMappings);
+  return (Array.isArray(countries) ? countries : [])
+    .map(country => ({
+      ...country,
+      operators: (Array.isArray(country.operators) ? country.operators : [])
+        .filter(operator => isPaymentOperatorEnabled(country.code, operator, mappings)),
+    }))
+    .filter(country => country.operators.length > 0);
 }
 
 function normalizeOperatorLabel(value) {
@@ -439,16 +454,18 @@ async function getOperatorProvider(countryCode, operator) {
   const params = await getParams();
   const mappings = parseProviderMappings(params.payment_provider_mappings);
   const configured = mappings[countryCode]?.[operator];
+  const enabled = isPaymentOperatorEnabled(countryCode, operator, mappings);
 
   if (configured?.provider === 'soleaspay') {
     const serviceId = Number(configured.service_id);
     return {
+      enabled,
       provider: 'soleaspay',
       serviceId: Number.isInteger(serviceId) && serviceId > 0 ? serviceId : null,
     };
   }
 
-  return { provider: 'ashtechpay', serviceId: null };
+  return { enabled, provider: 'ashtechpay', serviceId: null };
 }
 
 module.exports = {
@@ -475,5 +492,7 @@ module.exports = {
   normalizeSoleasCountryCode,
   normalizeOperatorLabel,
   parseProviderMappings,
+  isPaymentOperatorEnabled,
+  filterEnabledPaymentOperators,
   createPaymentReference,
 };

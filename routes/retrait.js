@@ -4,6 +4,8 @@ const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { getParams } = require('../services/params');
 const {
+  filterEnabledPaymentOperators,
+  getOperatorProvider,
   getAshtechCountries,
   getAshtechCryptoAssets,
 } = require('../services/paymentProviders');
@@ -87,7 +89,11 @@ router.get('/retrait', requireAuth, async (req, res) => {
   try {
     const params = await getParams();
     const [[user]]    = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
-    const countries = await getAshtechCountries();
+    const allCountries = await getAshtechCountries();
+    const countries = filterEnabledPaymentOperators(
+      allCountries,
+      params.payment_provider_mappings
+    );
     const withdrawalCountry = findAccountPaymentCountry(user?.pays, countries);
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
@@ -251,6 +257,10 @@ router.post('/retrait', requireAuth, async (req, res) => {
       }
       if (!country.operators.includes(operateur)) {
         return res.json({ success: false, message: 'Opérateur invalide pour le pays de votre compte.' });
+      }
+      const operatorConfig = await getOperatorProvider(countryCode, operateur);
+      if (!operatorConfig.enabled) {
+        return res.json({ success: false, message: 'Cet opérateur est temporairement désactivé.' });
       }
       if (!dialCode || !phoneDigits.startsWith(dialCode)
           || phoneDigits.length < 8 || phoneDigits.length > 15
