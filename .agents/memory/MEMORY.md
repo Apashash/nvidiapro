@@ -9,3 +9,4 @@
 - [Plesk deployment packaging](external-npm-deployment.md) — keep lockfile URLs public and build archives from an explicit allowlist, not the workspace root.
 - [Persistent external sessions](express-session-persistence.md) — Plesk deployments must store Express sessions in PostgreSQL, not the default in-memory store.
 - [Referral attribution](referral-attribution.md) — preserve the referral code in the signup form, not only in the session.
+- [Workflow port conflicts](workflow-port-conflicts.md) — a failed app launch may coexist with the previous server still serving on port 5000.
