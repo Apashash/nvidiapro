@@ -925,6 +925,65 @@ router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {
   }
 });
 
+router.post('/adminxyz/parametres/popup-button/save', requireAdminAuth, async (req, res) => {
+  const label = String(req.body.label || '').trim();
+  const url = String(req.body.url || '').trim();
+
+  if (label.length > 60) {
+    return res.json({ success: false, message: 'Le nom du bouton ne peut pas dépasser 60 caractères.' });
+  }
+  if (url.length > 2048) {
+    return res.json({ success: false, message: 'Le lien est trop long.' });
+  }
+  if (Boolean(label) !== Boolean(url)) {
+    return res.json({ success: false, message: 'Renseignez à la fois le nom du bouton et son lien, ou laissez les deux champs vides.' });
+  }
+  if (url) {
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return res.json({ success: false, message: 'Le lien doit être une URL http:// ou https:// valide.' });
+    }
+    if (!['http:', 'https:'].includes(parsedUrl.protocol) || !parsedUrl.hostname) {
+      return res.json({ success: false, message: 'Le lien doit être une URL http:// ou https:// valide.' });
+    }
+  }
+
+  let conn;
+  let transactionOpen = false;
+  try {
+    conn = await db.getConnection();
+    await conn.beginTransaction();
+    transactionOpen = true;
+    for (const [cle, valeur] of [
+      ['popup_button_label', label],
+      ['popup_button_url', url],
+    ]) {
+      await conn.query(
+        'INSERT INTO app_parametres (cle, valeur) VALUES (?, ?) ON CONFLICT (cle) DO UPDATE SET valeur = ?',
+        [cle, valeur, valeur]
+      );
+    }
+    await conn.commit();
+    transactionOpen = false;
+    invalidateCache();
+    return res.json({ success: true });
+  } catch (e) {
+    if (conn && transactionOpen) {
+      try {
+        await conn.rollback();
+      } catch (rollbackError) {
+        console.error('Popup button settings rollback failed:', rollbackError);
+      }
+    }
+    console.error('Popup button settings save failed:', e);
+    return res.json({ success: false, message: 'Impossible d’enregistrer le bouton du popup.' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
 // ── AJAX: Verser revenus ───────────────────────────────────────────────────────
 // Delegates to the same row-locked payDueCommande() used by the 24h auto-payout
 // scheduler and the manual user "collecter" endpoint, so admin-triggered payouts

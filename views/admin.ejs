@@ -1836,6 +1836,12 @@
     <label class="param-label">Message de bienvenue</label>
     <textarea class="param-textarea" id="popupMessage"><%= params.popup_message || '' %></textarea>
     <button class="btn-save" onclick="saveParam('popup_message', document.getElementById('popupMessage').value)"><i class="fas fa-save"></i> Enregistrer le message</button>
+    <label class="param-label" for="popupButtonLabel">Nom du bouton du popup</label>
+    <input type="text" class="param-input" id="popupButtonLabel" maxlength="60" value="<%= params.popup_button_label || '' %>" placeholder="Ex. : Découvrir l’offre">
+    <label class="param-label" for="popupButtonUrl">Lien de destination du bouton</label>
+    <input type="url" class="param-input" id="popupButtonUrl" value="<%= params.popup_button_url || '' %>" maxlength="2048" placeholder="https://...">
+    <p class="param-help">Le bouton s’affiche lorsque le nom et le lien sont tous les deux renseignés. Laissez les deux champs vides pour le masquer.</p>
+    <button class="btn-save" onclick="savePopupButton()"><i class="fas fa-save"></i> Enregistrer le bouton</button>
   </div>
 
   <!-- Paliers de salaire VIP -->
@@ -2254,6 +2260,22 @@ async function saveParam(cle, valeur, callback) {
   const d = await r.json();
   if (d.success) { toast('✓ Paramètre enregistré', 'ok'); if (callback) callback(valeur); }
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
+}
+
+async function savePopupButton() {
+  const label = document.getElementById('popupButtonLabel').value.trim();
+  const url = document.getElementById('popupButtonUrl').value.trim();
+  try {
+    const response = await fetch('/adminxyz/parametres/popup-button/save', {
+      method: 'POST',
+      body: new URLSearchParams({ label, url }),
+    });
+    const result = await response.json();
+    if (result.success) toast('✓ Bouton du popup enregistré', 'ok');
+    else toast('✗ ' + (result.message || 'Erreur'), 'err');
+  } catch (error) {
+    toast('✗ Impossible de contacter le serveur', 'err');
+  }
 }
 
 function refreshRetrait(valeur) {

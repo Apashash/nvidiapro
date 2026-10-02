@@ -385,6 +385,7 @@
         align-items: center; justify-content: center; gap: 9px;
         font-size: 14px; border: none; font-family: 'Poppins', sans-serif;
     }
+    .welcome-btn-custom { background:linear-gradient(135deg,#14105F,#211987); color:#fff; }
     .button-row { display:flex; gap:10px; }
     .button-row .welcome-btn { flex:1; }
     .welcome-btn-join { background: linear-gradient(135deg, #D4921F, #B07018); color: #fff; }
@@ -701,6 +702,8 @@
 
 <!-- Welcome popup — contrôlé par l'admin (popup_active + popup_message) -->
 <% const _p = locals.appParams || {}; %>
+<% const popupButtonLabel = String(_p.popup_button_label || '').trim(); %>
+<% const popupButtonUrl = String(_p.popup_button_url || '').trim(); %>
 <div class="welcome-popup" id="welcomePopup" style="<%= _p.popup_active === '1' ? '' : 'display:none' %>">
     <div class="welcome-content">
         <div class="welcome-header">
@@ -712,6 +715,11 @@
         </div>
         <div class="welcome-body">
             <div class="welcome-buttons">
+                <% if (popupButtonLabel && popupButtonUrl) { %>
+                <a href="<%= popupButtonUrl %>" target="_blank" rel="noopener noreferrer" class="welcome-btn welcome-btn-custom">
+                    <i class="fas fa-arrow-up-right-from-square"></i> <%= popupButtonLabel %>
+                </a>
+                <% } %>
                 <% if (_p.telegram_link) { %>
                 <a href="<%= _p.telegram_link %>" target="_blank" rel="noopener" class="welcome-btn welcome-btn-join">
                     <i class="fab fa-telegram"></i> Canal Telegram
