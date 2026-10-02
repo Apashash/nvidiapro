@@ -60,6 +60,7 @@
         'Inviter quelqu\'un': { en: 'Invite someone', es: 'Invitar a alguien', zh: '邀请他人', ur: 'کسی کو مدعو کریں' },
         'Le retrait est indisponible pour le moment, veuillez réessayer plus tard.': { en: 'Withdrawal is currently unavailable. Please try again later.', es: 'El retiro no está disponible por ahora. Inténtalo más tarde.', zh: '提现暂时不可用，请稍后重试。', ur: 'رقم نکلوانا فی الحال دستیاب نہیں، براہ کرم بعد میں دوبارہ کوشش کریں۔' },
         'Vous devez acheter au moins une action avant de pouvoir effectuer un retrait.': { en: 'You must buy at least one share before making a withdrawal.', es: 'Debes comprar al menos una acción antes de retirar.', zh: '提现前您必须至少购买一股。', ur: 'رقم نکلوانے سے پہلے کم از کم ایک شیئر خریدنا ضروری ہے۔' },
+        'Vous devez effectuer au moins un dépôt confirmé avant de pouvoir effectuer un retrait.': { en: 'You must make at least one confirmed deposit before making a withdrawal.', es: 'Debes realizar al menos un depósito confirmado antes de retirar.', zh: '提现前必须至少完成一笔已确认的存款。', ur: 'رقم نکلوانے سے پہلے کم از کم ایک تصدیق شدہ جمع کروانا ضروری ہے۔' },
         'Informations de retrait': { en: 'Withdrawal information', es: 'Información del retiro', zh: '提现信息', ur: 'رقم نکلوانے کی معلومات' },
         'Nom complet du titulaire': { en: 'Account holder full name', es: 'Nombre completo del titular', zh: '账户持有人全名', ur: 'اکاؤنٹ ہولڈر کا پورا نام' },
         'Nom sur le compte Mobile Money': { en: 'Name on the Mobile Money account', es: 'Nombre de la cuenta de Mobile Money', zh: '移动支付账户姓名', ur: 'موبائل منی اکاؤنٹ پر نام' },

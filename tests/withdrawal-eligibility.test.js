@@ -43,3 +43,26 @@ test('withdrawal route counts only validated deposits', () => {
   const route = fs.readFileSync(path.join(__dirname, '..', 'routes/retrait.js'), 'utf8');
   assert.match(route, /depots WHERE user_id = \? AND statut = 'valide'/);
 });
+
+test('POST withdrawal checks prerequisites before creating a withdrawal request', () => {
+  const route = fs.readFileSync(path.join(__dirname, '..', 'routes/retrait.js'), 'utf8');
+  const postHandlerStart = route.indexOf("router.post('/retrait'");
+  const prerequisiteCheck = route.indexOf(
+    'const { hasPurchasedAction, hasValidatedDeposit } = await getWithdrawalPrerequisites(user_id);',
+    postHandlerStart
+  );
+  const rejectedWhenIneligible = route.indexOf('if (withdrawalPrerequisiteMessage)', prerequisiteCheck);
+  const withdrawalInsert = route.indexOf('INSERT INTO retraits', postHandlerStart);
+
+  assert.ok(postHandlerStart >= 0, 'POST /retrait route exists');
+  assert.ok(prerequisiteCheck > postHandlerStart, 'POST route checks both prerequisites');
+  assert.ok(rejectedWhenIneligible > prerequisiteCheck, 'POST route rejects missing prerequisites');
+  assert.ok(withdrawalInsert > rejectedWhenIneligible, 'request is inserted only after prerequisite checks');
+});
+
+test('withdrawal page shows the prerequisite message and blocks an unavailable request', () => {
+  const view = fs.readFileSync(path.join(__dirname, '..', 'views/retrait.ejs'), 'utf8');
+  assert.match(view, /<span><%= withdrawalPrerequisiteMessage %><\/span>/);
+  assert.match(view, /if \(!retraitDisponible\)/);
+  assert.match(view, /withdrawalPrerequisiteMessage \|\| scheduleMessage/);
+});

@@ -48,13 +48,13 @@ function formatMinutes(mins) {
 async function getWithdrawalPrerequisites(userId) {
   const [[row]] = await db.query(
     `SELECT
-       (SELECT COUNT(*)::int FROM commandes WHERE user_id = ?) AS purchase_count,
-       (SELECT COUNT(*)::int FROM depots WHERE user_id = ? AND statut = 'valide') AS validated_deposit_count`,
+       EXISTS (SELECT 1 FROM commandes WHERE user_id = ?) AS has_purchased_action,
+       EXISTS (SELECT 1 FROM depots WHERE user_id = ? AND statut = 'valide') AS has_validated_deposit`,
     [userId, userId]
   );
   return {
-    hasPurchasedAction: Number(row?.purchase_count || 0) > 0,
-    hasValidatedDeposit: Number(row?.validated_deposit_count || 0) > 0,
+    hasPurchasedAction: Boolean(row?.has_purchased_action),
+    hasValidatedDeposit: Boolean(row?.has_validated_deposit),
   };
 }
 

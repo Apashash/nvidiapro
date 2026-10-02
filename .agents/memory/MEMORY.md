@@ -3,7 +3,7 @@
 - [AshtechPay collect API integration](ashtechpay-integration.md) — notify_url (not callback_url) field, plain XAF/XOF currency codes, OTP retry flow with ussd_code, Wave response quirks.
 - [AshTech crypto API docs](ashtech-crypto-docs.md) — collection is documented; USDT withdrawals are manual, not a documented provider payout.
 - [MySoleas V4 payment gateway](soleaspay-services.md) — current deposits and withdrawals use OAuth2, alpha-3 countries, service codes, and intent/execute/status flows.
-- [Deposit referral and withdrawal rules](deposit-referral-and-withdrawal-rules.md) — commissions are based on validated deposits; withdrawals require at least one purchased action.
+- [Deposit referral and withdrawal rules](deposit-referral-and-withdrawal-rules.md) — commissions use validated deposits; withdrawals require a confirmed deposit and a purchased action.
 - [Mobile language stability](mobile-language-stability.md) — avoid continuous whole-page mutation observers for client-side translation; translate on load and explicit language changes.
 - [MySoleas OAuth authentication](soleaspay-payout-auth.md) — V4 gateway calls require client_credentials and x-sp-auth-token; the old API ACCESS/private-secret flow is V3 only.
 - [Plesk deployment packaging](external-npm-deployment.md) — keep lockfile URLs public and build archives from an explicit allowlist, not the workspace root.
