@@ -193,6 +193,23 @@ function getPlanInput(body) {
   };
 }
 
+const DEFAULT_PLAN_TIERS = [
+  { min: 0, max: 6000, rate: 5 },
+  { min: 6001, max: 15000, rate: 7 },
+  { min: 15001, max: 40000, rate: 10 },
+  { min: 40001, max: 170000, rate: 15 },
+  { min: 170001, max: 10000000, rate: 20 },
+  { min: 10000001, max: null, rate: 20 },
+];
+
+async function insertAdminPlan(input) {
+  await db.query(
+    'INSERT INTO planinvestissement (nom, prix, prix_action, actions_minimum, duree_jours, rendement_journalier, strategie_json, image_url, description) VALUES (?,?,?,?,?,?,?,?,?)',
+    [input.nom, input.prix, input.prixAction, input.actionsMinimum, input.dureeJours,
+      input.rendementJournalier, input.strategieJson, input.imageUrl, input.description]
+  );
+}
+
 function enrichAdminPlan(plan) {
   const actionsMinimum = Math.max(1, parseInt(plan.actions_minimum, 10) || 1);
   const prixAction = Number(plan.prix_action ?? (Number(plan.prix) / actionsMinimum));
@@ -344,6 +361,32 @@ router.get('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
     enrichAdminPlan(plan);
     res.render('admin', { currentPage: 'plan-edit', pageTitle: 'Modifier le plan', plan });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.get('/adminxyz/plans/new', requireAdminAuth, (req, res) => {
+  const plan = {
+    nom: '',
+    prix_action: '',
+    actions_minimum: '',
+    duree_jours: '',
+    taux_minimum: Math.min(...DEFAULT_PLAN_TIERS.map(tier => tier.rate)),
+    taux_maximum: Math.max(...DEFAULT_PLAN_TIERS.map(tier => tier.rate)),
+    image_url: '',
+    description: '',
+    tiers: DEFAULT_PLAN_TIERS.map(tier => ({ ...tier })),
+  };
+  res.render('admin', { currentPage: 'plan-new', pageTitle: 'Ajouter un plan', plan });
+});
+
+router.post('/adminxyz/plans/new', requireAdminAuth, async (req, res) => {
+  try {
+    await insertAdminPlan(getPlanInput(req.body));
+    res.redirect('/adminxyz/plans');
+  } catch (e) {
+    if (e.message && !e.code) return res.status(400).send(e.message);
+    console.error(e);
+    res.status(500).send('Erreur: ' + e.message);
+  }
 });
 
 router.post('/adminxyz/plans/:id/edit', requireAdminAuth, async (req, res) => {
@@ -1137,10 +1180,7 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
       case 'add_plan': {
         try {
           const input = getPlanInput(req.body);
-          await db.query(
-            'INSERT INTO planinvestissement (nom, prix, prix_action, actions_minimum, duree_jours, rendement_journalier, strategie_json, image_url, description) VALUES (?,?,?,?,?,?,?,?,?)',
-            [input.nom, input.prix, input.prixAction, input.actionsMinimum, input.dureeJours,
-              input.rendementJournalier, input.strategieJson, input.imageUrl, input.description]);
+          await insertAdminPlan(input);
           return res.json({ success: true });
         } catch (e) {
           return res.json({ success: false, message: e.message || 'Données invalides' });
