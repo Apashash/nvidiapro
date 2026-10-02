@@ -31,8 +31,11 @@ test('customer welcome popup shows a safely escaped custom link only when both v
 
 test('welcome popup keeps its message and actions readable above mobile controls', () => {
   assert.match(dashboardView, /class="welcome-body">\s*<p class="welcome-message">/);
+  assert.match(dashboardView, /href="\/assets\/dangote-theme\.css\?v=3"/);
   assert.match(themeStyles, /\.welcome-popup\s*\{[^}]*z-index:\s*20000\s*!important/s);
   assert.match(themeStyles, /\.welcome-popup \.welcome-header h3\s*\{[^}]*color:\s*#fff\s*!important/s);
+  assert.match(themeStyles, /\.welcome-popup \.welcome-header h3\s*\{[^}]*font-size:\s*20px\s*!important[^}]*font-weight:\s*800\s*!important/s);
+  assert.match(themeStyles, /\.welcome-popup \.welcome-message\s*\{[^}]*color:\s*#15151a\s*!important[^}]*font-size:\s*16px\s*!important[^}]*font-weight:\s*600\s*!important/s);
   assert.match(themeStyles, /\.welcome-popup a\.welcome-btn-custom\s*\{[^}]*color:\s*#fff\s*!important/s);
   assert.match(themeStyles, /\.welcome-popup \.welcome-content\s*\{[^}]*100dvh[^}]*!important/s);
 });
