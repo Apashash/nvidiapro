@@ -10,7 +10,7 @@ const dashboardView = fs.readFileSync(path.join(__dirname, '..', 'views/index.ej
 
 test('admin can configure a popup button name and destination together', () => {
   assert.match(adminView, /id="popupButtonLabel"[^>]*maxlength="60"/);
-  assert.match(adminView, /id="popupButtonUrl"[^>]*type="url"/);
+  assert.match(adminView, /type="url"[^>]*id="popupButtonUrl"/);
   assert.match(adminView, /onclick="savePopupButton\(\)"/);
   assert.match(adminRoute, /\/adminxyz\/parametres\/popup-button\/save/);
   assert.match(adminRoute, /Boolean\(label\) !== Boolean\(url\)/);
