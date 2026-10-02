@@ -18,6 +18,7 @@ const {
   findAccountPaymentCountry,
   getCountryDialCode,
 } = require('../services/accountPaymentCountry');
+const { getWithdrawalPrerequisiteMessage } = require('../services/withdrawalEligibility');
 
 // Maps admin day abbreviations → JS getUTCDay() values (0=Sun … 6=Sat)
 const DAY_MAP = { 'Dim': 0, 'Lun': 1, 'Mar': 2, 'Mer': 3, 'Jeu': 4, 'Ven': 5, 'Sam': 6 };
@@ -42,6 +43,19 @@ function formatMinutes(mins) {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`;
+}
+
+async function getWithdrawalPrerequisites(userId) {
+  const [[row]] = await db.query(
+    `SELECT
+       (SELECT COUNT(*)::int FROM commandes WHERE user_id = ?) AS purchase_count,
+       (SELECT COUNT(*)::int FROM depots WHERE user_id = ? AND statut = 'valide') AS validated_deposit_count`,
+    [userId, userId]
+  );
+  return {
+    hasPurchasedAction: Number(row?.purchase_count || 0) > 0,
+    hasValidatedDeposit: Number(row?.validated_deposit_count || 0) > 0,
+  };
 }
 
 function buildScheduleStatus(params) {
@@ -101,12 +115,16 @@ router.get('/retrait', requireAuth, async (req, res) => {
     const suspendu = (params.retraits_actifs === '0');
     const schedule = buildScheduleStatus(params);
     const retrait_bloque = !!(user && user.retrait_bloque);
-    const [[commandRow]] = await db.query(
-      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ?",
-      [user_id]
-    );
-    const hasActiveInvestment = Number(commandRow?.nb) > 0;
-    const retraits_disponibles = !suspendu && !retrait_bloque && schedule.disponible && hasActiveInvestment;
+    const { hasPurchasedAction, hasValidatedDeposit } = await getWithdrawalPrerequisites(user_id);
+    const hasActiveInvestment = hasPurchasedAction;
+    const withdrawalPrerequisiteMessage = getWithdrawalPrerequisiteMessage({
+      hasValidatedDeposit,
+      hasPurchasedAction,
+    });
+    const retraits_disponibles = !suspendu
+      && !retrait_bloque
+      && schedule.disponible
+      && !withdrawalPrerequisiteMessage;
 
     const message = req.session.retrait_message || null;
     delete req.session.retrait_message;
@@ -119,7 +137,8 @@ router.get('/retrait', requireAuth, async (req, res) => {
       ? configuredCryptoRate
       : 0;
     res.render('retrait', {
-      user, solde, retraits_disponibles, hasActiveInvestment, suspendu,
+      user, solde, retraits_disponibles, hasActiveInvestment, hasValidatedDeposit,
+      withdrawalPrerequisiteMessage, suspendu,
       retrait_bloque, schedule, params, fraisPourcentage, message,
       withdrawalCountry,
       withdrawalDialCode: withdrawalCountry
@@ -159,13 +178,14 @@ router.post('/retrait', requireAuth, async (req, res) => {
       return res.json({ success: false, message: schedule.message });
     }
 
-    // 3. At least one investment/action must have been purchased.
-    const [[cmds]] = await db.query(
-      "SELECT COUNT(*)::int as nb FROM commandes WHERE user_id = ?",
-      [user_id]
-    );
-    if (Number(cmds.nb) === 0) {
-      return res.json({ success: false, message: "Vous devez acheter au moins une action avant de pouvoir effectuer un retrait." });
+    // A validated deposit and at least one purchased action are both required.
+    const { hasPurchasedAction, hasValidatedDeposit } = await getWithdrawalPrerequisites(user_id);
+    const withdrawalPrerequisiteMessage = getWithdrawalPrerequisiteMessage({
+      hasValidatedDeposit,
+      hasPurchasedAction,
+    });
+    if (withdrawalPrerequisiteMessage) {
+      return res.json({ success: false, message: withdrawalPrerequisiteMessage });
     }
 
     // 4. Form validation
