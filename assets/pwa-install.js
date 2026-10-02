@@ -42,54 +42,64 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const banner = document.querySelector('[data-pwa-install-banner]');
-    if (!banner || isAlreadyInstalled()) return;
-
-    const installButton = banner.querySelector('[data-pwa-install-button]');
-    const closeButton = banner.querySelector('[data-pwa-install-close]');
+    const installButtons = document.querySelectorAll('[data-pwa-install-button]');
+    const profileEntries = document.querySelectorAll('[data-pwa-install-entry]');
+    const closeButton = banner?.querySelector('[data-pwa-install-close]');
     const helpDialog = document.querySelector('[data-pwa-install-help]');
     const helpCloseButton = helpDialog?.querySelector('[data-pwa-install-help-close]');
     const helpText = helpDialog?.querySelector('[data-pwa-install-steps]');
     let hideTimer;
+    let activeInstallTrigger = null;
+
+    if (isAlreadyInstalled()) {
+      profileEntries.forEach(entry => { entry.hidden = true; });
+      return;
+    }
+    if (!banner && !installButtons.length) return;
 
     function closeHelp() {
       if (!helpDialog) return;
       helpDialog.hidden = true;
-      if (!banner.hidden) installButton?.focus();
+      activeInstallTrigger?.focus();
     }
 
     function hideBanner() {
       window.clearTimeout(hideTimer);
-      banner.hidden = true;
+      if (banner) banner.hidden = true;
     }
 
-    function showHelp() {
+    function showHelp(trigger) {
       if (!helpDialog || !helpText) return;
       helpText.textContent = translate(getInstallInstructions());
+      activeInstallTrigger = trigger || null;
       helpDialog.hidden = false;
       helpCloseButton?.focus();
     }
 
-    if (installButton) {
-      installButton.addEventListener('click', async () => {
-        if (!deferredInstallPrompt) {
-          hideBanner();
-          showHelp();
-          return;
-        }
+    async function handleInstallClick(event) {
+      const trigger = event.currentTarget;
+      if (!deferredInstallPrompt) {
+        if (banner && banner.contains(trigger)) hideBanner();
+        showHelp(trigger);
+        return;
+      }
 
-        const installPrompt = deferredInstallPrompt;
-        deferredInstallPrompt = null;
-        try {
-          await installPrompt.prompt();
-          await installPrompt.userChoice;
-          hideBanner();
-        } catch (error) {
-          console.warn('Could not open the app installation prompt:', error);
-          hideBanner();
-          showHelp();
-        }
-      });
+      const installPrompt = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      try {
+        await installPrompt.prompt();
+        await installPrompt.userChoice;
+        hideBanner();
+      } catch (error) {
+        console.warn('Could not open the app installation prompt:', error);
+        if (banner && banner.contains(trigger)) hideBanner();
+        showHelp(trigger);
+      }
     }
+
+    installButtons.forEach(button => {
+      button.addEventListener('click', handleInstallClick);
+    });
 
     closeButton?.addEventListener('click', hideBanner);
     helpCloseButton?.addEventListener('click', closeHelp);
@@ -99,14 +109,19 @@
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && helpDialog && !helpDialog.hidden) closeHelp();
     });
-    window.addEventListener('appinstalled', hideBanner, { once: true });
+    window.addEventListener('appinstalled', () => {
+      hideBanner();
+      profileEntries.forEach(entry => { entry.hidden = true; });
+    }, { once: true });
     window.addEventListener('gd-language-change', () => {
       if (helpText && helpDialog && !helpDialog.hidden) {
         helpText.textContent = translate(getInstallInstructions());
       }
     });
 
-    banner.hidden = false;
-    hideTimer = window.setTimeout(hideBanner, BANNER_DURATION_MS);
+    if (banner) {
+      banner.hidden = false;
+      hideTimer = window.setTimeout(hideBanner, BANNER_DURATION_MS);
+    }
   });
 })();

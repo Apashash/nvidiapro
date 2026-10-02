@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Profil - Groupe Dangote (GD)</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#14105F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="/images/pwa-icon-192.png">
+    <link rel="stylesheet" href="/assets/pwa-install.css?v=1">
+    <script defer src="/assets/pwa-install.js?v=2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -122,6 +129,17 @@
         }
         .menu-txt { flex:1; font-size:14px; font-weight:500; }
         .menu-arr { color:#14105F; font-size:12px; }
+        .pwa-profile-install {
+            width:100%; border:0; border-bottom:1px solid #E4E4EE;
+            background:#fff; text-align:left; font:inherit;
+        }
+        .pwa-profile-install[hidden] { display:none !important; }
+        .pwa-profile-install-cta {
+            display:inline-flex; align-items:center; justify-content:center;
+            min-height:32px; padding:0 12px; border-radius:10px;
+            background:#D60000; color:#fff; font-size:11px; font-weight:700;
+            white-space:nowrap;
+        }
 
 
         .logout-confirm-overlay {
@@ -253,6 +271,13 @@
                 <span class="menu-txt">FAQ</span>
                 <i class="fas fa-chevron-right menu-arr"></i>
             </a>
+            <button type="button" class="menu-item pwa-profile-install"
+                    data-pwa-install-button data-pwa-install-entry
+                    aria-label="Installer l’application">
+                <span class="menu-ico"><i class="fas fa-download" aria-hidden="true"></i></span>
+                <span class="menu-txt">Installer l’application</span>
+                <span class="pwa-profile-install-cta">Installer</span>
+            </button>
             <a href="<%= (locals.appParams && appParams.telegram_link) || 'https://t.me/groupeofficielblackrock' %>" target="_blank" class="menu-item">
                 <span class="menu-ico"><i class="fas fa-headset"></i></span>
                 <span class="menu-txt">Service client</span>
@@ -268,6 +293,8 @@
         </div>
     </div>
 </div>
+
+<%- include('partials/pwa-install-help') %>
 
 <!-- Logout Confirm -->
 <div class="logout-confirm-overlay" id="logoutOverlay">
