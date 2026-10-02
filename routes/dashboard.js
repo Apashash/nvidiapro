@@ -27,6 +27,7 @@ router.get('/post/nouveau', requireAuth, (req, res) => {
 
 router.get('/', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
+  const showAppInstallPrompt = req.session.show_app_install_prompt === true;
   try {
     const [[user]] = await db.query(
       'SELECT u.*, s.solde FROM utilisateurs u LEFT JOIN soldes s ON u.id = s.user_id WHERE u.id = ?',
@@ -53,8 +54,20 @@ router.get('/', requireAuth, async (req, res) => {
     const error_message = req.session.error_message || null;
     delete req.session.success_message;
     delete req.session.error_message;
+    delete req.session.show_app_install_prompt;
 
-    res.render('index', { user, solde: user.solde || 0, revenus: rev, posts, plans, devise, success_message, error_message, notifications: [] });
+    res.render('index', {
+      user,
+      solde: user.solde || 0,
+      revenus: rev,
+      posts,
+      plans,
+      devise,
+      success_message,
+      error_message,
+      notifications: [],
+      showAppInstallPrompt,
+    });
   } catch (e) {
     console.error(e);
     res.redirect('/connexion');

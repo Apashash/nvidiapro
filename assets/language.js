@@ -289,7 +289,14 @@
         'Erreur lors de l’achat': { en: 'Purchase error', es: 'Error durante la compra', zh: '购买出错', ur: 'خریداری میں خرابی' },
         "Erreur lors de l'achat": { en: 'Purchase error', es: 'Error durante la compra', zh: '购买出错', ur: 'خریداری میں خرابی' },
         'Erreur de connexion': { en: 'Connection error', es: 'Error de conexión', zh: '连接错误', ur: 'کنکشن میں خرابی' },
-        'Changer la devise': { en: 'Change currency', es: 'Cambiar moneda', zh: '切换货币', ur: 'کرنسی تبدیل کریں' }
+        'Changer la devise': { en: 'Change currency', es: 'Cambiar moneda', zh: '切换货币', ur: 'کرنسی تبدیل کریں' },
+        'Téléchargez notre application': { en: 'Install our app', es: 'Instala nuestra aplicación', zh: '安装我们的应用', ur: 'ہماری ایپ انسٹال کریں' },
+        'Accès rapide depuis votre écran d’accueil': { en: 'Quick access from your home screen', es: 'Acceso rápido desde tu pantalla de inicio', zh: '从主屏幕快速访问', ur: 'اپنی ہوم اسکرین سے فوری رسائی' },
+        'Installer': { en: 'Install', es: 'Instalar', zh: '安装', ur: 'انسٹال کریں' },
+        'Installer l’application': { en: 'Install the app', es: 'Instalar la aplicación', zh: '安装应用', ur: 'ایپ انسٹال کریں' },
+        'Sur iPhone ou iPad : ouvrez Partager, puis choisissez « Sur l’écran d’accueil ».': { en: 'On iPhone or iPad: tap Share, then choose “Add to Home Screen.”', es: 'En iPhone o iPad: toca Compartir y elige «Añadir a pantalla de inicio».', zh: '在 iPhone 或 iPad 上：点按“分享”，然后选择“添加到主屏幕”。', ur: 'iPhone یا iPad پر: شیئر پر ٹیپ کریں، پھر ہوم اسکرین میں شامل کریں منتخب کریں۔' },
+        'Sur Android : ouvrez le menu ⋮, puis choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ».': { en: 'On Android: open the ⋮ menu, then choose “Install app” or “Add to Home screen.”', es: 'En Android: abre el menú ⋮ y elige «Instalar aplicación» o «Añadir a pantalla de inicio».', zh: '在 Android 上：打开 ⋮ 菜单，然后选择“安装应用”或“添加到主屏幕”。', ur: 'Android پر: ⋮ مینو کھولیں، پھر ایپ انسٹال کریں یا ہوم اسکرین میں شامل کریں منتخب کریں۔' },
+        'Ouvrez le menu de votre navigateur, puis choisissez « Installer l’application ».': { en: 'Open your browser menu, then choose “Install app.”', es: 'Abre el menú del navegador y elige «Instalar aplicación».', zh: '打开浏览器菜单，然后选择“安装应用”。', ur: 'اپنے براؤزر کا مینو کھولیں، پھر ایپ انسٹال کریں منتخب کریں۔' }
     };
     const dictionaries = {
         en: {

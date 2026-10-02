@@ -68,6 +68,7 @@ router.post('/connexion', async (req, res) => {
     req.session.user_id = user.id;
     req.session.user_nom = user.nom;
     req.session.pays = user.pays;
+    req.session.show_app_install_prompt = true;
     delete req.session.form_data;
     res.redirect('/');
   } catch (e) {
@@ -184,6 +185,7 @@ router.post('/inscription1', async (req, res) => {
       req.session.user_id = user_id;
       req.session.user_nom = nom;
       req.session.pays = pays;
+      req.session.show_app_install_prompt = true;
       delete req.session.parrain_code;
       delete req.session.form_data;
       res.redirect('/');

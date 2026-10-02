@@ -94,3 +94,6 @@
   <i class="fab fa-whatsapp" style="font-size:26px;"></i>
 </a>
 <% } %>
+<% if (locals.showAppInstallPrompt) { %>
+<%- include('pwa-install') %>
+<% } %>

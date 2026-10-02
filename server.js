@@ -52,6 +52,18 @@ app.use(require('./middleware/paramLoader'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.get('/manifest.webmanifest', (req, res) => {
+  res.type('application/manifest+json');
+  res.sendFile(path.join(__dirname, 'public/manifest.webmanifest'));
+});
+app.get('/sw.js', (req, res) => {
+  res.set({
+    'Cache-Control': 'no-cache',
+    'Service-Worker-Allowed': '/',
+  });
+  res.type('application/javascript');
+  res.sendFile(path.join(__dirname, 'public/sw.js'));
+});
 
 // Routes
 app.use('/', require('./routes/auth'));
