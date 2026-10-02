@@ -69,6 +69,7 @@
     .nav-badge { min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#E8931A; color:#fff; font-size:0.72rem; font-weight:700; display:none; align-items:center; justify-content:center; flex-shrink:0; }
     .nav-badge.show { display:flex; }
     .sidebar-footer { padding:14px 16px; border-top:1px solid #f0f0f0; }
+    .sidebar-footer { display:flex; flex-direction:column; gap:8px; }
     .sidebar-footer a { display:flex; align-items:center; justify-content:center; gap:8px; background:#fff; border:1.5px solid #e0e0e0; border-radius:12px; padding:12px; color:#555; text-decoration:none; font-size:0.9rem; font-weight:600; transition:background 0.15s; }
     .sidebar-footer a:hover { background:#f5f5f5; }
 
@@ -382,6 +383,19 @@
       background:var(--brand-red) !important;
       color:#fff !important;
     }
+    .admin-panel .sidebar-footer a.vip-settings-link {
+      justify-content:flex-start !important;
+      gap:10px !important;
+      background:var(--brand-navy) !important;
+      border-color:var(--brand-navy) !important;
+      color:#fff !important;
+    }
+    .admin-panel .sidebar-footer a.vip-settings-link:hover {
+      background:var(--brand-navy-dark) !important;
+    }
+    .admin-panel .sidebar-footer a.vip-settings-link i {
+      color:var(--brand-red) !important;
+    }
     .admin-panel .user-name { color:var(--brand-navy) !important; }
     .admin-panel .user-sub { color:var(--brand-muted) !important; }
     .admin-panel .user-balance { color:var(--brand-red) !important; }
@@ -443,6 +457,10 @@
     <% }); %>
   </nav>
   <div class="sidebar-footer">
+    <a href="/adminxyz/parametres#vip-salary-tiers" class="vip-settings-link">
+      <i class="fas fa-coins" aria-hidden="true"></i>
+      <span>Paliers de salaire VIP</span>
+    </a>
     <a href="/adminxyz/logout"><i class="fas fa-sign-out-alt" style="color:#ef4444"></i> Déconnexion</a>
   </div>
 </aside>
