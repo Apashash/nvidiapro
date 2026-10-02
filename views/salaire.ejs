@@ -216,8 +216,8 @@
 
 <div class="container">
     <div class="page-header">
-        <h1><i class="fas fa-coins"></i> Salaire Quotidien</h1>
-        <p>Recevez votre rémunération selon votre niveau VIP</p>
+        <h1><i class="fas fa-coins"></i> Salaire par palier VIP</h1>
+        <p>Un versement unique au palier VIP actuel, après validation du seuil de filleuls actifs.</p>
     </div>
 
     <!-- Hero salary card -->
@@ -274,8 +274,9 @@
                 const req      = parseInt(p.filleuls_requis) || 1;
                 const filled   = Math.min(filleuls_actifs, req);
                 const pct      = Math.round(filled / req * 100);
-                const done     = filleuls_actifs >= req;
-                const isCur    = p.niveau == niveau_actuel;
+                const isCur    = Number(p.niveau) === Number(niveau_actuel);
+                const isPast   = Number(p.niveau) < Number(niveau_actuel);
+                const done     = isCur && filleuls_actifs >= req;
                 const isPaid   = niveaux_reclames.includes(p.niveau);
                 const cardCls  = isPaid ? 'paid' : (done ? 'unlocked' : (isCur ? 'actuel' : 'locked'));
                 // Dots: show actual filleuls up to req, then empty slots
@@ -312,8 +313,10 @@
                 <div class="palier-status done"><i class="fas fa-check-circle"></i> Débloqué — salaire disponible !</div>
                 <% } else if (isCur) { %>
                 <div class="palier-status current"><i class="fas fa-clock"></i> En cours — encore <%= req - filleuls_actifs %> filleul(s)</div>
+                <% } else if (isPast) { %>
+                <div class="palier-status locked"><i class="fas fa-lock"></i> Palier dépassé — seul le niveau VIP actuel est réclamable</div>
                 <% } else { %>
-                <div class="palier-status locked"><i class="fas fa-lock"></i> Verrouillé — <%= req - filleuls_actifs %> filleul(s) manquants</div>
+                <div class="palier-status locked"><i class="fas fa-lock"></i> Verrouillé — niveau VIP <%= p.niveau %> requis</div>
                 <% } %>
 
                 <!-- Filleul avatars (only show for current + unlocked) -->

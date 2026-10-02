@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
+const { MAX_VIP_LEVEL } = require('../services/vipSalaryTiers');
 
 router.get('/compte', requireAuth, async (req, res) => {
   const user_id = req.session.user_id;
@@ -23,11 +24,10 @@ router.get('/compte', requireAuth, async (req, res) => {
     const filleuls_actifs = parseInt(filleulRow ? filleulRow.cnt : 0) || 0;
 
     // 3 filleuls actifs = 1 niveau VIP
-    const MAX_VIP = 10;
-    const niveau_vip = Math.min(MAX_VIP, Math.floor(filleuls_actifs / 3));
+    const niveau_vip = Math.min(MAX_VIP_LEVEL, Math.floor(filleuls_actifs / 3));
     const inv_actuelles = filleuls_actifs % 3;
-    const inv_requises  = niveau_vip >= MAX_VIP ? 0 : (3 - inv_actuelles);
-    const pourcentage   = niveau_vip >= MAX_VIP ? 100 : Math.round(inv_actuelles / 3 * 100);
+    const inv_requises  = niveau_vip >= MAX_VIP_LEVEL ? 0 : (3 - inv_actuelles);
+    const pourcentage   = niveau_vip >= MAX_VIP_LEVEL ? 100 : Math.round(inv_actuelles / 3 * 100);
 
     // Upsert dans la table vip
     const [[existVip]] = await db.query('SELECT id FROM vip WHERE user_id = ?', [user_id]);

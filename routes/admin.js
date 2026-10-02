@@ -16,6 +16,11 @@ const {
   validatePrizeTiers,
 } = require('../services/giftCodePrizes');
 const {
+  MAX_VIP_LEVEL,
+  getNextVipSalaryLevel,
+  validateVipSalaryTierInput,
+} = require('../services/vipSalaryTiers');
+const {
   getAshtechCountries,
   findSoleasServiceForOperator,
   getSoleasServices,
@@ -705,11 +710,96 @@ router.post('/adminxyz/codes-cadeaux/delete/:id', requireAdminAuth, async (req, 
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
 });
 
+const vipSalaryNoticeByCode = {
+  saved: {
+    type: 'success',
+    message: 'Palier enregistré. Le nouveau seuil et le montant s’appliquent aux versements futurs non réclamés; l’historique reste inchangé.',
+  },
+  invalid: {
+    type: 'error',
+    message: 'Valeurs invalides. Vérifiez le niveau, le libellé, le nombre de filleuls et le montant.',
+  },
+  duplicate: {
+    type: 'error',
+    message: 'Un palier existe déjà pour ce niveau.',
+  },
+  order: {
+    type: 'error',
+    message: 'Ajoutez les paliers dans l’ordre, sans dépasser le niveau VIP maximal.',
+  },
+  maximum: {
+    type: 'error',
+    message: 'Les 10 niveaux VIP sont déjà configurés.',
+  },
+  notfound: {
+    type: 'error',
+    message: 'Ce palier n’existe plus. Rechargez la page avant de réessayer.',
+  },
+  failed: {
+    type: 'error',
+    message: 'Enregistrement impossible. Aucun palier n’a été modifié.',
+  },
+};
+
+function vipSalarySettingsUrl(status) {
+  return `/adminxyz/parametres?vipSalary=${status}#vip-salary-tiers`;
+}
+
 router.get('/adminxyz/parametres', requireAdminAuth, async (req, res) => {
   try {
     const params = await getParams();
-    res.render('admin', { currentPage: 'parametres', pageTitle: 'Paramètres', params });
+    const [vipSalaryTiers] = await db.query(
+      'SELECT id, niveau, label, filleuls_requis, montant_cadeau FROM vip_paliers ORDER BY niveau ASC'
+    );
+    const vipSalaryNotice = vipSalaryNoticeByCode[String(req.query.vipSalary || '')] || null;
+    res.render('admin', {
+      currentPage: 'parametres',
+      pageTitle: 'Paramètres',
+      params,
+      vipSalaryTiers,
+      nextVipSalaryLevel: getNextVipSalaryLevel(vipSalaryTiers),
+      maxVipLevel: MAX_VIP_LEVEL,
+      vipSalaryNotice,
+    });
   } catch (e) { console.error(e); res.status(500).send('Erreur: ' + e.message); }
+});
+
+router.post('/adminxyz/parametres/salaire/save', requireAdminAuth, async (req, res) => {
+  const parsed = validateVipSalaryTierInput(req.body);
+  if (!parsed.valid) return res.redirect(vipSalarySettingsUrl('invalid'));
+
+  const tier = parsed.value;
+  try {
+    if (tier.id !== null) {
+      const [[existingTier]] = await db.query(
+        'SELECT id, niveau, label FROM vip_paliers WHERE id = ?',
+        [tier.id]
+      );
+      if (!existingTier) return res.redirect(vipSalarySettingsUrl('notfound'));
+
+      const label = tier.label || existingTier.label || `Niveau VIP ${existingTier.niveau}`;
+      await db.query(
+        'UPDATE vip_paliers SET label = ?, filleuls_requis = ?, montant_cadeau = ? WHERE id = ?',
+        [label, tier.filleuls_requis, tier.montant_cadeau, tier.id]
+      );
+    } else {
+      const [existingTiers] = await db.query('SELECT niveau FROM vip_paliers ORDER BY niveau ASC');
+      const nextLevel = getNextVipSalaryLevel(existingTiers);
+      if (nextLevel === null) return res.redirect(vipSalarySettingsUrl('maximum'));
+      if (tier.niveau !== nextLevel) return res.redirect(vipSalarySettingsUrl('order'));
+
+      const label = tier.label || `Niveau VIP ${tier.niveau}`;
+      await db.query(
+        'INSERT INTO vip_paliers (niveau, label, filleuls_requis, montant_cadeau) VALUES (?, ?, ?, ?)',
+        [tier.niveau, label, tier.filleuls_requis, tier.montant_cadeau]
+      );
+    }
+
+    return res.redirect(vipSalarySettingsUrl('saved'));
+  } catch (e) {
+    console.error('Admin VIP salary tier save failed:', e);
+    return res.redirect(vipSalarySettingsUrl(e.code === '23505' ? 'duplicate' : 'failed'));
+  }
 });
 
 router.post('/adminxyz/parametres/save', requireAdminAuth, async (req, res) => {

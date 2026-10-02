@@ -257,6 +257,18 @@
     .form-group input[readonly] { color:#888; cursor:not-allowed; }
     .btn-save { width:100%; background:#E8931A; color:#fff; border:none; border-radius:12px; padding:13px; font-size:0.92rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
     .btn-save:hover { background:#d4820e; }
+    .vip-salary-note { padding:11px 13px; margin-bottom:14px; border-radius:10px; background:#FFF7ED; color:#9A3412; font-size:0.8rem; line-height:1.5; }
+    .vip-salary-notice { padding:11px 13px; margin-bottom:14px; border-radius:10px; font-size:0.82rem; line-height:1.45; }
+    .vip-salary-notice.success { background:#F0FDF4; color:#166534; }
+    .vip-salary-notice.error { background:#FEF2F2; color:#991B1B; }
+    .vip-salary-tier { padding:14px; margin-bottom:10px; border:1px solid #eee; border-radius:12px; background:#fff; }
+    .vip-salary-tier-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .vip-salary-tier-title { font-size:0.9rem; font-weight:800; color:#1a1a1a; }
+    .vip-salary-tier-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 12px; margin-bottom:12px; }
+    .vip-salary-field label { display:block; font-size:0.75rem; color:#555; font-weight:700; margin-bottom:5px; }
+    .vip-salary-field input { width:100%; background:#F5F5F0; border:1.5px solid #e8e8e8; border-radius:10px; padding:10px 12px; font-size:0.9rem; color:#1a1a1a; outline:none; }
+    .vip-salary-field input:focus { border-color:#E8931A; }
+    @media(max-width:420px) { .vip-salary-tier-grid { grid-template-columns:1fr; } }
 
     /* Paramètres */
     .param-card { background:#fff; border-radius:16px; padding:18px; margin-bottom:14px; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
@@ -1761,6 +1773,96 @@
     <label class="param-label">Message de bienvenue</label>
     <textarea class="param-textarea" id="popupMessage"><%= params.popup_message || '' %></textarea>
     <button class="btn-save" onclick="saveParam('popup_message', document.getElementById('popupMessage').value)"><i class="fas fa-save"></i> Enregistrer le message</button>
+  </div>
+
+  <!-- Paliers de salaire VIP -->
+  <div class="param-card" id="vip-salary-tiers">
+    <div class="param-head">
+      <div class="param-icon" style="background:#F0FDF4"><i class="fas fa-coins" style="color:#16a34a"></i></div>
+      <div class="param-head-text">
+        <h3>Paliers de salaire VIP</h3>
+        <p>Montant et nombre de filleuls directs actifs requis pour chaque niveau</p>
+      </div>
+    </div>
+
+    <div class="vip-salary-note">
+      Le niveau VIP progresse de 1 tous les 3 filleuls actifs, jusqu’au niveau <%= maxVipLevel %>.
+      Chaque palier est versé une seule fois. Les modifications concernent les versements futurs non réclamés;
+      les versements déjà inscrits dans l’historique ne sont pas modifiés. Les paliers existants ne peuvent pas être supprimés ici.
+    </div>
+
+    <% if (vipSalaryNotice) { %>
+    <div class="vip-salary-notice <%= vipSalaryNotice.type %>" role="status"><%= vipSalaryNotice.message %></div>
+    <% } %>
+
+    <% if (vipSalaryTiers.length === 0) { %>
+    <div class="empty" style="padding:20px 10px">Aucun palier configuré. Ajoutez le niveau VIP 1 pour activer les salaires.</div>
+    <% } %>
+
+    <% vipSalaryTiers.forEach(tier => { %>
+    <div class="vip-salary-tier">
+      <div class="vip-salary-tier-head">
+        <div>
+          <div class="vip-salary-tier-title">Niveau VIP <%= tier.niveau %></div>
+          <div class="salaire-sub">Palier modifiable — son niveau reste fixe</div>
+        </div>
+        <span class="vip-star"><i class="fas fa-star"></i></span>
+      </div>
+      <form method="POST" action="/adminxyz/parametres/salaire/save">
+        <input type="hidden" name="id" value="<%= tier.id %>">
+        <div class="vip-salary-tier-grid">
+          <div class="vip-salary-field">
+            <label for="salary-label-<%= tier.id %>">Libellé</label>
+            <input id="salary-label-<%= tier.id %>" name="label" type="text" maxlength="255"
+                   value="<%= tier.label || ('Niveau VIP ' + tier.niveau) %>" placeholder="Ex. Niveau VIP <%= tier.niveau %>">
+          </div>
+          <div class="vip-salary-field">
+            <label for="salary-referrals-<%= tier.id %>">Filleuls actifs requis</label>
+            <input id="salary-referrals-<%= tier.id %>" name="filleuls_requis" type="number" min="1" max="1000000" step="1"
+                   value="<%= tier.filleuls_requis %>" required>
+          </div>
+          <div class="vip-salary-field">
+            <label for="salary-amount-<%= tier.id %>">Montant (FCFA)</label>
+            <input id="salary-amount-<%= tier.id %>" name="montant_cadeau" type="number" min="0.01" max="10000000" step="0.01"
+                   value="<%= tier.montant_cadeau %>" required>
+          </div>
+        </div>
+        <button class="btn-save" type="submit"><i class="fas fa-save"></i> Enregistrer ce palier</button>
+      </form>
+    </div>
+    <% }); %>
+
+    <% if (nextVipSalaryLevel !== null) { %>
+    <div class="vip-salary-tier">
+      <div class="vip-salary-tier-head">
+        <div>
+          <div class="vip-salary-tier-title">Ajouter le niveau VIP <%= nextVipSalaryLevel %></div>
+          <div class="salaire-sub">Les niveaux se configurent dans l’ordre.</div>
+        </div>
+        <span class="vip-star"><i class="fas fa-plus"></i></span>
+      </div>
+      <form method="POST" action="/adminxyz/parametres/salaire/save">
+        <input type="hidden" name="niveau" value="<%= nextVipSalaryLevel %>">
+        <div class="vip-salary-tier-grid">
+          <div class="vip-salary-field">
+            <label for="new-salary-label">Libellé</label>
+            <input id="new-salary-label" name="label" type="text" maxlength="255" placeholder="Ex. Niveau VIP <%= nextVipSalaryLevel %>">
+          </div>
+          <div class="vip-salary-field">
+            <label for="new-salary-referrals">Filleuls actifs requis</label>
+            <input id="new-salary-referrals" name="filleuls_requis" type="number" min="1" max="1000000" step="1" placeholder="À définir" required>
+          </div>
+          <div class="vip-salary-field">
+            <label for="new-salary-amount">Montant (FCFA)</label>
+            <input id="new-salary-amount" name="montant_cadeau" type="number" min="0.01" max="10000000" step="0.01" placeholder="À définir" required>
+          </div>
+        </div>
+        <button class="btn-save" type="submit"><i class="fas fa-plus"></i> Ajouter ce palier</button>
+      </form>
+    </div>
+    <% } else { %>
+    <div class="empty" style="padding:14px 10px">Tous les niveaux VIP sont configurés.</div>
+    <% } %>
   </div>
 
 <% } %>
