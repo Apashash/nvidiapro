@@ -100,6 +100,7 @@
     .plan-card { background:#fff; border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 1px 6px rgba(0,0,0,0.06); display:flex; align-items:flex-start; justify-content:space-between; }
     .plan-body { flex:1; }
     .plan-name { font-size:1rem; font-weight:800; margin-bottom:4px; }
+    .plan-disabled-hint { display:inline-block; max-width:100%; margin:0 0 8px; padding:4px 8px; border-radius:8px; background:#FEF2F2; color:#b91c1c; font-size:0.72rem; font-weight:700; line-height:1.35; }
     .plan-meta { font-size:0.82rem; color:#555; margin-bottom:6px; }
     .plan-meta strong { color:#1a1a1a; }
     .plan-rend { font-size:0.88rem; font-weight:700; margin-bottom:2px; }
@@ -589,7 +590,10 @@
   %>
   <div class="plan-card" style="border-left:4px solid <%= color %><% if (p.bloque) { %>;opacity:0.75<% } %>">
     <div class="plan-body">
-      <div class="plan-name" style="color:<%= color %>"><%- p.nom %> <% if (p.bloque) { %><span style="font-size:0.68rem;background:#FEF2F2;color:#dc2626;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle"><i class="fas fa-lock"></i> Bloqué</span><% } %></div>
+      <div class="plan-name" style="color:<%= color %>"><%- p.nom %></div>
+      <% if (p.bloque) { %>
+      <div class="plan-disabled-hint"><i class="fas fa-lock"></i> Désactivé · touchez le cadenas pour réactiver</div>
+      <% } %>
       <div class="plan-meta">Prix/action : <strong><%= parseFloat(p.prix_action).toLocaleString('fr-FR') %> FCFA</strong> &nbsp; Durée : <strong><%= p.duree_jours %>j</strong></div>
       <div class="plan-meta">Minimum : <strong><%= parseFloat(p.minimum_montant).toLocaleString('fr-FR') %> FCFA</strong> (<%= p.actions_minimum %> actions)</div>
       <div class="plan-rend" style="color:<%= color %>">Taux : <%= p.taux_minimum %>–<%= p.taux_maximum %>%/j</div>
@@ -598,9 +602,11 @@
     <div class="card-actions">
       <button class="icon-btn <%= p.bloque ? 'icon-btn-del' : 'icon-btn-edit' %>"
         data-pid="<%= p.id %>"
-        title="<%= p.bloque ? 'Débloquer ce plan' : 'Bloquer ce plan' %>"
+        data-bloque="<%= p.bloque ? 'true' : 'false' %>"
+        title="<%= p.bloque ? 'Réactiver ce plan' : 'Désactiver ce plan' %>"
+        aria-label="<%= p.bloque ? 'Réactiver ce plan' : 'Désactiver ce plan' %>"
         onclick="togglePlanLockBtn(this)">
-        <i class="fas <%= p.bloque ? 'fa-lock' : 'fa-lock-open' %>"></i>
+        <i class="fas <%= p.bloque ? 'fa-lock-open' : 'fa-lock' %>"></i>
       </button>
       <button class="icon-btn icon-btn-edit"
         onclick="window.location.href='/adminxyz/plans/<%= p.id %>/edit'">
@@ -2224,12 +2230,13 @@ function removeTierRow(button) {
   button.closest('.tier-row').remove();
 }
 
-function togglePlanLockBtn(btn) { togglePlanLock(btn.dataset.pid); }
-async function togglePlanLock(id) {
-  if (!confirm('Changer le statut (bloqué/débloqué) de ce plan ?')) return;
+function togglePlanLockBtn(btn) { togglePlanLock(btn.dataset.pid, btn.dataset.bloque === 'true'); }
+async function togglePlanLock(id, isBlocked) {
+  const action = isBlocked ? 'réactiver' : 'désactiver';
+  if (!confirm('Voulez-vous ' + action + ' ce plan ?')) return;
   const r = await fetch('/adminxyz/action', { method:'POST', body: new URLSearchParams({ action:'toggle_plan_lock', id }) });
   const d = await r.json();
-  if (d.success) { toast(d.bloque ? '✓ Plan bloqué' : '✓ Plan débloqué', 'ok'); setTimeout(() => location.reload(), 900); }
+  if (d.success) { toast(d.bloque ? '✓ Plan désactivé' : '✓ Plan réactivé', 'ok'); setTimeout(() => location.reload(), 900); }
   else toast('✗ ' + (d.message || 'Erreur'), 'err');
 }
 function deletePlanBtn(btn) { deletePlan(btn.dataset.pid, btn.dataset.nom); }

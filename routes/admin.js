@@ -344,7 +344,7 @@ router.get('/adminxyz/dashboard', requireAdminAuth, async (req, res) => {
 // ── Plans VIP ──────────────────────────────────────────────────────────────────
 router.get('/adminxyz/plans', requireAdminAuth, async (req, res) => {
   try {
-    const [plans] = await db.query('SELECT * FROM planinvestissement WHERE COALESCE(bloque, false) = false ORDER BY id ASC');
+    const [plans] = await db.query('SELECT * FROM planinvestissement ORDER BY id ASC');
     plans.forEach(enrichAdminPlan);
     const counts  = await Promise.all(plans.map(async p => {
       const [[c]] = await db.query("SELECT COUNT(*) as total FROM commandes WHERE plan_id=? AND statut='actif'", [p.id]);

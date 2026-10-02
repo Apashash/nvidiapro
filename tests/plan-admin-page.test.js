@@ -16,3 +16,13 @@ test('adding a plan opens a dedicated page with the shared plan editor', () => {
   assert.doesNotMatch(adminView, /openAddPlanModal/);
   assert.doesNotThrow(() => ejs.compile(adminView, { filename: 'views/admin.ejs' }));
 });
+
+test('the admin plan list shows disabled plans with a clear reactivation action', () => {
+  assert.match(
+    adminRoute,
+    /router\.get\('\/adminxyz\/plans'[\s\S]*?SELECT \* FROM planinvestissement ORDER BY id ASC/
+  );
+  assert.match(adminView, /Désactivé · touchez le cadenas pour réactiver/);
+  assert.match(adminView, /title="<%= p\.bloque \? 'Réactiver ce plan' : 'Désactiver ce plan' %>"/);
+  assert.match(adminView, /data-bloque="<%= p\.bloque \? 'true' : 'false' %>"/);
+});
