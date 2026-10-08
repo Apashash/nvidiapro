@@ -6,6 +6,7 @@
  */
 
 const { Pool } = require('pg');
+const { applyDepotProviderSchema } = require('./depot-provider-schema');
 
 const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
 const isSupabase = !!process.env.SUPABASE_DATABASE_URL;
@@ -265,13 +266,12 @@ async function setup() {
       `ALTER TABLE retraits ADD COLUMN IF NOT EXISTS provider_transaction_id VARCHAR(255)`,
       `ALTER TABLE retraits ADD COLUMN IF NOT EXISTS provider_order_id VARCHAR(255)`,
       `ALTER TABLE retraits ADD COLUMN IF NOT EXISTS provider_metadata JSONB NOT NULL DEFAULT '{}'::jsonb`,
-      `ALTER TABLE depots ADD COLUMN IF NOT EXISTS provider_metadata JSONB NOT NULL DEFAULT '{}'::jsonb`,
-      `CREATE INDEX IF NOT EXISTS depots_provider_transaction_id_idx ON depots(provider_transaction_id) WHERE provider_transaction_id IS NOT NULL`,
       `CREATE INDEX IF NOT EXISTS retraits_provider_transaction_id_idx ON retraits(provider_transaction_id) WHERE provider_transaction_id IS NOT NULL`,
       `CREATE UNIQUE INDEX IF NOT EXISTS historique_revenus_salaire_niveau_uidx ON historique_revenus(user_id, niveau) WHERE type='salaire'`,
       `CREATE UNIQUE INDEX IF NOT EXISTS codes_utilises_user_code_uidx ON codes_utilises (user_id, code)`,
     ];
     for (const sql of alterations) await client.query(sql);
+    await applyDepotProviderSchema(client);
     console.log('✓ Schema ready (18 tables)');
 
     console.log('Seeding investment plans…');

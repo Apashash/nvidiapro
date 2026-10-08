@@ -11,6 +11,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "setup-db": "node scripts/setup-db.js",
+    "migrate-depot-provider-schema": "node scripts/migrate-depot-provider-schema.js",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
