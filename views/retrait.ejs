@@ -318,6 +318,11 @@
                 <input type="text" id="cryptoWalletAddress" class="form-input" disabled
                        maxlength="255" autocomplete="off" spellcheck="false"
                        placeholder="Adresse du portefeuille sur le réseau sélectionné">
+                <div class="form-group" id="cryptoWithdrawalMemoGroup" hidden style="margin-top:12px">
+                    <label class="form-label" id="cryptoWithdrawalMemoLabel" for="cryptoWithdrawalMemo">Memo / tag</label>
+                    <input type="text" id="cryptoWithdrawalMemo" class="form-input" disabled
+                           autocomplete="off" spellcheck="false">
+                </div>
                 <div class="info-card" style="margin-top:12px">
                     <div>Retrait traité manuellement après vérification.</div>
                     <% if (Number(withdrawalCryptoRate) > 0) { %>
@@ -405,6 +410,9 @@ const cryptoWithdrawalGroup = document.getElementById('cryptoWithdrawalGroup');
 const cryptoWithdrawalNetwork = document.getElementById('cryptoWithdrawalNetwork');
 const cryptoWithdrawalError = document.getElementById('cryptoWithdrawalError');
 const cryptoWalletAddress = document.getElementById('cryptoWalletAddress');
+const cryptoWithdrawalMemoGroup = document.getElementById('cryptoWithdrawalMemoGroup');
+const cryptoWithdrawalMemo = document.getElementById('cryptoWithdrawalMemo');
+const cryptoWithdrawalMemoLabel = document.getElementById('cryptoWithdrawalMemoLabel');
 const cryptoWithdrawalEstimate = document.getElementById('cryptoWithdrawalEstimate');
 const mobileOperatorGroup = document.getElementById('mobileOperatorGroup');
 const mobilePhoneGroup = document.getElementById('mobilePhoneGroup');
@@ -489,6 +497,8 @@ async function loadCryptoWithdrawalAssets() {
                 const option = document.createElement('option');
                 option.value = asset.asset_code;
                 option.textContent = asset.network_label;
+                option.dataset.memoRequired = asset.memo_required ? 'true' : 'false';
+                option.dataset.memoType = asset.memo_type || 'memo';
                 cryptoWithdrawalNetwork.appendChild(option);
             });
             if (!cryptoWithdrawalAssets.length) {
@@ -508,6 +518,16 @@ async function loadCryptoWithdrawalAssets() {
         }
     })();
     return cryptoWithdrawalAssetsRequest;
+}
+
+function updateCryptoWithdrawalMemo() {
+    const selected = cryptoWithdrawalNetwork.selectedOptions[0];
+    const memoRequired = selected?.dataset.memoRequired === 'true';
+    const memoType = selected?.dataset.memoType || 'memo';
+    cryptoWithdrawalMemoGroup.hidden = !memoRequired;
+    cryptoWithdrawalMemo.disabled = !memoRequired;
+    cryptoWithdrawalMemo.required = memoRequired;
+    cryptoWithdrawalMemoLabel.textContent = `${memoType} requis par le réseau`;
 }
 
 function updateCryptoWithdrawalEstimate() {
@@ -537,6 +557,14 @@ function setWithdrawalMode() {
     cryptoWalletAddress.disabled = !cryptoMode;
     cryptoWalletAddress.required = cryptoMode;
     cryptoWithdrawalNetwork.required = cryptoMode;
+    if (!cryptoMode) {
+        cryptoWithdrawalMemo.value = '';
+        cryptoWithdrawalMemo.required = false;
+        cryptoWithdrawalMemo.disabled = true;
+        cryptoWithdrawalMemoGroup.hidden = true;
+    } else {
+        updateCryptoWithdrawalMemo();
+    }
     updateOperateurs();
     if (cryptoMode) loadCryptoWithdrawalAssets().catch(() => {});
     updateCryptoWithdrawalEstimate();
@@ -588,7 +616,10 @@ if (inpMontant) inpMontant.addEventListener('input', () => {
     updateFeeSummary();
     updateCryptoWithdrawalEstimate();
 });
-if (cryptoWithdrawalNetwork) cryptoWithdrawalNetwork.addEventListener('change', updateCryptoWithdrawalEstimate);
+if (cryptoWithdrawalNetwork) cryptoWithdrawalNetwork.addEventListener('change', () => {
+    updateCryptoWithdrawalEstimate();
+    updateCryptoWithdrawalMemo();
+});
 
 // Default to the account's Mobile Money country when available, otherwise crypto.
 const initialCountry = countryOptions.find(option => option.dataset.kind === 'mobile') || countryOptions[0];
@@ -626,6 +657,9 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
     const cryptoMode = pays === 'Crypto USDT';
     const walletAddress = cryptoWalletAddress.value.trim();
     const assetCode = cryptoWithdrawalNetwork.value;
+    const destinationMemo = cryptoWithdrawalMemo.value.trim();
+    const selectedAsset = cryptoWithdrawalNetwork.selectedOptions[0];
+    const memoRequired = selectedAsset?.dataset.memoRequired === 'true';
 
     notifZone.innerHTML = '';
 
@@ -645,8 +679,8 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
         return;
     }
 
-    if (cryptoMode && (!assetCode || walletAddress.length < 20
-        || walletAddress.length > 255 || !/^[A-Za-z0-9:_-]+$/.test(walletAddress))) {
+    if (cryptoMode && (!assetCode || !walletAddress
+        || walletAddress.length > 255 || (memoRequired && !destinationMemo))) {
         notifZone.innerHTML = '<div class="notif error"><i class="fas fa-exclamation-circle"></i> ' + translateDynamic('Choisissez un réseau USDT et saisissez une adresse de portefeuille valide.') + '</div>';
         notifZone.scrollIntoView({ behavior: 'smooth' });
         return;
@@ -671,7 +705,7 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
 
     try {
         const requestBody = cryptoMode
-            ? { mode: 'crypto', asset_code: assetCode, wallet_address: walletAddress, montant }
+            ? { mode: 'crypto', asset_code: assetCode, wallet_address: walletAddress, destination_memo: destinationMemo, montant }
             : {
                 mode: 'mobile_money',
                 pays,
@@ -714,7 +748,7 @@ document.getElementById('btn-retrait').addEventListener('click', async function 
                 ? 'Demande de retrait enregistrée'
                 : 'Retrait envoyé avec succès !';
             document.getElementById('successPopupMessage').textContent = cryptoMode
-                ? 'Le paiement USDT sera effectué manuellement après vérification.'
+                ? 'La demande USDT sera exécutée après validation.'
                 : 'Votre demande a été soumise. Elle sera traitée dans les 24h.';
             document.getElementById('pop-montant').textContent   = netLabel;
             document.getElementById('pop-operateur').textContent = cryptoMode

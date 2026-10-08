@@ -368,6 +368,11 @@
                         : 'Votre solde sera crédité en FCFA uniquement après confirmation du paiement.') %>
                 </div>
             <% } else { %>
+                <% if (locals.pending_checkout_url) { %>
+                    <a href="<%= pending_checkout_url %>" target="_blank" rel="noopener noreferrer" class="ppc-wave-btn">
+                        <i class="fas fa-external-link-alt"></i> Ouvrir le paiement sécurisé
+                    </a>
+                <% } %>
                 <div class="ppc-phone">
                     <i class="fas fa-mobile-alt"></i>
                     <span>Confirmez sur votre téléphone</span>
@@ -522,6 +527,12 @@
                 <button type="submit" class="btn-submit" id="submitBtn">
                     <i class="fas fa-lock"></i> Confirmer le paiement
                 </button>
+                <% if (hostedCheckoutEnabled) { %>
+                <button type="button" class="btn-submit" id="hostedCheckoutBtn" style="margin-top:10px;background:#17345C">
+                    <i class="fas fa-arrow-up-right-from-square"></i> Payer avec Hosted Checkout
+                </button>
+                <div id="hostedCheckoutFeedback" class="alert-box alert-error" role="alert" hidden></div>
+                <% } %>
             </form>
 
             <div class="loading-wrap" id="loadingDiv">
@@ -551,6 +562,8 @@ const numeroInput = document.getElementById('numero');
 const depotForm = document.getElementById('depotForm');
 const formCard = document.getElementById('formCard');
 const submitBtn = document.getElementById('submitBtn');
+const hostedCheckoutBtn = document.getElementById('hostedCheckoutBtn');
+const hostedCheckoutFeedback = document.getElementById('hostedCheckoutFeedback');
 const savedCountryCode = formCard?.dataset.selectedCountry || '';
 const savedOperator = formCard?.dataset.selectedOperator || '';
 const savedCryptoAsset = formCard?.dataset.selectedCryptoAsset || '';
@@ -691,6 +704,7 @@ function selectCountry(option) {
     if (!option) return;
     const isCrypto = option.dataset.kind === 'crypto';
     cryptoMode = isCrypto;
+    if (hostedCheckoutBtn) hostedCheckoutBtn.hidden = isCrypto;
     countryOptions.forEach(item => {
         const selected = item === option;
         item.classList.toggle('active', selected);
@@ -792,6 +806,37 @@ if (countrySearch) {
 if (cryptoCoin) cryptoCoin.addEventListener('change', () => populateCryptoNetworks());
 if (cryptoAssetCode) cryptoAssetCode.addEventListener('change', updateCryptoNetworkNote);
 if (amountInput) amountInput.addEventListener('input', updateCryptoEstimate);
+
+if (hostedCheckoutBtn) hostedCheckoutBtn.addEventListener('click', async () => {
+    const amount = document.getElementById('montant').value;
+    const selected = countryOptions.find(option => option.dataset.code === countryCodeInput.value);
+    hostedCheckoutFeedback.hidden = true;
+    if (!selected || selected.dataset.kind === 'crypto' || !amount) {
+        hostedCheckoutFeedback.textContent = translateDynamic('Sélectionnez un pays Mobile Money et un montant.');
+        hostedCheckoutFeedback.hidden = false;
+        return;
+    }
+
+    hostedCheckoutBtn.disabled = true;
+    hostedCheckoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création du lien sécurisé…';
+    try {
+        const response = await fetch('/depot/hosted-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ montant: amount }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.payment_link) {
+            throw new Error(result.error || 'Impossible de créer le paiement sécurisé.');
+        }
+        window.location.assign(result.payment_link);
+    } catch (error) {
+        hostedCheckoutFeedback.textContent = error.message;
+        hostedCheckoutFeedback.hidden = false;
+        hostedCheckoutBtn.disabled = false;
+        hostedCheckoutBtn.innerHTML = '<i class="fas fa-arrow-up-right-from-square"></i> Payer avec Hosted Checkout';
+    }
+});
 
 if (depotForm) depotForm.addEventListener('submit', function (event) {
     if (!countryCodeInput.value) {

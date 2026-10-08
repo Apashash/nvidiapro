@@ -88,6 +88,13 @@ function getManualUsdtWithdrawalAssets(assets) {
   );
 }
 
+function getUsdtPayoutAssets(assets) {
+  if (!Array.isArray(assets)) return [];
+  return assets.filter(asset =>
+    asset && String(asset.coin || '').trim().toUpperCase() === 'USDT'
+  );
+}
+
 function normalizeAshtechCryptoCollectResponse(payment, selectedAsset) {
   if (!payment || typeof payment !== 'object' || Array.isArray(payment)) {
     throw new Error('Réponse de création crypto AshTechPay invalide');
@@ -100,7 +107,6 @@ function normalizeAshtechCryptoCollectResponse(payment, selectedAsset) {
     'payment_method',
     'asset_code',
     'network',
-    'address',
     'currency',
   ];
   for (const field of requiredStrings) {
@@ -109,7 +115,7 @@ function normalizeAshtechCryptoCollectResponse(payment, selectedAsset) {
     }
   }
 
-  if (!['pending', 'completed', 'failed'].includes(payment.status)) {
+  if (!['pending', 'success', 'completed', 'failed'].includes(payment.status)) {
     throw new Error('Statut de création crypto AshTechPay non documenté');
   }
   if (payment.payment_method !== 'crypto') {
@@ -122,6 +128,10 @@ function normalizeAshtechCryptoCollectResponse(payment, selectedAsset) {
   }
   if (payment.currency !== 'USDT') {
     throw new Error('AshTechPay a retourné une devise inattendue pour le dépôt crypto');
+  }
+  if (payment.status === 'pending'
+      && (typeof payment.address !== 'string' || !payment.address.trim())) {
+    throw new Error('Réponse crypto AshTechPay sans adresse de réception valide');
   }
   if (selectedAsset.memo_required
       && (typeof payment.memo !== 'string' || !payment.memo.trim())) {
@@ -158,7 +168,9 @@ function normalizeAshtechCryptoCollectResponse(payment, selectedAsset) {
     payment_method: payment.payment_method,
     asset_code: payment.asset_code.trim(),
     network: payment.network.trim(),
-    address: payment.address.trim(),
+    address: typeof payment.address === 'string' && payment.address.trim()
+      ? payment.address.trim()
+      : null,
     memo: typeof payment.memo === 'string' && payment.memo.trim() ? payment.memo.trim() : null,
     memo_type: typeof payment.memo_type === 'string' && payment.memo_type.trim()
       ? payment.memo_type.trim()
@@ -203,6 +215,7 @@ module.exports = {
   calculateManualUsdtWithdrawalAmount,
   findAshtechCryptoAsset,
   getManualUsdtWithdrawalAssets,
+  getUsdtPayoutAssets,
   getCryptoExpiry,
   getCryptoPollTimeoutMs,
   normalizeAshtechCryptoAssets,

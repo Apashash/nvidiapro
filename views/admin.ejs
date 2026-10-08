@@ -853,6 +853,7 @@
   <div id="retraitList">
   <% retraits.forEach(r => { %>
   <% const isCryptoWithdrawal = String(r.operateur || '').toUpperCase() === 'CRYPTO USDT'; %>
+  <% const payoutMetadata = r.provider_metadata && typeof r.provider_metadata === 'object' ? r.provider_metadata : {}; %>
   <div class="card" data-search="<%= (r.nom+' '+(r.telephone||'')+' '+(r.numero_compte||'')+' '+(r.methode||'')).toLowerCase() %>">
     <div class="card-row" style="align-items:flex-start">
       <div style="flex:1">
@@ -867,7 +868,7 @@
         <% } %>
         <div class="dep-meta" style="margin-bottom:6px"><%= r.methode || '—' %> · <%= r.date_demande ? new Date(r.date_demande).toLocaleDateString('fr-FR') : '—' %></div>
         <% if (isCryptoWithdrawal) { %>
-        <div class="dep-meta" style="margin-bottom:8px;color:#9A5B12">Envoyer manuellement le montant USDT indiqué. Vérifier que le portefeuille d’envoi prend en charge ce réseau et confirmer seulement après le transfert.</div>
+        <div class="dep-meta" style="margin-bottom:8px;color:#9A5B12">Vérifier le réseau et confirmer le retrait uniquement après la confirmation du transfert.</div>
         <% } %>
         <% if (r.numero_compte) { %>
         <div style="margin-bottom:4px">
@@ -877,24 +878,33 @@
                   onclick="copyText(this.dataset.copyValue)" aria-label="Copier l’adresse"><i class="fas fa-copy"></i></button>
         </div>
         <% } %>
+        <% if (payoutMetadata.destination_memo) { %>
+        <div class="dep-meta" style="margin-bottom:6px">Memo / Tag : <code><%= payoutMetadata.destination_memo %></code></div>
+        <% } %>
         <% if (r.statut === 'en_attente') { %>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-xs btn-v" onclick="doAction('validate_retrait',<%= r.id %>)"><i class="fas fa-check"></i> <%= isCryptoWithdrawal ? 'Confirmer l’envoi USDT' : 'Valider manuellement' %></button>
           <% if (!isCryptoWithdrawal) { %>
           <button class="btn-xs btn-v" onclick="doAction('pay_retrait_soleaspay',<%= r.id %>)"><i class="fas fa-money-bill-transfer"></i> Payer avec SoleasPay</button>
           <% } %>
+          <button class="btn-xs btn-v" onclick="doAction('pay_retrait_ashtech',<%= r.id %>)"><i class="fas fa-money-bill-transfer"></i> Payer avec AshTech Pay</button>
           <button class="btn-xs btn-r" onclick="doAction('reject_retrait',<%= r.id %>)"><i class="fas fa-times"></i> Rejeter</button>
         </div>
         <% } else if (r.statut === 'en_cours') { %>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <% if (r.fournisseur === 'ashtechpay') { %>
+          <button class="btn-xs btn-v" onclick="doAction('check_retrait_ashtech',<%= r.id %>)"><i class="fas fa-rotate"></i> Vérifier AshTech Pay</button>
+          <% } %>
+          <% if (r.fournisseur === 'soleaspay') { %>
           <button class="btn-xs btn-v" onclick="doAction('check_retrait_soleaspay',<%= r.id %>)"><i class="fas fa-rotate"></i> Vérifier SoleasPay</button>
+          <% } %>
         </div>
         <% } %>
       </div>
       <div>
         <% if (r.statut === 'en_attente') { %><span class="badge badge-pending">En attente</span>
-        <% } else if (r.statut === 'en_cours') { %><span class="badge badge-pending">SoleasPay en cours</span>
-        <% } else if (r.statut === 'valide') { %><span class="badge badge-valid"><%= r.fournisseur === 'soleaspay' ? 'Payé SoleasPay' : 'Validé' %></span>
+        <% } else if (r.statut === 'en_cours') { %><span class="badge badge-pending"><%= r.fournisseur === 'ashtechpay' ? 'AshTechPay en cours' : r.fournisseur === 'soleaspay' ? 'SoleasPay en cours' : 'En cours' %></span>
+        <% } else if (r.statut === 'valide') { %><span class="badge badge-valid"><%= r.fournisseur === 'ashtechpay' ? 'Payé AshTechPay' : r.fournisseur === 'soleaspay' ? 'Payé SoleasPay' : 'Validé' %></span>
         <% } else { %><span class="badge badge-rejected">Rejeté</span><% } %>
       </div>
     </div>
@@ -2185,6 +2195,8 @@ const actionLabels = {
   validate_retrait:'Confirmer le paiement manuel après avoir envoyé les fonds au client ?',
   pay_retrait_soleaspay:'Lancer le paiement de ce retrait via SoleasPay ?',
   check_retrait_soleaspay:'Vérifier le statut du paiement SoleasPay ?',
+  pay_retrait_ashtech:'Lancer le payout AshTechPay avec le réseau, le montant et la référence idempotente enregistrés ?',
+  check_retrait_ashtech:'Vérifier le statut AshTechPay sans créer une nouvelle référence ?',
   reject_retrait:'Rejeter ce retrait et rembourser le solde ?',
   validate_post:'Valider cette affiche ?', reject_post:'Rejeter cette affiche ?', delete_post:'Supprimer définitivement cette affiche ?',
   toggle_admin:'Changer le statut administrateur ?'

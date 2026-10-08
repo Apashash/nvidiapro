@@ -2,14 +2,13 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
-const axios = require('axios');
 const crypto = require('crypto');
 const { getParams } = require('../services/params');
 const {
-  ASHTECH_API_BASE,
   SOLEASPAY_API_BASE,
   getAshtechApiKey,
   getAshtechCountries,
+  getAshtechPayoutCountries,
   filterEnabledPaymentOperators,
   getAshtechCryptoAssets,
   getOperatorProvider,
@@ -22,6 +21,17 @@ const {
   normalizeSoleasCountryCode,
   createPaymentReference,
 } = require('../services/paymentProviders');
+const ashtechPay = require('../services/ashtechPay');
+const {
+  normalizeAshtechTransactionStatus,
+  validateAshtechNotifyUrl,
+  verifyAshtechWebhookSignature,
+} = require('../services/ashtechPay');
+const {
+  normalizeAshtechPayoutStatus,
+  parseProviderMetadata,
+  settleAshtechPayout,
+} = require('../services/ashtechPayouts');
 const {
   CRYPTO_PENDING_TTL_MS,
   calculateUsdtAmount,
@@ -49,12 +59,7 @@ const countryDialCodes = {
   ML: '223',
   SN: '221',
 };
-const CRYPTO_FCFA_PER_USDT = 600;
 const CRYPTO_POLL_INTERVAL_MS = 30000;
-
-function getCryptoRate() {
-  return CRYPTO_FCFA_PER_USDT;
-}
 
 function resolveUserCryptoCountryCode(user, countries) {
   const countryName = normalizeCountryName(user?.pays);
@@ -73,83 +78,6 @@ function resolveUserCryptoCountryCode(user, countries) {
   return countries.find(country => country.code === dialCodeMatch[0])?.code || '';
 }
 
-function normalizeAshtechTransactionStatus(status) {
-  const normalized = String(status || '').trim().toLowerCase();
-  if (normalized === 'completed' || normalized === 'success') return 'success';
-  if (['failed', 'rejected', 'cancelled', 'expired'].includes(normalized)) return 'failed';
-  return 'pending';
-}
-
-// Legacy fallback moved to services/paymentProviders.js.
-/*
-const fallbackAshtechCountries = [
-  { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
-  { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
-  { code: 'BJ', name: 'Bénin',             currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
-  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOF', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
-  { code: 'BF', name: 'Burkina Faso',      currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
-  { code: 'GA', name: 'Gabon',             currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
-  { code: 'CG', name: 'Congo Brazzaville', currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
-  { code: 'NE', name: 'Niger',            currency: 'XOF', operators: ['Airtel Money'] },
-  { code: 'ML', name: 'Mali',             currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
-];
-*/
-
-// Operators that AshtechPay may ask an OTP for, per the docs' "OTP requis" table.
-// Used only to decide whether to show a short "un code peut vous être demandé"
-// hint up front — the actual otp_required signal always comes from the API
-// response, so this list is informational, not authoritative.
-const otpProneOperators = new Set(['Orange Money', 'Wave']);
-
-/*
-function normalizeAshtechCountries(payload) {
-  const countries = Array.isArray(payload)
-    ? payload
-    : (Array.isArray(payload?.countries) ? payload.countries : []);
-
-  return countries
-    .map(country => {
-      const operators = Array.isArray(country.operators)
-        ? country.operators.map(operator => {
-            if (typeof operator === 'string') return operator.trim();
-            return String(operator?.code || operator?.name || '').trim();
-          }).filter(Boolean)
-        : [];
-      return {
-        code: String(country.code || country.country_code || '').trim().toUpperCase(),
-        name: String(country.name || country.country || '').trim(),
-        currency: String(country.currency || '').trim().toUpperCase(),
-        operators,
-      };
-    })
-    .filter(country => country.code && country.name && country.currency && country.operators.length);
-}
-
-async function getAshtechCountries() {
-  const now = Date.now();
-  if (ashtechCountriesCache && now - ashtechCountriesCachedAt < COUNTRY_CACHE_TTL_MS) {
-    return ashtechCountriesCache;
-  }
-
-  const apiKey = getAshtechApiKey();
-  if (!apiKey) return fallbackAshtechCountries;
-
-  try {
-    const { data } = await axios.get(`${ASHTECH_API_BASE}/v1/countries`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      timeout: 10000,
-    });
-    const countries = normalizeAshtechCountries(data);
-    if (!countries.length) throw new Error('Catalogue AshTechPay vide ou invalide');
-    ashtechCountriesCache = countries;
-    ashtechCountriesCachedAt = now;
-    return countries;
-  } catch (error) {
-    console.error('AshTechPay countries catalogue error:', error.response?.data || error.message);
-    return ashtechCountriesCache || fallbackAshtechCountries;
-  }
-}
-*/
 
 // ── GET /depot ───────────────────────────────────────────────────────────────
 router.get('/depot', requireAuth, async (req, res) => {
@@ -192,6 +120,7 @@ router.get('/depot', requireAuth, async (req, res) => {
     const pending_depot_id = pending_crypto?.depot_id || req.session.pending_depot_id || null;
     const pending_numero   = req.session.pending_numero   || null;
     const pending_wave_url = req.session.pending_wave_url || null;
+    const pending_checkout_url = req.session.pending_checkout_url || null;
     const otp_pending      = req.session.otp_pending
       ? {
           ...req.session.otp_pending,
@@ -205,20 +134,37 @@ router.get('/depot', requireAuth, async (req, res) => {
     delete req.session.pending_depot_id;
     delete req.session.pending_numero;
     delete req.session.pending_wave_url;
+    delete req.session.pending_checkout_url;
     delete req.session.depot_form;
     const params = await getParams();
     const depotMin = parseFloat(params.depot_minimum ?? 200);
-    const cryptoRate = getCryptoRate();
-    const allCountries = await getAshtechCountries();
+    const configuredCryptoRate = params.taux_usdt_fcfa === undefined || params.taux_usdt_fcfa === ''
+      ? 600
+      : Number(params.taux_usdt_fcfa);
+    const cryptoRate = Number.isFinite(configuredCryptoRate) && configuredCryptoRate > 0
+      ? configuredCryptoRate
+      : 0;
+    let allCountries = [];
+    let catalogueUnavailable = false;
+    try {
+      allCountries = await getAshtechCountries();
+    } catch (catalogueError) {
+      catalogueUnavailable = true;
+      console.error('AshTechPay country catalogue unavailable:', catalogueError.response?.status || catalogueError.message);
+    }
     const accountCountry = findAccountPaymentCountry(user?.pays, allCountries);
     const countries = accountCountry ? [accountCountry] : [];
     const enabledPaymentCountries = filterEnabledPaymentOperators(
       allCountries,
       params.payment_provider_mappings
     );
+    const displayError = error || (catalogueUnavailable
+      ? 'Le catalogue des moyens de paiement est indisponible. Réessayez plus tard.'
+      : null);
     res.render('depot', {
-      user, countries, cryptoCountries: enabledPaymentCountries, error, failed, depot_notice, depotMin, cryptoRate,
-      pending_depot_id, pending_numero, pending_wave_url, pending_crypto, otp_pending,
+      user, countries, cryptoCountries: enabledPaymentCountries, error: displayError, failed, depot_notice, depotMin, cryptoRate,
+      pending_depot_id, pending_numero, pending_wave_url, pending_crypto, pending_checkout_url, otp_pending,
+      hostedCheckoutEnabled: Boolean(process.env.HP_LIVE_KEY),
       selectedCountryCode: depotForm.country_code || '',
       selectedOperator: depotForm.operateur || '',
       selectedCryptoAsset: depotForm.crypto_asset_code || '',
@@ -230,6 +176,135 @@ router.get('/depot', requireAuth, async (req, res) => {
     res.redirect('/');
   }
 });
+
+router.get('/depot/fees', requireAuth, async (req, res) => {
+  try {
+    const fees = await ashtechPay.getFees();
+    res.json(fees);
+  } catch (error) {
+    console.error('AshTechPay fees lookup failed:', error.response?.status || error.message);
+    res.status(503).json({ error: 'Le barème AshTechPay est temporairement indisponible.' });
+  }
+});
+
+router.post('/depot/hosted-checkout', requireAuth, async (req, res) => {
+  const userId = req.session.user_id;
+  try {
+    const amount = Number(req.body.montant);
+    const params = await getParams();
+    const minimum = Number(params.depot_minimum ?? 200);
+    if (!Number.isSafeInteger(amount) || amount < minimum) {
+      return res.status(400).json({
+        error: `Le montant minimum de dépôt est de ${minimum.toLocaleString('fr-FR')} FCFA, en montant entier.`,
+      });
+    }
+
+    const [[user]] = await db.query('SELECT pays FROM utilisateurs WHERE id = ?', [userId]);
+    const countries = await getAshtechCountries();
+    const accountCountry = findAccountPaymentCountry(user?.pays, countries);
+    if (!accountCountry || !['XAF', 'XOF', 'CDF'].includes(accountCountry.currency)) {
+      return res.status(400).json({ error: 'Le paiement Hosted Checkout n’est pas disponible pour le pays de votre compte.' });
+    }
+
+    const notifyUrl = validateAshtechNotifyUrl(process.env.ASHTECH_NOTIFY_URL);
+    const [[existing]] = await db.query(
+      "SELECT * FROM depots WHERE user_id = ? AND fournisseur = 'ashtechpay_checkout' AND statut = 'en_attente' ORDER BY id DESC LIMIT 1",
+      [userId],
+    );
+    if (existing) {
+      const metadata = parseProviderMetadata(existing.provider_metadata);
+      if (existing.provider_transaction_id) {
+        const state = await ashtechPay.getHostedCheckoutStatus(existing.provider_transaction_id);
+        const checkoutStatus = String(state?.status || '').trim().toLowerCase();
+        if (checkoutStatus === 'success') {
+          await finalizeDepot(existing, 'success');
+          return res.status(409).json({ error: 'Ce dépôt Hosted Checkout est déjà payé.' });
+        }
+        if (checkoutStatus === 'failed' || checkoutStatus === 'expired') {
+          await finalizeDepot(existing, 'failed');
+        } else if (metadata.payment_link) {
+          req.session.pending_depot_id = existing.id;
+          req.session.pending_checkout_url = metadata.payment_link;
+          return res.json({ payment_link: metadata.payment_link });
+        } else {
+          return res.status(409).json({ error: 'Le paiement existant est en cours de vérification. Ne créez pas un second paiement.' });
+        }
+      } else if (metadata.idempotency_key && metadata.request_payload) {
+        const replay = await ashtechPay.createHostedCheckout(
+          metadata.request_payload,
+          metadata.idempotency_key,
+        );
+        const paymentLink = getSafeHostedPaymentLink(replay?.payment_link);
+        const paymentId = String(replay?.payment_id || '').trim();
+        if (!paymentLink || !paymentId) {
+          return res.status(502).json({ error: 'AshTechPay n’a pas retourné les informations complètes du paiement.' });
+        }
+        await db.query(
+          'UPDATE depots SET provider_transaction_id = ?, provider_metadata = ? WHERE id = ? AND statut = ?',
+          [paymentId, JSON.stringify({ ...metadata, payment_id: paymentId, payment_link: paymentLink }), existing.id, 'en_attente'],
+        );
+        req.session.pending_depot_id = existing.id;
+        req.session.pending_checkout_url = paymentLink;
+        return res.json({ payment_link: paymentLink });
+      }
+    }
+
+    const reference = createPaymentReference();
+    const idempotencyKey = `checkout-${reference}`;
+    const requestPayload = {
+      amount,
+      currency: accountCountry.currency,
+      description: 'Dépôt',
+      is_fixed_amount: true,
+      allowed_countries: [accountCountry.code],
+      notify_url: notifyUrl,
+    };
+    const [inserted] = await db.query(
+      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, fournisseur, provider_metadata, statut) VALUES (?, ?, ?, ?, ?, 'ashtechpay_checkout', ?, 'en_attente')",
+      [
+        userId,
+        amount,
+        'Hosted Checkout',
+        reference,
+        accountCountry.name,
+        JSON.stringify({ idempotency_key: idempotencyKey, request_payload: requestPayload }),
+      ],
+    );
+    const depotId = inserted.insertId;
+    const created = await ashtechPay.createHostedCheckout(requestPayload, idempotencyKey);
+    const paymentLink = getSafeHostedPaymentLink(created?.payment_link);
+    const paymentId = String(created?.payment_id || '').trim();
+    if (!paymentLink || !paymentId) {
+      return res.status(502).json({ error: 'AshTechPay n’a pas retourné les informations complètes du paiement.' });
+    }
+    await db.query(
+      'UPDATE depots SET provider_transaction_id = ?, provider_metadata = ? WHERE id = ?',
+      [
+        paymentId,
+        JSON.stringify({ idempotency_key: idempotencyKey, request_payload: requestPayload, payment_id: paymentId, payment_link: paymentLink }),
+        depotId,
+      ],
+    );
+    req.session.pending_depot_id = depotId;
+    req.session.pending_checkout_url = paymentLink;
+    return res.json({ payment_link: paymentLink });
+  } catch (error) {
+    console.error('AshTechPay Hosted Checkout create failed:', error.response?.status || error.message);
+    return res.status(503).json({
+      error: 'La création du paiement n’a pas pu être confirmée. La demande est conservée ; réessayez avec le même paiement.',
+    });
+  }
+});
+
+function getSafeHostedPaymentLink(value) {
+  try {
+    const url = new URL(String(value || ''));
+    if (url.protocol !== 'https:' || !['ashtechpay.com', 'www.ashtechpay.com'].includes(url.hostname)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 router.get('/depot/crypto/assets', requireAuth, async (req, res) => {
   try {
@@ -286,7 +361,6 @@ router.post('/depot/crypto/new-request', requireAuth, async (req, res) => {
 
 router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   let cryptoAttempt = null;
-  let cryptoApiKey = null;
   try {
   const user_id = req.session.user_id;
   const montant = Number(req.body.montant);
@@ -322,11 +396,9 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
     return rejectForm('Saisissez une adresse e-mail valide pour le paiement crypto.');
   }
 
-  const apiKey = getAshtechApiKey();
-  if (!apiKey) {
+  if (!getAshtechApiKey()) {
     return rejectForm('Le service de paiement crypto est momentanément indisponible.');
   }
-  cryptoApiKey = apiKey;
 
   const countries = await getAshtechCountries();
   const country = countries.find(item => item.code === countryCode);
@@ -345,7 +417,13 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   const asset = findAshtechCryptoAsset(assets, assetCode);
   if (!asset) return rejectForm('Cet actif ou réseau crypto n’est plus disponible.');
 
-  const cryptoRate = getCryptoRate();
+  const configuredCryptoRate = params.taux_usdt_fcfa === undefined || params.taux_usdt_fcfa === ''
+    ? 600
+    : Number(params.taux_usdt_fcfa);
+  if (!Number.isFinite(configuredCryptoRate) || configuredCryptoRate <= 0) {
+    return rejectForm('Le taux USDT/FCFA n’est pas configuré.');
+  }
+  const cryptoRate = configuredCryptoRate;
   let usdtAmount;
   try {
     usdtAmount = calculateUsdtAmount(montant, cryptoRate);
@@ -354,10 +432,11 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   }
 
   const reference = createPaymentReference();
+  const notify_url = validateAshtechNotifyUrl(process.env.ASHTECH_NOTIFY_URL);
   let depot_id;
   try {
     const [result] = await db.query(
-      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, fournisseur, provider_service_id, statut) VALUES (?, ?, ?, ?, ?, ?, ?, 'en_attente')",
+      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, fournisseur, provider_service_id, provider_metadata, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'en_attente')",
       [
         user_id,
         montant,
@@ -366,6 +445,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
         country.name,
         'ashtechpay',
         null,
+        JSON.stringify({ asset_code: asset.asset_code, crypto_amount: Number(usdtAmount), reference }),
       ]
     );
     depot_id = result.insertId;
@@ -381,7 +461,6 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
 
   const requestCreatedAt = new Date().toISOString();
   cryptoAttempt.created_at = requestCreatedAt;
-  const notify_url = buildNotifyUrl(req);
   const payload = {
     amount: Number(usdtAmount),
     currency: 'USDT',
@@ -395,18 +474,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   let responseData;
   let responseReceivedAt;
   try {
-    const response = await axios.post(
-      `${ASHTECH_API_BASE}/v1/crypto/collect`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 15000,
-      }
-    );
-    responseData = response.data;
+    responseData = await ashtechPay.createCryptoCollection(payload);
     responseReceivedAt = Date.now();
     cryptoAttempt.expires_at = getCryptoExpiry(responseData, responseReceivedAt);
   } catch (error) {
@@ -456,7 +524,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
     payment = normalizeAshtechCryptoCollectResponse(responseData, asset);
   } catch (error) {
     if (transactionId) {
-      pollTransactionStatus(depot_id, transactionId, apiKey, {
+      pollTransactionStatus(depot_id, transactionId, {
         timeoutMs: getCryptoPollTimeoutMs(responseData, responseReceivedAt || Date.now()),
         intervalMs: CRYPTO_POLL_INTERVAL_MS,
       });
@@ -477,7 +545,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
   }
 
   const expiresAt = getCryptoExpiry(payment, responseReceivedAt || Date.now());
-  pollTransactionStatus(depot_id, payment.transaction_id, apiKey, {
+  pollTransactionStatus(depot_id, payment.transaction_id, {
     timeoutMs: getCryptoPollTimeoutMs(payment, responseReceivedAt || Date.now()),
     intervalMs: CRYPTO_POLL_INTERVAL_MS,
   });
@@ -519,7 +587,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
     );
     if (res.headersSent) return;
     if (cryptoAttempt) {
-      if (cryptoAttempt.transaction_id && cryptoApiKey) {
+      if (cryptoAttempt.transaction_id) {
         try {
           await db.query(
             'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ? WHERE id = ? AND statut = ?',
@@ -533,7 +601,7 @@ router.post('/depot/crypto/process', requireAuth, async (req, res) => {
         } catch (databaseError) {
           console.error('Could not persist AshTechPay crypto transaction id:', databaseError.message);
         }
-        pollTransactionStatus(cryptoAttempt.depot_id, cryptoAttempt.transaction_id, cryptoApiKey, {
+        pollTransactionStatus(cryptoAttempt.depot_id, cryptoAttempt.transaction_id, {
           timeoutMs: getCryptoPollTimeoutMs(cryptoAttempt, Date.now()),
           intervalMs: CRYPTO_POLL_INTERVAL_MS,
         });
@@ -631,9 +699,9 @@ router.post('/depot/process', requireAuth, async (req, res) => {
   let depot_id;
   try {
     const [result] = await db.query(
-      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, fournisseur, provider_service_id, statut) VALUES (?, ?, ?, ?, ?, ?, ?, 'en_attente')",
+      "INSERT INTO depots (user_id, montant, methode, numero_transaction, pays, fournisseur, provider_service_id, provider_metadata, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'en_attente')",
       [user_id, montant, `${operateur} (${country.name})`, reference, country.name,
-        providerConfig.provider, providerConfig.serviceId]
+        providerConfig.provider, providerConfig.serviceId, JSON.stringify({ country_code, operator: operateur, reference })]
     );
     depot_id = result.insertId;
   } catch (e) {
@@ -642,7 +710,16 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     return res.redirect('/depot');
   }
 
-  const notify_url = buildNotifyUrl(req);
+  let notify_url = null;
+  if (providerConfig.provider === 'ashtechpay') {
+    try {
+      notify_url = validateAshtechNotifyUrl(process.env.ASHTECH_NOTIFY_URL);
+    } catch (error) {
+      await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
+      req.session.error = 'Le point de notification sécurisé AshTechPay n’est pas configuré.';
+      return res.redirect('/depot');
+    }
+  }
   await initiateCollect(req, res, {
     depot_id, montant, currency, numero, operateur, country_code, reference, notify_url,
     provider: providerConfig.provider, service_id: providerConfig.serviceId,
@@ -661,22 +738,21 @@ async function initiateCollect(req, res, args) {
 // la requête sans otp pour initier une nouvelle session").
 async function initiateAshtechCollect(req, res, { depot_id, montant, currency, numero, operateur, country_code, reference, notify_url }) {
   try {
-    const apiKey = getAshtechApiKey();
-    if (!apiKey) {
+    if (!getAshtechApiKey()) {
       await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
       req.session.error = 'Le service de paiement est momentanément indisponible.';
       return res.redirect('/depot');
     }
 
     const payload = { amount: montant, currency, phone: numero, operator: operateur, country_code, reference, notify_url };
-
-    const { data } = await axios.post(
-      `${ASHTECH_API_BASE}/v1/collect`,
-      payload,
-      { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
-    );
-
-    await onCollectAccepted(req, depot_id, data, apiKey);
+    const data = await ashtechPay.createMobileMoneyCollection(payload);
+    if (!data?.transaction_id) {
+      req.session.pending_depot_id = depot_id;
+      req.session.pending_numero = numero;
+      req.session.error = 'AshTechPay n’a pas retourné de référence de transaction. La demande reste en vérification.';
+      return res.redirect('/depot');
+    }
+    await onCollectAccepted(req, depot_id, data);
     delete req.session.depot_form;
     res.redirect('/depot');
 
@@ -685,17 +761,21 @@ async function initiateAshtechCollect(req, res, { depot_id, montant, currency, n
 
     // ── OTP requis : ne pas rejeter le dépôt, demander le code à l'utilisateur ──
     if (e.response?.status === 400 && apiError?.error === 'otp_required') {
-      // Si ussd_code contient le placeholder "montant" (ex: BF → "*144*4*6*montant#"),
-      // on le remplace par le montant réel pour que l'utilisateur compose le bon code.
-      let ussdCode = apiError.ussd_code || null;
-      if (ussdCode && ussdCode.includes('montant')) {
-        ussdCode = ussdCode.replace('montant', Math.round(montant).toString());
-      }
+      const ussdCode = typeof apiError.ussd_code === 'string' ? apiError.ussd_code : null;
       // AshtechPay renvoie un `reference` dans la réponse 400 otp_required (ex: "DEP-A1B2C3D4") —
       // ce reference généré par AshtechPay (PAS le nôtre) est OBLIGATOIRE pour l'étape 2 (retry OTP).
       // Sans lui, l'API renvoie 502 server_error ; avec un mauvais reference, elle renvoie
       // désormais 400 missing_reference. Il ne faut donc PAS l'omettre au retry.
-      const otpReference = apiError.reference || reference;
+      const otpReference = typeof apiError.reference === 'string' ? apiError.reference.trim() : '';
+      if (!otpReference) {
+        await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
+        req.session.error = 'AshTechPay n’a pas retourné la référence de session OTP requise. Aucun nouveau code ne sera envoyé.';
+        return res.redirect('/depot');
+      }
+      await db.query(
+        "UPDATE depots SET provider_metadata = provider_metadata || ?::jsonb WHERE id = ?",
+        [JSON.stringify({ otp_reference: otpReference }), depot_id],
+      );
       req.session.otp_pending = {
         depot_id, notify_url,
         payload: { amount: montant, currency, phone: numero, operator: operateur, country_code, reference: otpReference },
@@ -707,9 +787,13 @@ async function initiateAshtechCollect(req, res, { depot_id, montant, currency, n
     }
 
     console.error(`AshtechPay collect error [HTTP ${e.response?.status}] country=${country_code} operator=${operateur} currency=${currency}:`, JSON.stringify(apiError) || e.message);
-    // Mark deposit as rejected if API call failed for any other reason
-    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
     req.session.error = formatAshtechError(e);
+    if (!e.response || e.response.status >= 500 || e.response.status === 408 || e.response.status === 409) {
+      req.session.pending_depot_id = depot_id;
+      req.session.pending_numero = numero;
+      return res.redirect('/depot');
+    }
+    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
     res.redirect('/depot');
   }
 }
@@ -832,7 +916,7 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
   }
 
   const { depot_id, payload } = otp_pending;
-  const notify_url = otp_pending.notify_url || buildNotifyUrl(req);
+  const notify_url = otp_pending.notify_url || null;
 
   if (otp_pending.provider === 'soleaspay') {
     try {
@@ -857,64 +941,65 @@ router.post('/depot/otp/verify', requireAuth, async (req, res) => {
   }
 
   try {
-    const apiKey = getAshtechApiKey();
-    if (!apiKey) throw new Error('ASHTECHPAY_API_KEY non définie');
-
-    // Le retry OTP DOIT inclure le `reference` renvoyé par AshtechPay dans la réponse 400
-    // otp_required de l'étape 1 (stocké dans payload.reference — PAS notre propre référence
-    // interne). Sans lui, AshtechPay renvoie 502 server_error / 400 missing_reference.
-    const { data } = await axios.post(
-      `${ASHTECH_API_BASE}/v1/collect`,
-      { ...payload, otp, notify_url },
-      { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 }
-    );
+    if (!payload.reference || !notify_url) throw new Error('La session OTP ou l’URL de notification est manquante.');
+    const data = await ashtechPay.createMobileMoneyCollection({ ...payload, otp, notify_url });
 
     delete req.session.otp_pending;
-    await onCollectAccepted(req, depot_id, data, apiKey);
+    if (!data?.transaction_id) {
+      req.session.pending_depot_id = depot_id;
+      req.session.pending_numero = payload.phone || null;
+      req.session.error = 'La confirmation OTP est en cours de vérification. Ne renvoyez pas le code.';
+      return res.redirect('/depot');
+    }
+    await onCollectAccepted(req, depot_id, data);
     res.redirect('/depot');
 
   } catch (e) {
     const apiError = e.response?.data;
 
-    // Code invalide/expiré : on redemande l'OTP plutôt que de rejeter le dépôt.
-    if (e.response?.status === 400 && apiError?.error === 'otp_required') {
+    if (e.response?.status === 400 && apiError?.error === 'invalid_otp') {
       req.session.otp_pending = {
         ...otp_pending,
-        ussd_code: apiError.ussd_code || otp_pending.ussd_code,
-        message: apiError.message || 'Code OTP invalide ou expiré. Veuillez réessayer.',
+        message: apiError.message || 'Code OTP incorrect. Saisissez le code reçu pour cette même session.',
       };
       req.session.error = formatAshtechError(e);
       return res.redirect('/depot');
     }
 
-    // Session OTP expirée (>15 min) ou introuvable, ou reference manquant/invalide :
-    // la doc recommande de relancer l'appel SANS otp/reference pour démarrer une
-    // nouvelle session OTP, plutôt que de rejeter le dépôt.
-    if (e.response?.status === 400 && (apiError?.error === 'otp_expired' || apiError?.error === 'missing_reference')) {
+    if (e.response?.status === 400 && apiError?.error === 'otp_expired') {
       delete req.session.otp_pending;
-      req.session.error = formatAshtechError(e);
+      const reference = createPaymentReference();
+      await db.query(
+        'UPDATE depots SET numero_transaction = ?, provider_transaction_id = NULL, provider_metadata = provider_metadata || ?::jsonb WHERE id = ? AND statut = ?',
+        [reference, JSON.stringify({ reference, otp_reference: null }), depot_id, 'en_attente'],
+      );
+      req.session.error = 'La session OTP a expiré. Une nouvelle session de paiement va être créée.';
       return initiateCollect(req, res, {
         depot_id, montant: payload.amount, currency: payload.currency, numero: payload.phone,
         operateur: payload.operator, country_code: payload.country_code,
-        reference: createPaymentReference(), notify_url,
+        reference, notify_url, provider: 'ashtechpay',
       });
     }
 
     console.error('AshtechPay OTP verify error:', apiError || e.message);
-
-    // Erreur 5xx (erreur serveur AshtechPay) ou réseau : c'est peut-être transitoire.
-    // On garde l'otp_pending pour que l'utilisateur puisse réessayer sans perdre son dépôt.
-    // On ne rejette le dépôt que pour les erreurs 4xx définitives (hors otp_required géré au-dessus).
     const status = e.response?.status;
-    if (!status || status >= 500) {
-      req.session.otp_pending = otp_pending; // conserver pour réessai
-      req.session.error = formatAshtechError(e);
+    if (status === 409 && apiError?.error === 'otp_confirmation_in_progress') {
+      delete req.session.otp_pending;
+      req.session.pending_depot_id = depot_id;
+      req.session.pending_numero = payload.phone || null;
+      req.session.error = 'Une confirmation est déjà en cours. Ne renvoyez pas le code ; le statut sera vérifié.';
+      return res.redirect('/depot');
+    }
+    if (!status || status >= 500 || status === 408 || status === 409) {
+      delete req.session.otp_pending;
+      req.session.pending_depot_id = depot_id;
+      req.session.pending_numero = payload.phone || null;
+      req.session.error = 'La confirmation OTP n’a pas pu être vérifiée. Ne renvoyez pas le code ; le statut sera vérifié.';
       return res.redirect('/depot');
     }
 
-    // Erreur 4xx définitive (code invalide, session expirée, etc.) → rejeter
     delete req.session.otp_pending;
-    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ?", [depot_id]);
+    await db.query("UPDATE depots SET statut = 'rejete' WHERE id = ? AND statut = 'en_attente'", [depot_id]);
     req.session.error = formatAshtechError(e);
     res.redirect('/depot');
   }
@@ -929,12 +1014,6 @@ router.get('/depot/otp/cancel', requireAuth, async (req, res) => {
   }
   res.redirect('/depot');
 });
-
-function buildNotifyUrl(req) {
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-  const host     = req.headers['x-forwarded-host']  || req.headers.host;
-  return `${protocol}://${host}/ashtechpay_callback`;
-}
 
 function normalizeInternationalPhone(phone, countryCode) {
   const dialCode = countryDialCodes[countryCode];
@@ -961,7 +1040,7 @@ function normalizeProviderWallet(phone, countryCode) {
 // whether that happened on the first try (USSD push / Wave) or after
 // resubmitting with an `otp`. Stores the transaction id, kicks off the
 // server-side poller, and sets what the pending-payment card needs to render.
-async function onCollectAccepted(req, depot_id, data, apiKey) {
+async function onCollectAccepted(req, depot_id, data) {
   const [[depot]] = await db.query('SELECT numero_transaction FROM depots WHERE id = ?', [depot_id]);
   const reference = (depot?.numero_transaction || '').split('|')[0];
 
@@ -971,12 +1050,12 @@ async function onCollectAccepted(req, depot_id, data, apiKey) {
   );
 
   // Poll AshtechPay every 3s as a backup to the webhook, until the status changes.
-  pollTransactionStatus(depot_id, data.transaction_id, apiKey);
+  pollTransactionStatus(depot_id, data.transaction_id);
 
   req.session.pending_depot_id = depot_id;
   req.session.pending_numero   = data.phone || req.session.pending_numero || null;
   // Wave doesn't push a USSD prompt — the client must open a link to confirm.
-  req.session.pending_wave_url = data.flow === 'wave' ? data.wave_url : null;
+  req.session.pending_wave_url = typeof data.wave_url === 'string' ? data.wave_url : null;
 }
 
 // ── Server-side polling of AshtechPay GET /v1/transaction/:id ───────────────
@@ -986,7 +1065,7 @@ async function onCollectAccepted(req, depot_id, data, apiKey) {
 const POLL_INTERVAL_MS = 3000;
 const POLL_TIMEOUT_MS  = 5 * 60 * 1000; // stop after 5 minutes
 
-function pollTransactionStatus(depot_id, transaction_id, apiKey, options = {}) {
+function pollTransactionStatus(depot_id, transaction_id, options = {}) {
   const startedAt = Date.now();
   const timeoutMs = Number.isFinite(options.timeoutMs) ? options.timeoutMs : POLL_TIMEOUT_MS;
   const intervalMs = Number.isFinite(options.intervalMs) ? options.intervalMs : POLL_INTERVAL_MS;
@@ -1004,10 +1083,7 @@ function pollTransactionStatus(depot_id, transaction_id, apiKey, options = {}) {
       const [[depot]] = await db.query('SELECT * FROM depots WHERE id = ?', [depot_id]);
       if (!depot || depot.statut !== 'en_attente') return; // already finalized (e.g. by webhook)
 
-      const { data } = await axios.get(
-        `${ASHTECH_API_BASE}/v1/transaction/${encodeURIComponent(transaction_id)}`,
-        { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
-      );
+      const data = await ashtechPay.getTransactionStatus(transaction_id);
 
       const normalizedStatus = normalizeAshtechTransactionStatus(data.status);
       if (normalizedStatus !== 'pending') {
@@ -1125,7 +1201,6 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
     if (depot.statut === 'en_attente') {
       const transaction_id = depot.provider_transaction_id || (depot.numero_transaction || '').split('|')[1];
       const provider = depot.fournisseur || 'ashtechpay';
-      const apiKey = provider === 'ashtechpay' ? getAshtechApiKey() : null;
       if (transaction_id && provider === 'soleaspay') {
         try {
           const data = await verifySoleasCollection({ transactionReference: transaction_id });
@@ -1137,20 +1212,32 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
         } catch (e) {
           console.error(`SoleasPay live status check error (depot ${depot_id}):`, e.response?.data || e.message);
         }
-      } else if (transaction_id && apiKey) {
+      } else if (transaction_id && provider === 'ashtechpay_checkout') {
         try {
-          const { data } = await axios.get(
-            `${ASHTECH_API_BASE}/v1/transaction/${encodeURIComponent(transaction_id)}`,
-            { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
-          );
+          const data = await ashtechPay.getHostedCheckoutStatus(transaction_id);
+          const hostedStatus = String(data?.status || '').trim().toLowerCase();
+          const normalizedStatus = hostedStatus === 'success'
+            ? 'success'
+            : (hostedStatus === 'failed' || hostedStatus === 'expired')
+              ? 'failed'
+              : 'pending';
+          if (normalizedStatus !== 'pending') {
+            await finalizeDepot(depot, normalizedStatus);
+            depot.statut = normalizedStatus === 'success' ? 'valide' : 'rejete';
+          }
+        } catch (e) {
+          console.error(`AshTechPay checkout status check error (depot ${depot_id}):`, e.response?.data || e.message);
+        }
+      } else if (transaction_id && provider === 'ashtechpay') {
+        try {
+          const data = await ashtechPay.getTransactionStatus(transaction_id);
           const normalizedStatus = normalizeAshtechTransactionStatus(data.status);
           if (normalizedStatus !== 'pending') {
             await finalizeDepot(depot, normalizedStatus);
             depot.statut = normalizedStatus === 'success' ? 'valide' : 'rejete';
           }
         } catch (e) {
-          // Live check failed (network/API) — fall back to the last known DB status
-          console.error(`AshtechPay live status check error (depot ${depot_id}):`, e.response?.data || e.message);
+          console.error(`AshTechPay live status check error (depot ${depot_id}):`, e.response?.data || e.message);
         }
       }
     }
@@ -1171,94 +1258,136 @@ router.get('/depot/status/:id', requireAuth, async (req, res) => {
 });
 
 function isValidAshtechWebhook(req, rawBody) {
-  const webhookSecret = process.env.ASHTECHPAY_WEBHOOK_SECRET
-    || process.env.ASHTECH_WEBHOOK_SECRET
-    || process.env.WHSEC;
-
-  // Signature verification is enabled automatically once the merchant adds
-  // the documented whsec_... secret. Without it, keep compatibility with
-  // accounts that have not configured signed webhooks yet.
-  if (!webhookSecret) return true;
-
+  const webhookSecret = process.env.ASHTECH_WEBHOOK_SECRET;
+  const eventId = String(req.get('X-Ashtech-Event-Id') || '').trim();
   const timestamp = req.get('X-Ashtech-Timestamp') || '';
   const signatureHeader = req.get('X-Ashtech-Signature') || '';
-  const timestampSeconds = Number(timestamp);
-  if (!timestamp || !Number.isFinite(timestampSeconds)
-      || Math.abs(Date.now() / 1000 - timestampSeconds) > 300) {
-    return false;
-  }
-
-  const provided = signatureHeader.replace(/^sha256=/i, '').trim();
-  const expected = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(`${timestamp}.${rawBody}`)
-    .digest('hex');
-  const expectedBuffer = Buffer.from(expected, 'utf8');
-  const providedBuffer = Buffer.from(provided, 'utf8');
-  return expectedBuffer.length === providedBuffer.length
-    && crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+  return Boolean(eventId && verifyAshtechWebhookSignature({
+    secret: webhookSecret,
+    timestamp,
+    signature: signatureHeader,
+    rawBody,
+  }));
 }
 
-async function verifyAshtechWebhookDepot(depot, webhookTransactionId) {
-  if (depot.fournisseur && depot.fournisseur !== 'ashtechpay') {
-    console.warn(`AshTechPay callback ignored for non-AshTech depot ${depot.id}`);
-    return;
-  }
+async function findAshtechWebhookTarget(payload) {
+  const transactionId = String(payload.transaction_id || '').trim();
+  const paymentLinkId = String(payload.payment_link_id || '').trim();
+  const references = [payload.merchant_reference, payload.reference]
+    .filter(value => typeof value === 'string')
+    .map(value => value.trim())
+    .filter(Boolean);
 
-  const apiKey = getAshtechApiKey();
-  const storedTransactionId = depot.provider_transaction_id || '';
-  if (storedTransactionId && webhookTransactionId
-      && storedTransactionId !== webhookTransactionId) {
-    console.warn(`AshTechPay callback transaction mismatch for depot ${depot.id}`);
-    return;
-  }
-
-  const transactionId = storedTransactionId || webhookTransactionId;
-  if (!transactionId || !apiKey) {
-    console.warn(`AshTechPay callback cannot verify depot ${depot.id}`);
-    return;
-  }
-
-  const { data } = await axios.get(
-    `${ASHTECH_API_BASE}/v1/transaction/${encodeURIComponent(transactionId)}`,
-    { headers: { Authorization: `Bearer ${apiKey}` }, timeout: 10000 }
-  );
-  const returnedTransactionId = typeof data.transaction_id === 'string'
-    ? data.transaction_id.trim()
-    : '';
-  if (returnedTransactionId && returnedTransactionId !== transactionId) {
-    console.warn(`AshTechPay callback response transaction mismatch for depot ${depot.id}`);
-    return;
-  }
-  if (!storedTransactionId) {
-    const localReference = String(depot.numero_transaction || '').split('|')[0];
-    const providerReferences = [
-      data.merchant_reference,
-      data.external_reference,
-      data.reference,
-      data.data?.merchant_reference,
-      data.data?.external_reference,
-      data.data?.reference,
-    ].filter(value => typeof value === 'string').map(value => value.trim());
-    if (!localReference || !providerReferences.includes(localReference)) {
-      console.warn(`AshTechPay callback reference mismatch for depot ${depot.id}`);
-      return;
+  if (payload.type === 'payment_link' || paymentLinkId) {
+    if (paymentLinkId) {
+      const [[checkout]] = await db.query(
+        "SELECT * FROM depots WHERE fournisseur = 'ashtechpay_checkout' AND provider_transaction_id = ? LIMIT 1",
+        [paymentLinkId],
+      );
+      if (checkout) return { type: 'checkout', record: checkout, paymentLinkId };
     }
-
-    await db.query(
-      'UPDATE depots SET numero_transaction = ?, provider_transaction_id = ? WHERE id = ? AND provider_transaction_id IS NULL',
-      [`${localReference}|${transactionId}`, transactionId, depot.id]
-    );
-    depot.provider_transaction_id = transactionId;
+    for (const reference of references) {
+      const [[checkout]] = await db.query(
+        "SELECT * FROM depots WHERE fournisseur = 'ashtechpay_checkout' AND numero_transaction = ? LIMIT 1",
+        [reference],
+      );
+      if (checkout) return { type: 'checkout', record: checkout, paymentLinkId: checkout.provider_transaction_id };
+    }
+    return null;
   }
 
-  const verifiedStatus = normalizeAshtechTransactionStatus(data.status);
-  if (verifiedStatus === 'pending') {
-    console.log(`AshTechPay callback verified as pending for depot ${depot.id}`);
+  if (transactionId) {
+    const [[depot]] = await db.query(
+      "SELECT * FROM depots WHERE fournisseur = 'ashtechpay' AND provider_transaction_id = ? LIMIT 1",
+      [transactionId],
+    );
+    if (depot) return { type: 'deposit', record: depot, transactionId };
+    const [[withdrawal]] = await db.query(
+      "SELECT * FROM retraits WHERE fournisseur = 'ashtechpay' AND provider_transaction_id = ? LIMIT 1",
+      [transactionId],
+    );
+    if (withdrawal) return { type: 'payout', record: withdrawal, transactionId };
+  }
+
+  for (const reference of references) {
+    const [[depot]] = await db.query(
+      "SELECT * FROM depots WHERE fournisseur = 'ashtechpay' AND (numero_transaction = ? OR split_part(numero_transaction, '|', 1) = ?) LIMIT 1",
+      [reference, reference],
+    );
+    if (depot) return { type: 'deposit', record: depot, transactionId };
+    const [[withdrawal]] = await db.query(
+      "SELECT * FROM retraits WHERE fournisseur = 'ashtechpay' AND provider_order_id = ? LIMIT 1",
+      [reference],
+    );
+    if (withdrawal) return { type: 'payout', record: withdrawal, transactionId };
+  }
+  return null;
+}
+
+async function processAshtechWebhook(payload, eventId) {
+  const target = await findAshtechWebhookTarget(payload);
+  if (!target) {
+    console.warn(`AshTechPay webhook ${eventId}: no matching local transaction`);
+    return;
+  }
+  if (parseProviderMetadata(target.record.provider_metadata).last_ashtech_event_id === eventId) {
     return;
   }
 
-  await finalizeDepot(depot, verifiedStatus);
+  if (target.type === 'checkout') {
+    if (!target.paymentLinkId) throw new Error('Hosted Checkout payment_id is not stored yet.');
+    const data = await ashtechPay.getHostedCheckoutStatus(target.paymentLinkId);
+    if (data.payment_id && String(data.payment_id) !== String(target.paymentLinkId)) {
+      throw new Error('Hosted Checkout payment_id mismatch.');
+    }
+    const status = String(data.status || '').trim().toLowerCase();
+    const normalized = status === 'success'
+      ? 'success'
+      : (status === 'failed' || status === 'expired')
+        ? 'failed'
+        : 'pending';
+    await finalizeDepot(target.record, normalized);
+    await db.query(
+      'UPDATE depots SET provider_metadata = provider_metadata || ?::jsonb WHERE id = ?',
+      [JSON.stringify({ last_ashtech_event_id: eventId }), target.record.id],
+    );
+    return;
+  }
+
+  const transactionId = target.record.provider_transaction_id || target.transactionId;
+  if (!transactionId) throw new Error('AshTechPay transaction_id is not available yet.');
+  const data = await ashtechPay.getTransactionStatus(transactionId);
+  if (data.transaction_id && String(data.transaction_id) !== String(transactionId)) {
+    throw new Error('AshTechPay transaction_id mismatch.');
+  }
+
+  if (!target.record.provider_transaction_id) {
+    const reference = String(target.record.numero_transaction || target.record.provider_order_id || '');
+    await db.query(
+      target.type === 'deposit'
+        ? 'UPDATE depots SET provider_transaction_id = ?, numero_transaction = ? WHERE id = ? AND provider_transaction_id IS NULL'
+        : 'UPDATE retraits SET provider_transaction_id = ? WHERE id = ? AND provider_transaction_id IS NULL',
+      target.type === 'deposit'
+        ? [transactionId, `${reference.split('|')[0]}|${transactionId}`, target.record.id]
+        : [transactionId, target.record.id],
+    );
+  }
+
+  if (target.type === 'deposit') {
+    const status = normalizeAshtechTransactionStatus(data.status);
+    await finalizeDepot(target.record, status);
+    await db.query(
+      'UPDATE depots SET provider_metadata = provider_metadata || ?::jsonb WHERE id = ?',
+      [JSON.stringify({ last_ashtech_event_id: eventId }), target.record.id],
+    );
+    return;
+  }
+
+  await settleAshtechPayout(db, target.record.id, normalizeAshtechPayoutStatus(data.status));
+  await db.query(
+    'UPDATE retraits SET provider_metadata = provider_metadata || ?::jsonb WHERE id = ?',
+    [JSON.stringify({ last_ashtech_event_id: eventId }), target.record.id],
+  );
 }
 
 // ── POST /ashtechpay_callback  (webhook) ─────────────────────────────────────
@@ -1268,9 +1397,7 @@ async function verifyAshtechWebhookDepot(depot, webhookTransactionId) {
 //     status: "completed"|"failed", amount (net), total_amount (brut), currency, ... }
 // Note: status field is "completed" (not "success") — map accordingly.
 router.post('/ashtechpay_callback', async (req, res) => {
-  const rawBody = Buffer.isBuffer(req.body)
-    ? req.body.toString('utf8')
-    : JSON.stringify(req.body || {});
+  const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from('');
 
   if (!isValidAshtechWebhook(req, rawBody)) {
     return res.status(401).json({ received: false, error: 'Invalid webhook signature' });
@@ -1278,57 +1405,21 @@ router.post('/ashtechpay_callback', async (req, res) => {
 
   let payload;
   try {
-    payload = JSON.parse(rawBody);
-  } catch (error) {
+    payload = JSON.parse(rawBody.toString('utf8'));
+  } catch {
     return res.status(400).json({ received: false, error: 'Invalid webhook payload' });
   }
 
-  const { event, transaction_id, reference, status } = payload;
-
-  // Always respond 200 first (as recommended by docs) so AshtechPay stops retrying
-  res.status(200).json({ received: true });
-
-  if (!reference && !transaction_id) {
-    console.warn('AshtechPay callback: missing reference and transaction_id');
-    return;
+  const eventId = String(req.get('X-Ashtech-Event-Id') || '').trim();
+  if (!['payment.completed', 'payment.failed', 'payout.completed', 'payout.failed'].includes(payload.event)) {
+    return res.status(200).json({ received: true, ignored: true });
   }
-
-  const webhookStatus = event === 'payment.completed'
-    ? 'success'
-    : event === 'payment.failed'
-      ? 'failed'
-      : normalizeAshtechTransactionStatus(status);
-  if (webhookStatus === 'pending') {
-    // Unknown / pending — ignore, let polling handle it
-    console.log(`AshtechPay callback: unhandled event="${event}" status="${status}" — ignoring`);
-    return;
-  }
-
   try {
-    let depot = null;
-    if (reference) {
-      const [[byReference]] = await db.query(
-        "SELECT * FROM depots WHERE numero_transaction = ? OR split_part(numero_transaction, '|', 1) = ? LIMIT 1",
-        [reference, reference]
-      );
-      depot = byReference || null;
-    }
-    if (!depot && transaction_id) {
-      const [[byTransaction]] = await db.query(
-        "SELECT * FROM depots WHERE provider_transaction_id = ? OR split_part(numero_transaction, '|', 2) = ? LIMIT 1",
-        [transaction_id, transaction_id]
-      );
-      depot = byTransaction || null;
-    }
-    if (!depot) {
-      console.warn('AshTechPay callback: deposit not found');
-      return;
-    }
-
-    await verifyAshtechWebhookDepot(depot, transaction_id);
-
+    await processAshtechWebhook(payload, eventId);
+    return res.status(200).json({ received: true });
   } catch (e) {
-    console.error('AshtechPay callback error:', e);
+    console.error(`AshTechPay webhook ${eventId} processing error:`, e.response?.data || e.message);
+    return res.status(503).json({ received: false, error: 'Webhook processing could not be confirmed.' });
   }
 });
 

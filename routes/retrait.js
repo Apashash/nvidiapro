@@ -4,15 +4,13 @@ const db = require('../config/db');
 const { requireAuth } = require('../middleware/auth');
 const { getParams } = require('../services/params');
 const {
-  filterEnabledPaymentOperators,
-  getOperatorProvider,
-  getAshtechCountries,
+  getAshtechPayoutCountries,
   getAshtechCryptoAssets,
 } = require('../services/paymentProviders');
 const {
   calculateManualUsdtWithdrawalAmount,
   findAshtechCryptoAsset,
-  getManualUsdtWithdrawalAssets,
+  getUsdtPayoutAssets,
 } = require('../services/ashtechCrypto');
 const {
   findAccountPaymentCountry,
@@ -83,10 +81,12 @@ function buildScheduleStatus(params) {
 
 router.get('/retrait/crypto/assets', requireAuth, async (req, res) => {
   try {
-    const assets = getManualUsdtWithdrawalAssets(await getAshtechCryptoAssets())
+    const assets = getUsdtPayoutAssets(await getAshtechCryptoAssets())
       .map(asset => ({
         asset_code: asset.asset_code,
         network_label: asset.network_label,
+        memo_required: asset.memo_required,
+        memo_type: asset.memo_type,
       }));
     res.json({ assets });
   } catch (error) {
@@ -103,11 +103,14 @@ router.get('/retrait', requireAuth, async (req, res) => {
   try {
     const params = await getParams();
     const [[user]]    = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
-    const allCountries = await getAshtechCountries();
-    const countries = filterEnabledPaymentOperators(
-      allCountries,
-      params.payment_provider_mappings
-    );
+    let countries = [];
+    let payoutCatalogueUnavailable = false;
+    try {
+      countries = await getAshtechPayoutCountries();
+    } catch (catalogueError) {
+      payoutCatalogueUnavailable = true;
+      console.error('AshTechPay payout catalogue unavailable:', catalogueError.response?.status || catalogueError.message);
+    }
     const withdrawalCountry = findAccountPaymentCountry(user?.pays, countries);
     const [[soldeRow]] = await db.query('SELECT solde FROM soldes WHERE user_id = ?', [user_id]);
     const solde = soldeRow ? parseFloat(soldeRow.solde) : 0;
@@ -145,6 +148,7 @@ router.get('/retrait', requireAuth, async (req, res) => {
         ? getCountryDialCode(withdrawalCountry.code)
         : '',
       withdrawalCryptoRate,
+      payoutCatalogueUnavailable,
     });
   } catch (e) {
     console.error(e);
@@ -198,6 +202,7 @@ router.post('/retrait', requireAuth, async (req, res) => {
     let methode = '';
     let cryptoAmountUsdt = null;
     let networkLabel = null;
+    let payoutMetadata = {};
 
     if (!Number.isFinite(montant) || montant <= 0) {
       return res.json({ success: false, message: 'Saisissez un montant valide.' });
@@ -214,14 +219,14 @@ router.post('/retrait', requireAuth, async (req, res) => {
     if (cryptoMode) {
       const walletAddress = String(req.body.wallet_address || '').trim();
       const assetCode = String(req.body.asset_code || '').trim();
-      if (walletAddress.length < 20 || walletAddress.length > 255
-          || !/^[A-Za-z0-9:_-]+$/.test(walletAddress)) {
+      const destinationMemo = String(req.body.destination_memo || '').trim();
+      if (!walletAddress || walletAddress.length > 255) {
         return res.json({ success: false, message: 'Adresse de portefeuille USDT invalide.' });
       }
 
       let assets;
       try {
-        assets = getManualUsdtWithdrawalAssets(await getAshtechCryptoAssets());
+        assets = getUsdtPayoutAssets(await getAshtechCryptoAssets());
       } catch (error) {
         console.error('USDT network validation failed:', error.message);
         return res.json({ success: false, message: 'Impossible de vérifier le réseau USDT. Réessayez plus tard.' });
@@ -229,6 +234,12 @@ router.post('/retrait', requireAuth, async (req, res) => {
       const asset = findAshtechCryptoAsset(assets, assetCode);
       if (!asset) {
         return res.json({ success: false, message: 'Sélectionnez un réseau USDT disponible.' });
+      }
+      if (asset.memo_required && !destinationMemo) {
+        return res.json({
+          success: false,
+          message: `Le réseau ${asset.network_label} exige un ${asset.memo_type || 'memo'} pour le retrait.`,
+        });
       }
 
       const rate = params.taux_usdt_fcfa === undefined || params.taux_usdt_fcfa === ''
@@ -252,13 +263,21 @@ router.post('/retrait', requireAuth, async (req, res) => {
       operateur = 'Crypto USDT';
       pays = String(userCheck?.pays || 'Autre').trim();
       methode = `Crypto USDT ${cryptoAmountUsdt} · ${networkLabel} · taux ${rate} FCFA/USDT`;
+      payoutMetadata = {
+        payout_type: 'crypto',
+        asset_code: asset.asset_code,
+        network_label: asset.network_label,
+        destination_memo: destinationMemo,
+        amount_usdt: cryptoAmountUsdt,
+        fee_bearer: 'sender',
+      };
       if (methode.length > 100) {
         return res.json({ success: false, message: 'Le nom du réseau USDT est trop long.' });
       }
     } else {
       const submittedCountry = String(req.body.pays || '').trim();
       const countryCode = String(req.body.country_code || '').trim().toUpperCase();
-      const countries = await getAshtechCountries();
+      const countries = await getAshtechPayoutCountries();
       const accountCountry = findAccountPaymentCountry(userCheck?.pays, countries);
       const submittedAccountCountry = findAccountPaymentCountry(submittedCountry, countries);
       const country = countries.find(item => item.code === countryCode);
@@ -278,10 +297,6 @@ router.post('/retrait', requireAuth, async (req, res) => {
       if (!country.operators.includes(operateur)) {
         return res.json({ success: false, message: 'Opérateur invalide pour le pays de votre compte.' });
       }
-      const operatorConfig = await getOperatorProvider(countryCode, operateur);
-      if (!operatorConfig.enabled) {
-        return res.json({ success: false, message: 'Cet opérateur est temporairement désactivé.' });
-      }
       if (!dialCode || !phoneDigits.startsWith(dialCode)
           || phoneDigits.length < 8 || phoneDigits.length > 15
           || !nom || nom.length > 100) {
@@ -291,6 +306,13 @@ router.post('/retrait', requireAuth, async (req, res) => {
       numero = `+${phoneDigits}`;
       pays = country.name;
       methode = operateur;
+      payoutMetadata = {
+        payout_type: 'mobile_money',
+        country_code: country.code,
+        recipient_name: nom,
+        phone: phoneDigits,
+        fee_bearer: 'sender',
+      };
     }
 
     const maxParJour = parseInt(params.retrait_max_par_jour ?? 1);
@@ -335,8 +357,8 @@ router.post('/retrait', requireAuth, async (req, res) => {
       }
 
       await conn.query(
-        "INSERT INTO retraits (user_id, montant, montant_net, frais, operateur, pays, methode, numero_compte, fournisseur, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'manuel', 'en_attente')",
-        [user_id, montant, montantNet, frais, operateur, pays, methode, numero]
+        "INSERT INTO retraits (user_id, montant, montant_net, frais, operateur, pays, methode, numero_compte, fournisseur, provider_metadata, statut) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'manuel', ?, 'en_attente')",
+        [user_id, montant, montantNet, frais, operateur, pays, methode, numero, JSON.stringify(payoutMetadata)]
       );
       await conn.commit();
     } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }

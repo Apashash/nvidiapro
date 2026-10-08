@@ -2,8 +2,9 @@ const axios = require('axios');
 const crypto = require('crypto');
 const { getParams } = require('./params');
 const { normalizeAshtechCryptoAssets } = require('./ashtechCrypto');
+const ashtechPay = require('./ashtechPay');
 
-const ASHTECH_API_BASE = process.env.ASHTECH_API_BASE || 'https://www.ashtechpay.com';
+const ASHTECH_API_BASE = ashtechPay.apiBase;
 const SOLEASPAY_API_BASE = process.env.MYSOLEAS_API_BASE
   || process.env.SOLEASPAY_API_BASE
   || 'https://api.mysoleas.com';
@@ -23,18 +24,6 @@ function createPaymentReference() {
   return `Ashpay${randomReferencePart(5, PAYMENT_REFERENCE_LETTERS)}-${randomReferencePart(8, PAYMENT_REFERENCE_ALNUM)}-${randomReferencePart(4, PAYMENT_REFERENCE_LETTERS)}`;
 }
 
-const fallbackAshtechCountries = [
-  { code: 'CM', name: 'Cameroun',          currency: 'XAF', operators: ['Orange Money', 'MTN Mobile Money'] },
-  { code: 'TG', name: 'Togo',              currency: 'XOF', operators: ['Flooz (Moov)', 'T-Money'] },
-  { code: 'BJ', name: 'Bénin',             currency: 'XOF', operators: ['Moov Money', 'MTN Mobile Money'] },
-  { code: 'CI', name: "Côte d'Ivoire",     currency: 'XOF', operators: ['Moov Money', 'Orange Money', 'MTN Mobile Money', 'Wave'] },
-  { code: 'BF', name: 'Burkina Faso',      currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
-  { code: 'GA', name: 'Gabon',             currency: 'XAF', operators: ['Airtel Money', 'Moov Money'] },
-  { code: 'CG', name: 'Congo Brazzaville', currency: 'XAF', operators: ['Airtel Money', 'MTN Mobile Money'] },
-  { code: 'NE', name: 'Niger',             currency: 'XOF', operators: ['Airtel Money'] },
-  { code: 'ML', name: 'Mali',              currency: 'XOF', operators: ['Moov Money', 'Orange Money'] },
-];
-
 // SoleasPay's documented services-list is generic rather than country/operator
 // specific. These are the two Mobile Money services documented by SoleasPay V3.
 const fallbackSoleasServices = [
@@ -42,8 +31,7 @@ const fallbackSoleasServices = [
   { id: 2, code: 'orange_cmr', name: 'Orange Cameroon', description: 'Orange Money', countryCode: 'CMR', currency: 'XAF', is_active: true, is_public: true, is_need_otp: false, is_can_collect: true, is_can_disburse: true },
 ];
 
-let ashtechCountriesCache = null;
-let ashtechCountriesCachedAt = 0;
+const ashtechCountriesCache = new Map();
 let ashtechCryptoAssetsCache = null;
 let ashtechCryptoAssetsCachedAt = 0;
 let soleasServicesCache = null;
@@ -52,7 +40,7 @@ let soleasBearerToken = null;
 let soleasBearerTokenExpiresAt = 0;
 
 function getAshtechApiKey() {
-  return process.env.ASHTECH_API_KEY || process.env.ASHTECHPAY_API_KEY || null;
+  return ashtechPay.getAshtechApiKey();
 }
 
 function getSoleasApiKey() {
@@ -266,48 +254,49 @@ async function verifySoleasDisbursement({ transactionReference: reference }) {
 }
 
 function normalizeAshtechCountries(payload) {
-  const countries = Array.isArray(payload)
-    ? payload
-    : (Array.isArray(payload?.countries) ? payload.countries : []);
+  const countries = Array.isArray(payload) ? payload : [];
 
   return countries
     .map(country => ({
-      code: String(country.code || country.country_code || '').trim().toUpperCase(),
-      name: String(country.name || country.country || '').trim(),
+      code: String(country.code || '').trim().toUpperCase(),
+      name: String(country.name || '').trim(),
       currency: String(country.currency || '').trim().toUpperCase(),
+      wallet_currency: typeof country.wallet_currency === 'string'
+        ? country.wallet_currency.trim().toUpperCase()
+        : null,
       operators: Array.isArray(country.operators)
-        ? country.operators.map(operator => {
-            if (typeof operator === 'string') return operator.trim();
-            return String(operator?.code || operator?.name || '').trim();
-          }).filter(Boolean)
+        ? country.operators.filter(operator => typeof operator === 'string')
+          .map(operator => operator.trim()).filter(Boolean)
         : [],
     }))
     .filter(country => country.code && country.name && country.currency && country.operators.length);
 }
 
-async function getAshtechCountries() {
-  const now = Date.now();
-  if (ashtechCountriesCache && now - ashtechCountriesCachedAt < COUNTRY_CACHE_TTL_MS) {
-    return ashtechCountriesCache;
+async function getAshtechCountries(operation = 'collect') {
+  if (operation !== 'collect' && operation !== 'payout') {
+    throw new Error('Opération de catalogue AshTechPay non prise en charge.');
   }
-
-  const apiKey = getAshtechApiKey();
-  if (!apiKey) return fallbackAshtechCountries;
+  const now = Date.now();
+  const cached = ashtechCountriesCache.get(operation);
+  if (cached && now - cached.cachedAt < COUNTRY_CACHE_TTL_MS) {
+    return cached.countries.map(country => ({ ...country, operators: [...country.operators] }));
+  }
 
   try {
-    const { data } = await axios.get(`${ASHTECH_API_BASE}/v1/countries`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-      timeout: 10000,
-    });
-    const countries = normalizeAshtechCountries(data);
+    const countries = normalizeAshtechCountries(
+      await ashtechPay.getCountries(operation === 'payout' ? 'payout' : undefined)
+    );
     if (!countries.length) throw new Error('Catalogue AshTechPay vide ou invalide');
-    ashtechCountriesCache = countries;
-    ashtechCountriesCachedAt = now;
-    return countries;
+    ashtechCountriesCache.set(operation, { countries, cachedAt: now });
+    return countries.map(country => ({ ...country, operators: [...country.operators] }));
   } catch (error) {
     console.error('AshTechPay countries catalogue error:', error.response?.data || error.message);
-    return ashtechCountriesCache || fallbackAshtechCountries;
+    throw error;
   }
+}
+
+function getAshtechPayoutCountries() {
+  return getAshtechCountries('payout');
 }
 
 async function getAshtechCryptoAssets() {
@@ -316,15 +305,7 @@ async function getAshtechCryptoAssets() {
     return ashtechCryptoAssetsCache.map(asset => ({ ...asset }));
   }
 
-  const apiKey = getAshtechApiKey();
-  if (!apiKey) {
-    throw new Error('AshTechPay Direct API key is not configured');
-  }
-
-  const { data } = await axios.get(`${ASHTECH_API_BASE}/v1/crypto/assets`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
-    timeout: 10000,
-  });
+  const data = await ashtechPay.getCryptoAssets();
   const assets = normalizeAshtechCryptoAssets(data);
   ashtechCryptoAssetsCache = assets;
   ashtechCryptoAssetsCachedAt = now;
@@ -475,7 +456,9 @@ module.exports = {
   fallbackSoleasServices,
   getAshtechApiKey,
   getAshtechCountries,
+  getAshtechPayoutCountries,
   getAshtechCryptoAssets,
+  getAshtechFees: ashtechPay.getFees,
   getOperatorProvider,
   getSoleasApiKey,
   getSoleasPrivateSecret,

@@ -22,6 +22,8 @@ const {
 } = require('../services/vipSalaryTiers');
 const {
   getAshtechCountries,
+  getAshtechPayoutCountries,
+  getAshtechCryptoAssets,
   findSoleasServiceForOperator,
   getSoleasServices,
   initiateSoleasDisbursement,
@@ -29,6 +31,16 @@ const {
   verifySoleasDisbursement,
   createPaymentReference,
 } = require('../services/paymentProviders');
+const ashtechPay = require('../services/ashtechPay');
+const {
+  findAshtechCryptoAsset,
+  getUsdtPayoutAssets,
+} = require('../services/ashtechCrypto');
+const {
+  normalizeAshtechPayoutStatus,
+  parseProviderMetadata,
+  settleAshtechPayout,
+} = require('../services/ashtechPayouts');
 
 const TUTO_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'tuto');
 if (!fs.existsSync(TUTO_UPLOAD_DIR)) fs.mkdirSync(TUTO_UPLOAD_DIR, { recursive: true });
@@ -1086,6 +1098,215 @@ function normalizeAdminProviderWallet(phone, countryCode) {
   return digits;
 }
 
+function formatAshtechAdminError(error) {
+  const status = error?.response?.status;
+  const body = error?.response?.data;
+  const code = body?.error || body?.code;
+  const message = body?.message || error?.message || 'Erreur inconnue';
+  return `AshTechPay${status ? ` (${status})` : ''}${code ? ` [${code}]` : ''} : ${String(message).slice(0, 500)}`;
+}
+
+async function buildAshtechPayoutRequest(ret, reference) {
+  const metadata = parseProviderMetadata(ret.provider_metadata);
+  const notifyUrl = require('../services/ashtechPay').validateAshtechNotifyUrl(process.env.ASHTECH_NOTIFY_URL);
+  const amount = Number(ret.montant_net ?? ret.montant);
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error('Montant de payout invalide.');
+
+  if (metadata.payout_type === 'mobile_money') {
+    const countryCode = String(metadata.country_code || '').trim().toUpperCase();
+    const countries = await getAshtechPayoutCountries();
+    const country = countries.find(item => item.code === countryCode);
+    const operator = String(ret.operateur || '').trim();
+    if (!country || !country.operators.includes(operator)) {
+      throw new Error('Le pays ou l’opérateur n’est plus actif dans le catalogue AshTechPay des payouts.');
+    }
+    const recipientName = String(metadata.recipient_name || '').trim();
+    const phone = String(metadata.phone || ret.numero_compte || '').replace(/\D/g, '');
+    if (!recipientName || !phone) {
+      throw new Error('Le nom du bénéficiaire ou son numéro international manque dans la demande.');
+    }
+    return {
+      reference,
+      country_code: countryCode,
+      operator,
+      phone,
+      recipient_name: recipientName,
+      amount,
+      fee_bearer: 'sender',
+      notify_url: notifyUrl,
+    };
+  }
+
+  if (metadata.payout_type === 'crypto') {
+    const assetCode = String(metadata.asset_code || '').trim();
+    const assets = getUsdtPayoutAssets(await getAshtechCryptoAssets());
+    const asset = findAshtechCryptoAsset(assets, assetCode);
+    const destinationAddress = String(ret.numero_compte || '').trim();
+    const destinationMemo = String(metadata.destination_memo || '').trim();
+    const usdtAmount = Number(metadata.amount_usdt);
+    if (!asset || !destinationAddress || !Number.isFinite(usdtAmount) || usdtAmount <= 0) {
+      throw new Error('L’actif, l’adresse ou le montant USDT de la demande est incomplet ou inactif.');
+    }
+    if (asset.memo_required && !destinationMemo) {
+      throw new Error(`Le réseau ${asset.network_label} exige un ${asset.memo_type || 'memo'}.`);
+    }
+    return {
+      reference,
+      asset_code: asset.asset_code,
+      destination_address: destinationAddress,
+      ...(destinationMemo ? { destination_memo: destinationMemo } : {}),
+      amount: usdtAmount,
+      fee_bearer: 'sender',
+      notify_url: notifyUrl,
+    };
+  }
+
+  throw new Error('Le type de payout AshTechPay n’est pas défini pour ce retrait.');
+}
+
+async function prepareAshtechPayout(id) {
+  const [[current]] = await db.query('SELECT * FROM retraits WHERE id = ?', [id]);
+  if (!current) throw new Error('Retrait non trouvé.');
+  if (current.statut === 'en_cours' && current.fournisseur === 'ashtechpay') {
+    const metadata = parseProviderMetadata(current.provider_metadata);
+    if (!current.provider_order_id || !metadata.request_payload) {
+      throw new Error('La demande AshTechPay en cours ne contient pas sa référence ou son payload initial.');
+    }
+    return { withdrawal: current, payload: metadata.request_payload };
+  }
+  if (current.statut !== 'en_attente') throw new Error('Ce retrait a déjà été traité.');
+
+  const reference = createPaymentReference();
+  const payload = await buildAshtechPayoutRequest(current, reference);
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [[locked]] = await conn.query('SELECT * FROM retraits WHERE id = ? FOR UPDATE', [id]);
+    if (!locked) {
+      await conn.rollback();
+      throw new Error('Retrait non trouvé.');
+    }
+    if (locked.statut === 'en_cours' && locked.fournisseur === 'ashtechpay') {
+      const metadata = parseProviderMetadata(locked.provider_metadata);
+      await conn.rollback();
+      if (!locked.provider_order_id || !metadata.request_payload) {
+        throw new Error('La demande AshTechPay en cours ne contient pas son payload initial.');
+      }
+      return { withdrawal: locked, payload: metadata.request_payload };
+    }
+    if (locked.statut !== 'en_attente') {
+      await conn.rollback();
+      throw new Error('Ce retrait a déjà été traité.');
+    }
+    const metadata = {
+      ...parseProviderMetadata(locked.provider_metadata),
+      request_payload: payload,
+      provider_status: 'not_submitted',
+      last_error: null,
+    };
+    await conn.query(
+      "UPDATE retraits SET statut = 'en_cours', fournisseur = 'ashtechpay', provider_order_id = ?, provider_metadata = ? WHERE id = ? AND statut = 'en_attente'",
+      [reference, JSON.stringify(metadata), id],
+    );
+    await conn.commit();
+    return {
+      withdrawal: { ...locked, statut: 'en_cours', fournisseur: 'ashtechpay', provider_order_id: reference, provider_metadata: metadata },
+      payload,
+    };
+  } catch (error) {
+    try { await conn.rollback(); } catch {}
+    throw error;
+  } finally {
+    conn.release();
+  }
+}
+
+async function saveAshtechPayoutResult(withdrawal, providerStatus, transactionId, errorMessage = null) {
+  const currentMetadata = parseProviderMetadata(withdrawal.provider_metadata);
+  const metadata = {
+    ...currentMetadata,
+    provider_status: providerStatus,
+    last_error: errorMessage,
+  };
+  await db.query(
+    'UPDATE retraits SET provider_transaction_id = COALESCE(?, provider_transaction_id), provider_metadata = ? WHERE id = ? AND fournisseur = ? AND statut = ?',
+    [transactionId || null, JSON.stringify(metadata), withdrawal.id, 'ashtechpay', 'en_cours'],
+  );
+}
+
+async function submitAshtechPayout(withdrawal, payload) {
+  try {
+    const response = withdrawal.operateur === 'Crypto USDT'
+      ? await ashtechPay.createCryptoPayout(payload)
+      : await ashtechPay.createMobileMoneyPayout(payload);
+    const transactionId = String(response?.transaction_id || '').trim();
+    const reportedStatus = normalizeAshtechPayoutStatus(response?.status);
+    await saveAshtechPayoutResult(withdrawal, reportedStatus, transactionId);
+    if (!transactionId) {
+      return {
+        success: true,
+        status: 'en_cours',
+        message: 'La demande utilise sa référence idempotente et reste en cours de vérification.',
+      };
+    }
+    const verified = await ashtechPay.getTransactionStatus(transactionId);
+    if (verified.transaction_id && String(verified.transaction_id) !== transactionId) {
+      throw new Error('Le transaction_id retourné par AshTechPay ne correspond pas à la demande.');
+    }
+    const status = normalizeAshtechPayoutStatus(verified.status);
+    await saveAshtechPayoutResult(withdrawal, status, transactionId);
+    const settled = await settleAshtechPayout(db, withdrawal.id, status);
+    if (status === 'success') return { success: true, message: 'Payout AshTechPay confirmé.' };
+    if (status === 'failed') {
+      return { success: settled.ok, message: settled.ok ? 'Payout AshTechPay échoué, solde remboursé.' : settled.message };
+    }
+    return { success: true, status: 'en_cours', message: 'Payout AshTechPay en cours de traitement.' };
+  } catch (error) {
+    await saveAshtechPayoutResult(
+      withdrawal,
+      'unknown',
+      null,
+      formatAshtechAdminError(error),
+    );
+    return { success: false, status: 'en_cours', message: formatAshtechAdminError(error) };
+  }
+}
+
+async function checkAshtechPayout(withdrawal) {
+  const transactionId = String(withdrawal.provider_transaction_id || '').trim();
+  if (!transactionId) {
+    const metadata = parseProviderMetadata(withdrawal.provider_metadata);
+    if (metadata.provider_status === 'pending_manual') {
+      return {
+        success: true,
+        status: 'en_cours',
+        message: 'AshTechPay a placé le payout en traitement manuel. Ne renvoyez pas la demande ; attendez la confirmation.',
+      };
+    }
+    if (!metadata.request_payload || !withdrawal.provider_order_id) {
+      return { success: false, status: 'en_cours', message: 'La référence ou le payload idempotent de ce payout manque.' };
+    }
+    return submitAshtechPayout(withdrawal, metadata.request_payload);
+  }
+
+  try {
+    const data = await ashtechPay.getTransactionStatus(transactionId);
+    if (data.transaction_id && String(data.transaction_id) !== transactionId) {
+      throw new Error('Le transaction_id retourné par AshTechPay ne correspond pas à ce retrait.');
+    }
+    const status = normalizeAshtechPayoutStatus(data.status);
+    await saveAshtechPayoutResult(withdrawal, status, transactionId);
+    const settled = await settleAshtechPayout(db, withdrawal.id, status);
+    if (status === 'success') return { success: true, message: 'Payout AshTechPay confirmé.' };
+    if (status === 'failed') {
+      return { success: settled.ok, message: settled.ok ? 'Payout AshTechPay échoué, solde remboursé.' : settled.message };
+    }
+    return { success: true, status: 'en_cours', message: 'Payout AshTechPay toujours en cours.' };
+  } catch (error) {
+    return { success: false, status: 'en_cours', message: formatAshtechAdminError(error) };
+  }
+}
+
 // ── AJAX: Actions ──────────────────────────────────────────────────────────────
 router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
   const { action, id, montant, user_id, nom, prix, duree_jours, rendement_journalier, description } = req.body;
@@ -1172,6 +1393,27 @@ router.post('/adminxyz/action', requireAdminAuth, async (req, res) => {
           );
           return res.json({ success: false, message: formatSoleasAdminError(error) });
         }
+      }
+
+      case 'pay_retrait_ashtech': {
+        let prepared;
+        try {
+          prepared = await prepareAshtechPayout(id);
+        } catch (error) {
+          return res.json({ success: false, message: error.message });
+        }
+        if (prepared.withdrawal.provider_transaction_id) {
+          return res.json(await checkAshtechPayout(prepared.withdrawal));
+        }
+        return res.json(await submitAshtechPayout(prepared.withdrawal, prepared.payload));
+      }
+
+      case 'check_retrait_ashtech': {
+        const [[ret]] = await db.query('SELECT * FROM retraits WHERE id = ?', [id]);
+        if (!ret || ret.statut !== 'en_cours' || ret.fournisseur !== 'ashtechpay') {
+          return res.json({ success: false, message: 'Ce retrait n’est pas un payout AshTechPay en cours.' });
+        }
+        return res.json(await checkAshtechPayout(ret));
       }
 
       case 'check_retrait_soleaspay': {
