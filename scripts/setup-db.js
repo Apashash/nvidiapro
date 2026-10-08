@@ -268,7 +268,6 @@ async function setup() {
       `ALTER TABLE depots ADD COLUMN IF NOT EXISTS provider_metadata JSONB NOT NULL DEFAULT '{}'::jsonb`,
       `CREATE INDEX IF NOT EXISTS depots_provider_transaction_id_idx ON depots(provider_transaction_id) WHERE provider_transaction_id IS NOT NULL`,
       `CREATE INDEX IF NOT EXISTS retraits_provider_transaction_id_idx ON retraits(provider_transaction_id) WHERE provider_transaction_id IS NOT NULL`,
-      `CREATE UNIQUE INDEX IF NOT EXISTS depots_one_pending_hosted_checkout_per_user_uidx ON depots(user_id) WHERE fournisseur = 'ashtechpay_checkout' AND statut = 'en_attente'`,
       `CREATE UNIQUE INDEX IF NOT EXISTS historique_revenus_salaire_niveau_uidx ON historique_revenus(user_id, niveau) WHERE type='salaire'`,
       `CREATE UNIQUE INDEX IF NOT EXISTS codes_utilises_user_code_uidx ON codes_utilises (user_id, code)`,
     ];

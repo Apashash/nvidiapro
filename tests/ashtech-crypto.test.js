@@ -94,7 +94,7 @@ test('validates the documented crypto collect response against the selected asse
   );
   assert.throws(
     () => normalizeAshtechCryptoCollectResponse({ ...payment, address: '' }, asset),
-    /address valide/i,
+    /adresse.*valide/i,
   );
 });
 

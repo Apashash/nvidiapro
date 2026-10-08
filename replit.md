@@ -28,7 +28,8 @@ The workflow is configured in `.replit` and waits for port 5000 before marking t
 - `uploads/` — user-uploaded post images (multer)
 
 ## Key Features
-- Mobile Money deposits via AshTechPay Direct API
+- Mobile Money deposits and USDT collections via AshTechPay Direct API
+- Mobile Money and USDT payouts via AshTechPay Direct API
 - Investment plan (Action VIP 1) with daily yield over 125 days
 - 3-level MLM referral system (20% / 10% / 5% commissions)
 - VIP tiers with daily salary
@@ -43,6 +44,8 @@ Replit built-in PostgreSQL is used by default (auto-provisioned `DATABASE_URL`).
 
 **First-time setup:** run `npm run setup-db` to create all tables and seed investment plans.
 
+After deploying the AshTechPay integration changes, run `npm run setup-db` once to add provider metadata and lookup indexes. Configure AshTechPay values through Replit Secrets; never put keys in browser code or chat. Set the callback URL in the AshTechPay Direct API dashboard to the exact public HTTPS value in `ASHTECH_NOTIFY_URL`.
+
 Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, `planinvestissement`, `commandes`, `depots`, `retraits`, `portefeuilles`, `transaction_passwords`, `historique_revenus`, `posts`, `codes_utilises`, `filleuls`, `connexions_journalieres`, `pieces`, and more.
 
 ## Secrets / Environment Variables
@@ -51,9 +54,10 @@ Schema lives in `scripts/setup-db.js`. Tables: `utilisateurs`, `soldes`, `vip`, 
 | `SESSION_SECRET` | Yes | Express session signing |
 | `DATABASE_URL` | Auto (Replit) | PostgreSQL connection (Replit built-in) |
 | `SUPABASE_DATABASE_URL` | Optional | Override DB with Supabase instance |
-| `ASHTECH_API_KEY` | Required for deposits | AshTechPay Direct API key (`ak_...`) |
-| `ASHTECHPAY_API_KEY` | Legacy fallback | Previous name accepted for existing deployments |
-| `ASHTECHPAY_WEBHOOK_SECRET` | Optional | AshTechPay webhook secret (`whsec_...`) |
+| `ASHTECH_API_KEY` | Required for Direct API operations | AshTechPay Direct API key; configured on the server only |
+| `ASHTECH_USER_ID` | Required for Direct API operations | Profile user ID associated with `ASHTECH_API_KEY` |
+| `ASHTECH_WEBHOOK_SECRET` | Required for signed AshTechPay webhooks | Signing secret configured in the AshTechPay Direct API dashboard |
+| `ASHTECH_NOTIFY_URL` | Required for new AshTechPay operations | Public HTTPS URL ending exactly in `/ashtechpay_callback` |
 | `ASHTECH_API_BASE` | Optional | API base override; defaults to `https://www.ashtechpay.com` |
 | `SOLEASPAY_API_KEY` | Optional | MySoleas merchant API key, used for public phone verification |
 | `MYSOLEAS_CLIENT_ID` | Required for MySoleas deposits/withdrawals | Gateway OAuth2 application ID sent as `sp_client_id` |

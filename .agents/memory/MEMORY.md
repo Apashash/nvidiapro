@@ -1,7 +1,7 @@
 - [Corporate navy/red theme](agricultural-theme.md) — all EJS views share a Dangote-inspired navy/red/white visual layer while preserving logic and French content.
 - [Supabase DB connection](supabase-db-connection.md) — app's real DB is Supabase via SUPABASE_DATABASE_URL secret, takes precedence over Replit's DATABASE_URL.
-- [AshtechPay collect API integration](ashtechpay-integration.md) — notify_url (not callback_url) field, plain XAF/XOF currency codes, OTP retry flow with ussd_code, Wave response quirks.
-- [AshTech crypto API docs](ashtech-crypto-docs.md) — collection is documented; USDT withdrawals are manual, not a documented provider payout.
+- [AshTechPay Direct API](ashtechpay-integration.md) — Direct-only scope, matching profile user ID, exact OTP session reference, signed raw-body webhooks, live catalogues.
+- [AshTech crypto flows](ashtech-crypto-docs.md) — use active exact USDT asset codes and required memos for both collection and documented crypto payouts.
 - [MySoleas V4 payment gateway](soleaspay-services.md) — current deposits and withdrawals use OAuth2, alpha-3 countries, service codes, and intent/execute/status flows.
 - [Deposit referral and withdrawal rules](deposit-referral-and-withdrawal-rules.md) — commissions use validated deposits; withdrawals require a confirmed deposit and a purchased action.
 - [Mobile language stability](mobile-language-stability.md) — avoid continuous whole-page mutation observers for client-side translation; translate on load and explicit language changes.
