@@ -4,7 +4,7 @@
     "ashtech": {
       "source": "doc.ashtechpay.com",
       "sourceType": "well-known",
-      "computedHash": "c6f5b9852658651446f147833acb496be076c7c1760fbfd8c6da46896a9e82a0"
+      "computedHash": "5a6c4134d347fe8601ab037dc27bfe08c100354441b9bd281936acf7ed615848"
     },
     "supabase": {
       "source": "supabase/agent-skills",
