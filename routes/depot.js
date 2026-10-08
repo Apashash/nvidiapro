@@ -43,6 +43,10 @@ const {
 const { formatAshtechError } = require('../services/ashtechError');
 const { sanitizePaymentMessage } = require('../services/paymentText');
 const {
+  createDepotInsertDiagnostic,
+  formatDepotInsertError,
+} = require('../services/depotInsertError');
+const {
   findAccountPaymentCountry,
   normalizeCountryName,
 } = require('../services/accountPaymentCountry');
@@ -85,6 +89,7 @@ router.get('/depot', requireAuth, async (req, res) => {
     const user_id = req.session.user_id;
     const [[user]] = await db.query('SELECT * FROM utilisateurs WHERE id = ?', [user_id]);
     const flashError = req.session.error;
+    const depotInsertDiagnostic = req.session.depot_insert_diagnostic || null;
     const error = flashError
       ? flashError?.provider === 'ashtechpay'
         ? flashError.body || `AshTechPay (HTTP ${flashError.status || 'inconnu'}) : réponse vide.`
@@ -129,6 +134,7 @@ router.get('/depot', requireAuth, async (req, res) => {
     const depot_notice = req.session.depot_notice || null;
     const depotForm        = req.session.depot_form || {};
     delete req.session.error;
+    delete req.session.depot_insert_diagnostic;
     delete req.session.depot_notice;
     delete req.session.pending_depot_id;
     delete req.session.pending_numero;
@@ -161,6 +167,7 @@ router.get('/depot', requireAuth, async (req, res) => {
       : null);
     res.render('depot', {
       user, countries, cryptoCountries: enabledPaymentCountries, error: displayError, failed, depot_notice, depotMin, cryptoRate,
+      depotInsertDiagnostic: user?.is_admin ? depotInsertDiagnostic : null,
       pending_depot_id, pending_numero, pending_wave_url, pending_crypto, otp_pending,
       selectedCountryCode: depotForm.country_code || '',
       selectedOperator: depotForm.operateur || '',
@@ -584,7 +591,9 @@ router.post('/depot/process', requireAuth, async (req, res) => {
     depot_id = result.insertId;
   } catch (e) {
     console.error('depot insert error:', e);
-    req.session.error = "Erreur lors de l'enregistrement du dépôt";
+    const diagnostic = createDepotInsertDiagnostic(e, reference);
+    req.session.depot_insert_diagnostic = diagnostic;
+    req.session.error = formatDepotInsertError(diagnostic);
     return res.redirect('/depot');
   }
 

@@ -46,6 +46,11 @@
         .alert-error   { background:#FFF0EE; border:1px solid #F5A9A0; color:#C0392B; }
         .alert-success { background:#F0FFF4; border:1px solid #86EFAC; color:#166534; }
         .alert-warning { background:#FFFBF0; border:1px solid #F5D78A; color:#92570E; }
+        .depot-diagnostic { margin-top:9px; padding-top:8px; border-top:1px solid rgba(192,57,43,.25); }
+        .depot-diagnostic summary { cursor:pointer; font-size:12px; font-weight:700; }
+        .depot-diagnostic dl { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:4px 8px; margin-top:8px; }
+        .depot-diagnostic dt { font-weight:700; }
+        .depot-diagnostic dd { min-width:0; overflow-wrap:anywhere; }
 
         .form-card {
             background:#fff; border-radius:18px; padding:22px 18px;
@@ -281,7 +286,28 @@
             <div class="alert-box alert-error"><i class="fas fa-times-circle"></i> <%= failed %></div>
         <% } %>
         <% if (locals.error) { %>
-            <div class="alert-box alert-error" role="alert"><i class="fas fa-exclamation-circle"></i><span class="alert-message"><%= error %></span></div>
+            <div class="alert-box alert-error" role="alert">
+                <i class="fas fa-exclamation-circle"></i>
+                <div class="alert-message">
+                    <span><%= error %></span>
+                    <% if (locals.depotInsertDiagnostic) { %>
+                        <details class="depot-diagnostic">
+                            <summary>Détails techniques (administrateur)</summary>
+                            <dl>
+                                <dt>Référence</dt><dd><%= depotInsertDiagnostic.reference %></dd>
+                                <dt>Code PostgreSQL</dt><dd><%= depotInsertDiagnostic.code %></dd>
+                                <dt>Diagnostic</dt><dd><%= depotInsertDiagnostic.summary %></dd>
+                                <dt>Message</dt><dd><%= depotInsertDiagnostic.message %></dd>
+                                <% if (depotInsertDiagnostic.detail) { %><dt>Détail</dt><dd><%= depotInsertDiagnostic.detail %></dd><% } %>
+                                <% if (depotInsertDiagnostic.hint) { %><dt>Indication</dt><dd><%= depotInsertDiagnostic.hint %></dd><% } %>
+                                <% if (depotInsertDiagnostic.table) { %><dt>Table</dt><dd><%= depotInsertDiagnostic.table %></dd><% } %>
+                                <% if (depotInsertDiagnostic.column) { %><dt>Colonne</dt><dd><%= depotInsertDiagnostic.column %></dd><% } %>
+                                <% if (depotInsertDiagnostic.constraint) { %><dt>Contrainte</dt><dd><%= depotInsertDiagnostic.constraint %></dd><% } %>
+                            </dl>
+                        </details>
+                    <% } %>
+                </div>
+            </div>
         <% } %>
         <% if (locals.depot_notice) { %>
             <div class="alert-box alert-warning"><i class="fas fa-exclamation-triangle"></i> <%= depot_notice %></div>
